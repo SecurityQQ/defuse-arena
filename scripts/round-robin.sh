@@ -18,6 +18,7 @@ ROUNDS="${ROUNDS:-1}"
 BUDGET="${BUDGET:-60000}"
 BAND="${BAND:-D3}"
 ONLY="${ONLY:-}"
+SKIP_DONE="${SKIP_DONE:-0}"
 JOBS="${JOBS:-2}"
 DRY_RUN="${DRY_RUN:-0}"
 DEVIN="${DEVIN:-devin}"
@@ -66,6 +67,12 @@ for ((i = 0; i < n; i++)); do
 
       match_no=$((match_no + 1))
       match_id=$(printf 'm-%04d' "$match_no")
+
+      if [[ "$SKIP_DONE" == "1" && -s "$SEASON_DIR/matches/$match_id/result.tsv" ]]; then
+        log "skip $match_id (already has result.tsv)"
+        continue
+      fi
+
       start_round=$(((match_no - 1) * ROUNDS + 1))
 
       SPECS+=("$SEASON|$match_id|$start_round|$ROUNDS|$BAND|$a_label|$a_model|$d_label|$d_model")

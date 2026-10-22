@@ -52,6 +52,7 @@ Environment:
 | `BAND` | `D3` | difficulty band recorded in the manifest |
 | `BUDGET` | `60000` | budget recorded in the manifest |
 | `ONLY` | empty | run only matches involving this label |
+| `SKIP_DONE` | `0` | skip matches that already have a non-empty `result.tsv` |
 | `JOBS` | `2` | matches in parallel |
 | `AGENT_TIMEOUT` | `1800` | seconds per agent run |
 | `DRY_RUN` | `0` | print commands, make no model calls |
