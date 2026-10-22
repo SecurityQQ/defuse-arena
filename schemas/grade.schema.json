@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://inspection-arena.local/schemas/grade.schema.json",
+  "title": "RoundGrade",
+  "description": "Executable grading record. Written by the grader after patch verification.",
+  "type": "object",
+  "required": [
+    "round_id",
+    "match_id",
+    "season_id",
+    "ts",
+    "attacker",
+    "defender",
+    "scoring_version",
+    "theta",
+    "outcome",
+    "brier",
+    "score",
+    "chips",
+    "rating_delta"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "round_id": { "type": "string" },
+    "match_id": { "type": "string" },
+    "season_id": { "type": "string" },
+    "ts": { "type": "string", "format": "date-time" },
+    "attacker": { "type": "string" },
+    "defender": { "type": "string" },
+    "scoring_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "theta": { "type": "integer", "enum": [0, 1] },
+    "outcome": {
+      "type": "string",
+      "enum": ["TP", "TN", "FP", "FN", "VOID", "DISCOVERY"]
+    },
+    "poc_unpatched": {
+      "type": ["boolean", "null"]
+    },
+    "poc_patched": {
+      "type": ["boolean", "null"]
+    },
+    "tests_pass": {
+      "type": ["boolean", "null"]
+    },
+    "brier": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "S_B = clip(1 - 2(p - y)^2, 0, 1)."
+    },
+    "chips": {
+      "type": "object",
+      "required": ["attacker", "defender"],
+      "additionalProperties": false,
+      "properties": {
+        "attacker": { "type": "integer" },
+        "defender": { "type": "integer" }
+      }
+    },
+    "rating_delta": {
+      "type": "object",
+      "required": ["attacker", "defender"],
+      "additionalProperties": false,
+      "properties": {
+        "attacker": { "type": "number" },
+        "defender": { "type": "number" }
+      }
+    }
+  }
+}

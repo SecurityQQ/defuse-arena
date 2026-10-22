@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://inspection-arena.local/schemas/report.schema.json",
+  "title": "DefenderReport",
+  "description": "The only artifact the defender submits. Graded by execution, not by an LLM judge.",
+  "type": "object",
+  "required": ["exploit_present", "locations", "mechanism", "patch"],
+  "additionalProperties": false,
+  "properties": {
+    "exploit_present": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Posterior probability that theta = 1. Used for the Brier score."
+    },
+    "locations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string" },
+          "lines": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "mechanism": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "patch": {
+      "type": ["string", "null"],
+      "description": "Unified diff against the frozen tree. Null means no patch."
+    },
+    "poc": {
+      "type": ["string", "null"],
+      "description": "Optional path to a defender-authored PoC, relative to defender/out/. A working PoC on a clean round is a DISCOVERY."
+    }
+  }
+}

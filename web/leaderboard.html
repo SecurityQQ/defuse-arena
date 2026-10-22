@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inspection Arena — Leaderboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #010A13;
+    --bg-2: #06101F;
+    --panel: #091428;
+    --panel-2: #0F1B2D;
+    --line: rgba(200, 170, 110, .16);
+    --line-soft: rgba(200, 170, 110, .07);
+    --gold: #C8AA6E;
+    --gold-2: #F0E6D2;
+    --gold-3: #785A28;
+    --teal: #0AC8B9;
+    --blue: #0596AA;
+    --red: #C6443E;
+    --orange: #E8A24A;
+    --purple: #B98BE8;
+    --text: #CDBE91;
+    --muted: #7A8CA3;
+    --white: #F0E6D2;
+    --pos: #4FE0B0;
+    --neg: #E06060;
+    --font-display: "Cinzel", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    --font-ui: "Rajdhani", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "SFMono-Regular", ui-monospace, Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { background: var(--bg); }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 15px;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(10, 200, 185, .10), transparent 60%),
+      radial-gradient(900px 520px at 92% 0%, rgba(200, 170, 110, .10), transparent 55%),
+      linear-gradient(180deg, #010A13 0%, #06101F 42%, #010A13 100%);
+    background-attachment: fixed;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: .55;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='64' viewBox='0 0 56 64'%3E%3Cpath d='M28 2 L52 16 L52 44 L28 58 L4 44 L4 16 Z' fill='none' stroke='%23C8AA6E' stroke-opacity='0.05' stroke-width='1'/%3E%3C/svg%3E");
+  }
+
+  .page {
+    position: relative;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 26px 28px 40px;
+  }
+
+  /* ---------- top bar ---------- */
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+    font-size: 10px;
+    letter-spacing: .24em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .topbar b { color: var(--gold); font-weight: 600; }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    text-align: center;
+    padding: 46px 0 34px;
+    position: relative;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: .38em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h1 {
+    margin: 10px 0 18px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 7vw, 104px);
+    line-height: .95;
+    letter-spacing: .16em;
+    text-indent: .16em;
+    background: linear-gradient(100deg, #785A28 0%, #C8AA6E 32%, #F0E6D2 50%, #C8AA6E 68%, #785A28 100%);
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 34px rgba(200, 170, 110, .22));
+    animation: shimmer 9s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% center; }
+    100% { background-position: -20% center; }
+  }
+
+  .ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: var(--gold);
+    font-size: 11px;
+  }
+
+  .ornament::before,
+  .ornament::after {
+    content: "";
+    width: min(180px, 22vw);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+
+  .ornament::after { transform: scaleX(-1); }
+
+  .tagline {
+    margin: 16px 0 0;
+    color: var(--muted);
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+
+  .empty-banner {
+    margin: 0 0 18px;
+    padding: 14px 18px;
+    border: 1px solid rgba(232, 162, 74, .4);
+    background: rgba(232, 162, 74, .07);
+    color: var(--orange);
+    font-size: 12px;
+    letter-spacing: .08em;
+  }
+
+  .empty-banner code {
+    font-family: var(--font-mono);
+    color: var(--gold-2);
+  }
+
+  /* ---------- summary ---------- */
+
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 18px;
+  }
+
+  .stat {
+    background: linear-gradient(180deg, rgba(15, 27, 45, .95), rgba(6, 16, 31, .95));
+    padding: 16px 18px;
+  }
+
+  .stat .k {
+    display: block;
+    font-size: 9px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .stat .v {
+    font-family: var(--font-display);
+    font-size: 25px;
+    color: var(--gold-2);
+    letter-spacing: .04em;
+  }
+
+  .stat .v.ok {
+    color: var(--teal);
+    font-size: 18px;
+    letter-spacing: .14em;
+  }
+
+  /* ---------- podium ---------- */
+
+  .podium {
+    display: grid;
+    grid-template-columns: 1fr 1.12fr 1fr;
+    gap: 14px;
+    align-items: end;
+    margin-bottom: 22px;
+  }
+
+  .champ {
+    position: relative;
+    padding: 20px 18px 18px;
+    text-align: center;
+    border: 1px solid var(--line);
+    background:
+      linear-gradient(180deg, rgba(15, 27, 45, .92), rgba(6, 16, 31, .92));
+    overflow: hidden;
+  }
+
+  .champ::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(220px 90px at 50% 0%, rgba(200, 170, 110, .12), transparent 70%);
+    pointer-events: none;
+  }
+
+  .champ.first {
+    padding: 30px 18px 24px;
+    border-color: rgba(200, 170, 110, .45);
+    box-shadow: 0 0 60px rgba(200, 170, 110, .12), inset 0 0 40px rgba(200, 170, 110, .04);
+  }
+
+  .champ-rank {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--gold-3);
+    letter-spacing: .2em;
+  }
+
+  .champ.first .champ-rank { color: var(--gold); }
+
+  .champ h3 {
+    margin: 6px 0 8px;
+    font-size: 18px;
+    letter-spacing: .12em;
+    color: var(--white);
+    text-transform: uppercase;
+  }
+
+  .champ.first h3 { font-size: 22px; }
+
+  .champ-rating {
+    font-family: var(--font-display);
+    font-size: 34px;
+    color: var(--gold-2);
+    line-height: 1;
+    margin: 10px 0 8px;
+  }
+
+  .champ.first .champ-rating { font-size: 44px; }
+
+  .champ-meta {
+    font-size: 11px;
+    letter-spacing: .12em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* ---------- panels ---------- */
+
+  .panel {
+    position: relative;
+    margin-bottom: 20px;
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(15, 27, 45, .9), rgba(6, 16, 31, .94));
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(240, 230, 210, .04);
+    animation: rise .55s ease both;
+  }
+
+  .panel:nth-of-type(2) { animation-delay: .08s; }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .5;
+    background:
+      linear-gradient(90deg, var(--gold), transparent 16%) top left / 130px 1px no-repeat,
+      linear-gradient(180deg, var(--gold), transparent 34%) top left / 1px 90px no-repeat,
+      linear-gradient(270deg, var(--gold), transparent 16%) bottom right / 130px 1px no-repeat,
+      linear-gradient(0deg, var(--gold), transparent 34%) bottom right / 1px 90px no-repeat;
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .panel-head h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 19px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--gold-2);
+    font-weight: 500;
+  }
+
+  .sub {
+    margin: 4px 0 0;
+    font-size: 11px;
+    letter-spacing: .06em;
+    color: var(--muted);
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .tabs { display: flex; gap: 3px; }
+
+  .tab {
+    font-family: var(--font-ui);
+    font-size: 10px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: none;
+    border: 1px solid transparent;
+    padding: 7px 11px;
+    cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+
+  .tab:hover { color: var(--gold-2); }
+
+  .tab.active {
+    color: var(--gold-2);
+    border-color: var(--line);
+    background: rgba(200, 170, 110, .09);
+  }
+
+  .search {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    letter-spacing: .06em;
+    color: var(--white);
+    background: rgba(0, 0, 0, .35);
+    border: 1px solid var(--line);
+    padding: 8px 11px;
+    min-width: 180px;
+    outline: none;
+    transition: border-color .15s;
+  }
+
+  .search::placeholder { color: var(--muted); }
+  .search:focus { border-color: var(--gold); }
+
+  .clear {
+    font-family: var(--font-ui);
+    font-size: 10px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--orange);
+    background: rgba(232, 162, 74, .08);
+    border: 1px solid rgba(232, 162, 74, .4);
+    padding: 7px 11px;
+    cursor: pointer;
+  }
+
+  /* ---------- tables ---------- */
+
+  .table-wrap { overflow-x: auto; }
+
+  #ledger-panel .table-wrap {
+    max-height: 560px;
+    overflow: auto;
+  }
+
+  #ledger-panel thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #0B1729;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+
+  thead th {
+    padding: 11px 10px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--line);
+    user-select: none;
+  }
+
+  thead th[data-key] { cursor: pointer; }
+  thead th[data-key]:hover { color: var(--gold-2); }
+  thead th.sorted { color: var(--gold); }
+
+  tbody td {
+    padding: 11px 10px;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--line-soft);
+    white-space: nowrap;
+  }
+
+  tbody tr { transition: background .15s; }
+  tbody tr:hover { background: linear-gradient(90deg, rgba(200, 170, 110, .07), transparent 65%); }
+
+  tbody tr.podium-row:hover { background: linear-gradient(90deg, rgba(200, 170, 110, .12), transparent 65%); }
+
+  tbody tr.prov { opacity: .55; }
+
+  tr.divider td {
+    padding: 14px 10px 8px;
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--gold-3);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .rank {
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--gold-2);
+    border: 1px solid var(--line);
+    background: radial-gradient(circle at 32% 22%, rgba(200, 170, 110, .16), transparent 70%);
+  }
+
+  .rank.top1 {
+    border-color: rgba(240, 230, 210, .6);
+    box-shadow: 0 0 18px rgba(200, 170, 110, .3);
+    color: #FFF6E0;
+  }
+
+  .rank.top2 { border-color: rgba(185, 196, 208, .5); }
+  .rank.top3 { border-color: rgba(185, 122, 78, .55); }
+
+  .agent { display: flex; flex-direction: column; gap: 5px; }
+
+  .agent-name {
+    font-family: var(--font-ui);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--white);
+    background: none;
+    border: 0;
+    padding: 0;
+    text-align: left;
+    cursor: pointer;
+    transition: color .15s;
+  }
+
+  .agent-name:hover { color: var(--gold); }
+
+  .agent-name.small {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    color: var(--text);
+  }
+
+  .agent-name.small:hover { color: var(--gold); }
+
+  .form { display: flex; gap: 3px; }
+
+  .form i {
+    display: block;
+    width: 8px;
+    height: 8px;
+    background: #2A3A4D;
+    transform: skewX(-12deg);
+  }
+
+  .form i.w { background: var(--teal); box-shadow: 0 0 7px rgba(10, 200, 185, .55); }
+  .form i.l { background: #5A2A2A; }
+
+  .tier {
+    display: inline-block;
+    padding: 2px 7px;
+    font-size: 8.5px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  .tier.challenger { color: #8FE9FF; border-color: rgba(143, 233, 255, .5); text-shadow: 0 0 10px rgba(143, 233, 255, .35); }
+  .tier.grandmaster { color: #E05A5A; border-color: rgba(224, 90, 90, .45); }
+  .tier.master { color: #B98BE8; border-color: rgba(185, 139, 232, .45); }
+  .tier.diamond { color: #6FB6FF; border-color: rgba(111, 182, 255, .45); }
+  .tier.platinum { color: #57D6C4; border-color: rgba(87, 214, 196, .45); }
+  .tier.gold { color: #E3C27A; border-color: rgba(227, 194, 122, .45); }
+  .tier.silver { color: #B9C4D0; border-color: rgba(185, 196, 208, .4); }
+  .tier.bronze { color: #B97A4E; border-color: rgba(185, 122, 78, .45); }
+
+  .champ-tier {
+    display: inline-block;
+    font-size: 9px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border: 1px solid currentColor;
+  }
+
+  .champ-tier.challenger { color: #8FE9FF; }
+  .champ-tier.grandmaster { color: #E05A5A; }
+  .champ-tier.master { color: #B98BE8; }
+  .champ-tier.diamond { color: #6FB6FF; }
+  .champ-tier.platinum { color: #57D6C4; }
+  .champ-tier.gold { color: #E3C27A; }
+  .champ-tier.silver { color: #B9C4D0; }
+  .champ-tier.bronze { color: #B97A4E; }
+
+  .rating {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--gold-2);
+  }
+
+  .dim { color: var(--muted); }
+
+  .wr { display: flex; align-items: center; gap: 8px; }
+
+  .wr-bar {
+    display: block;
+    width: 62px;
+    height: 4px;
+    background: rgba(255, 255, 255, .08);
+    overflow: hidden;
+  }
+
+  .wr-bar i {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--teal));
+  }
+
+  .wr em {
+    font-style: normal;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .04em;
+  }
+
+  .pos { color: var(--pos); }
+  .neg { color: var(--neg); }
+
+  .mono {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0;
+  }
+
+  .coin {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 700;
+    border: 1px solid;
+  }
+
+  .coin.h {
+    color: #0B0F14;
+    background: linear-gradient(180deg, #F0E6D2, #C8AA6E);
+    border-color: #F0E6D2;
+    box-shadow: 0 0 12px rgba(200, 170, 110, .35);
+  }
+
+  .coin.t {
+    color: #8FE9FF;
+    background: rgba(10, 200, 185, .08);
+    border-color: rgba(10, 200, 185, .5);
+  }
+
+  .outcome {
+    display: inline-block;
+    min-width: 42px;
+    padding: 3px 7px;
+    text-align: center;
+    font-size: 9px;
+    letter-spacing: .14em;
+    border: 1px solid;
+    border-radius: 2px;
+  }
+
+  .outcome.tp { color: #4FE0B0; border-color: rgba(79, 224, 176, .45); background: rgba(79, 224, 176, .08); }
+  .outcome.tn { color: #6FB6FF; border-color: rgba(111, 182, 255, .45); background: rgba(111, 182, 255, .08); }
+  .outcome.fp { color: #E8A24A; border-color: rgba(232, 162, 74, .45); background: rgba(232, 162, 74, .08); }
+  .outcome.fn { color: #E06060; border-color: rgba(224, 96, 96, .45); background: rgba(224, 96, 96, .08); }
+  .outcome.void { color: #8A97A8; border-color: rgba(138, 151, 168, .4); background: rgba(138, 151, 168, .06); }
+  .outcome.discovery { color: #B98BE8; border-color: rgba(185, 139, 232, .45); background: rgba(185, 139, 232, .08); }
+
+  footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  footer code {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--gold);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  @media (max-width: 900px) {
+    .summary { grid-template-columns: repeat(2, 1fr); }
+    .podium { grid-template-columns: 1fr; }
+    .champ.first { order: -1; }
+    .panel-head { align-items: flex-start; }
+    .page { padding: 18px 14px 30px; }
+  }
+
+  @media (max-width: 700px) {
+    .topbar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: 9px;
+      letter-spacing: .16em;
+    }
+
+    .panel-head { flex-direction: column; align-items: stretch; }
+    .controls { width: 100%; }
+    .search { flex: 1 1 auto; min-width: 0; }
+
+    #standings th:nth-child(5), #standings td:nth-child(5),
+    #standings th:nth-child(6), #standings td:nth-child(6),
+    #standings th:nth-child(11), #standings td:nth-child(11),
+    #standings th:nth-child(12), #standings td:nth-child(12),
+    #standings th:nth-child(13), #standings td:nth-child(13),
+    #standings th:nth-child(14), #standings td:nth-child(14) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 600px) {
+    h1 { letter-spacing: .08em; text-indent: .08em; }
+    .eyebrow { letter-spacing: .2em; font-size: 9px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <span><b>Inspection Arena</b> · hidden-vulnerability auditing</span>
+    <span id="season-label">No season loaded</span>
+  </div>
+
+  <header class="masthead">
+    <div class="eyebrow">Two agents · one coin · an audit that has to hold</div>
+    <h1>Leaderboard</h1>
+    <div class="ornament"><span>◆</span></div>
+    <p class="tagline">Detection · Defusal · Efficiency</p>
+  </header>
+
+  <div class="empty-banner" id="empty-banner" hidden>
+    No season data loaded. Generate this page with
+    <code>inspection-arena standings --format html</code>.
+  </div>
+
+  <section class="summary" id="summary" aria-label="Season summary"></section>
+
+  <section class="podium" id="podium" aria-label="Top three agents"></section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Standings</h2>
+        <p class="sub">Combined rating, role splits, spend and calibration. Click a column to re-sort.</p>
+      </div>
+      <div class="controls">
+        <div class="tabs" role="tablist" aria-label="Rating mode">
+          <button class="tab active" data-role="overall" role="tab" aria-selected="true">Overall</button>
+          <button class="tab" data-role="att" role="tab" aria-selected="false">Attacker</button>
+          <button class="tab" data-role="def" role="tab" aria-selected="false">Defender</button>
+        </div>
+        <input class="search" id="search" type="search" placeholder="Search agent…" aria-label="Search agent">
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="standings"></table>
+    </div>
+  </section>
+
+  <section class="panel" id="ledger-panel">
+    <div class="panel-head">
+      <div>
+        <h2>Match log</h2>
+        <p class="sub" id="ledger-sub">Every round, every token, every rating point.</p>
+      </div>
+      <button class="clear" id="clear-filter" hidden>Clear filter ✕</button>
+    </div>
+    <div class="table-wrap">
+      <table id="ledger"></table>
+    </div>
+  </section>
+
+  <footer>
+    <span>Generated <time id="gen">—</time></span>
+    <span id="scoring-label">Scoring —</span>
+    <span>Ledger <code id="hash">—</code></span>
+  </footer>
+
+</div>
+
+<script type="application/json" id="arena-data">
+{
+  "season_id": "",
+  "generated_at": null,
+  "scoring_version": "0.1.0",
+  "ledger_sha256": "",
+  "rows": [],
+  "ledger": []
+}
+</script>
+
+<script>
+(() => {
+  "use strict";
+
+  const DATA = JSON.parse(document.getElementById("arena-data").textContent);
+  const state = { role: "overall", key: "rating", dir: -1, query: "", agent: null };
+
+  const TIERS = [
+    [1550, "Challenger", "challenger"],
+    [1500, "Grandmaster", "grandmaster"],
+    [1450, "Master", "master"],
+    [1400, "Diamond", "diamond"],
+    [1350, "Platinum", "platinum"],
+    [1300, "Gold", "gold"],
+    [1250, "Silver", "silver"],
+    [-Infinity, "Bronze", "bronze"],
+  ];
+
+  const tierOf = rating => TIERS.find(([min]) => rating >= min);
+
+  const fmtK = n => {
+    const abs = Math.abs(n);
+    if (abs >= 1e6) return (n / 1e6).toFixed(2) + "M";
+    if (abs >= 1e3) return (n / 1e3).toFixed(1) + "k";
+    return String(n);
+  };
+
+  const fmtSigned = n => (n > 0 ? "+" : n < 0 ? "\u2212" : "") + fmtK(Math.abs(n));
+  const pct = x => (x == null ? "\u2014" : (x * 100).toFixed(0) + "%");
+  const delta = n => (n > 0 ? "+" : "") + n.toFixed(1);
+
+  const winFor = (row, agent) => {
+    if (row.outcome === "VOID") return null;
+    if (row.attacker === agent) return row.outcome === "FN" || row.outcome === "FP";
+    if (row.defender === agent) {
+      return row.outcome === "TP" || row.outcome === "TN" || row.outcome === "DISCOVERY";
+    }
+    return null;
+  };
+
+  const formFor = agent =>
+    DATA.ledger
+      .filter(r => r.attacker === agent || r.defender === agent)
+      .sort((a, b) => a.ts.localeCompare(b.ts))
+      .slice(-5)
+      .map(r => winFor(r, agent));
+
+  const formHtml = agent =>
+    formFor(agent)
+      .map(w => `<i class="${w ? "w" : "l"}" title="${w ? "win" : "loss"}"></i>`)
+      .join("");
+
+  const ranked = () =>
+    DATA.rows
+      .filter(r => !r.provisional && r.agent.toLowerCase().includes(state.query))
+      .sort((a, b) => state.dir * (a[state.key] - b[state.key]) || b.rating - a.rating);
+
+  const topThree = () =>
+    DATA.rows
+      .filter(r => !r.provisional)
+      .slice()
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 3);
+
+  function renderSummary() {
+    const valid = DATA.rows.reduce((s, r) => s + r.rounds, 0);
+    const voids = DATA.rows.reduce((s, r) => s + r.voids, 0);
+    const tokens = DATA.rows.reduce((s, r) => s + r.tokens_total, 0);
+    const brier = valid ? DATA.rows.reduce((s, r) => s + r.brier * r.rounds, 0) / valid : null;
+
+    const stats = [
+      ["Agents", DATA.rows.length],
+      ["Rounds", valid],
+      ["Void", voids],
+      ["Tokens", fmtK(tokens)],
+      ["Mean Brier", brier == null ? "\u2014" : brier.toFixed(3)],
+      ["Ledger", DATA.ledger_sha256 ? "Verified" : "\u2014"],
+    ];
+
+    document.getElementById("summary").innerHTML = stats
+      .map(([k, v]) => {
+        const ok = v === "Verified";
+        return `<div class="stat"><span class="k">${k}</span><span class="v ${ok ? "ok" : ""}">${v}</span></div>`;
+      })
+      .join("");
+  }
+
+  function renderPodium() {
+    const top = topThree();
+    const order = [1, 0, 2];
+    const podium = document.getElementById("podium");
+
+    if (!top.length) {
+      podium.hidden = true;
+      podium.innerHTML = "";
+      return;
+    }
+
+    podium.hidden = false;
+    podium.innerHTML = order
+      .map(i => {
+        const a = top[i];
+        if (!a) return "";
+        const [, tier, cls] = tierOf(a.rating);
+        return `<article class="champ ${i === 0 ? "first" : ""}">
+          <div class="champ-rank">${i + 1}</div>
+          <h3>${a.agent}</h3>
+          <div class="champ-tier ${cls}">${tier}</div>
+          <div class="champ-rating">${a.rating.toFixed(1)}</div>
+          <div class="champ-meta">${a.wins}\u2013${a.losses} \u00b7 ${fmtK(a.tokens_total)} tokens</div>
+        </article>`;
+      })
+      .join("");
+  }
+
+  const COLUMNS = [
+    ["rank", "#", null],
+    ["agent", "Agent", null],
+    ["tier", "Tier", null],
+    ["rating", "Rating", "rating"],
+    ["rating_att", "Att", "rating_att"],
+    ["rating_def", "Def", "rating_def"],
+    ["rounds", "Rounds", "rounds"],
+    ["wl", "W\u2013L", null],
+    ["wr", "Winrate", null],
+    ["tokens_total", "Tokens", "tokens_total"],
+    ["tokens_per_round", "Tok/round", "tokens_per_round"],
+    ["brier", "Brier", "brier"],
+    ["patch_validity", "Patch", "patch_validity"],
+    ["fpr", "FPR", "fpr"],
+    ["net_chips", "Chips", "net_chips"],
+  ];
+
+  function rowHtml(a, rank) {
+    const [, tier, cls] = tierOf(a.rating);
+    const total = a.wins + a.losses || 1;
+    const wr = (a.wins / total) * 100;
+    const rankHtml = rank == null
+      ? `<span class="rank">\u2014</span>`
+      : `<span class="rank ${rank <= 3 ? "top" + rank : ""}">${rank}</span>`;
+
+    return `<tr class="${rank && rank <= 3 ? "podium-row" : ""} ${rank == null ? "prov" : ""}">
+      <td>${rankHtml}</td>
+      <td><div class="agent">
+        <button class="agent-name" data-agent="${a.agent}">${a.agent}</button>
+        <div class="form">${formHtml(a.agent)}</div>
+      </div></td>
+      <td><span class="tier ${cls}">${tier}</span></td>
+      <td class="rating">${a.rating.toFixed(1)}</td>
+      <td class="dim">${a.rating_att.toFixed(1)}</td>
+      <td class="dim">${a.rating_def.toFixed(1)}</td>
+      <td>${a.rounds}</td>
+      <td>${a.wins}\u2013${a.losses}</td>
+      <td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>
+      <td>${fmtK(a.tokens_total)}</td>
+      <td class="dim">${fmtK(a.tokens_per_round)}</td>
+      <td>${a.brier.toFixed(3)}</td>
+      <td>${pct(a.patch_validity)}</td>
+      <td>${pct(a.fpr)}</td>
+      <td class="${a.net_chips >= 0 ? "pos" : "neg"}">${fmtSigned(a.net_chips)}</td>
+    </tr>`;
+  }
+
+  function renderStandings() {
+    const head = `<thead><tr>${COLUMNS.map(([, label, key]) => {
+      const sorted = key && key === state.key;
+      const arrow = sorted ? (state.dir === -1 ? " \u25be" : " \u25b4") : "";
+      return `<th ${key ? `data-key="${key}"` : ""} class="${sorted ? "sorted" : ""}">${label}${arrow}</th>`;
+    }).join("")}</tr></thead>`;
+
+    const rows = ranked().map((a, i) => rowHtml(a, i + 1)).join("");
+
+    const provisional = DATA.rows
+      .filter(r => r.provisional && r.agent.toLowerCase().includes(state.query))
+      .map(a => rowHtml(a, null))
+      .join("");
+
+    const divider = provisional
+      ? `<tr class="divider"><td colspan="15">Provisional \u2014 fewer than 20 valid rounds</td></tr>`
+      : "";
+
+    const empty = !rows && !provisional
+      ? `<tr><td colspan="15" class="dim">${DATA.rows.length
+          ? `No agents match \u201c${state.query}\u201d.`
+          : "No season data. Generate this page from a season export."}</td></tr>`
+      : "";
+
+    document.getElementById("standings").innerHTML =
+      head + `<tbody>${rows}${divider}${provisional}${empty}</tbody>`;
+  }
+
+  function renderLedger() {
+    const rows = DATA.ledger
+      .filter(r => !state.agent || r.attacker === state.agent || r.defender === state.agent)
+      .slice()
+      .sort((a, b) => b.ts.localeCompare(a.ts));
+
+    const head = `<thead><tr>
+      <th>Round</th><th>Match</th><th>Attacker</th><th>Defender</th><th>\u03b8</th>
+      <th>Outcome</th><th>Tok A</th><th>Tok D</th><th>\u0394R A</th><th>\u0394R D</th>
+      <th>Chips A</th><th>Chips D</th>
+    </tr></thead>`;
+
+    const body = rows.length
+      ? rows.map(r => `<tr>
+      <td class="mono">${r.round_id}</td>
+      <td class="mono dim">${r.match_id}</td>
+      <td><button class="agent-name small" data-agent="${r.attacker}">${r.attacker}</button></td>
+      <td><button class="agent-name small" data-agent="${r.defender}">${r.defender}</button></td>
+      <td><span class="coin ${r.theta ? "h" : "t"}" title="${r.theta ? "Heads \u2014 exploit required" : "Tails \u2014 clean service"}">${r.theta ? "H" : "T"}</span></td>
+      <td><span class="outcome ${r.outcome.toLowerCase()}">${r.outcome}</span></td>
+      <td>${fmtK(r.tokens.attacker)}</td>
+      <td>${fmtK(r.tokens.defender)}</td>
+      <td class="${r.rating_delta.attacker >= 0 ? "pos" : "neg"}">${delta(r.rating_delta.attacker)}</td>
+      <td class="${r.rating_delta.defender >= 0 ? "pos" : "neg"}">${delta(r.rating_delta.defender)}</td>
+      <td class="${r.chips.attacker >= 0 ? "pos" : "neg"}">${fmtSigned(r.chips.attacker)}</td>
+      <td class="${r.chips.defender >= 0 ? "pos" : "neg"}">${fmtSigned(r.chips.defender)}</td>
+    </tr>`).join("")
+      : `<tr><td colspan="12" class="dim">No rounds recorded.</td></tr>`;
+
+    document.getElementById("ledger").innerHTML = head + `<tbody>${body}</tbody>`;
+
+    document.getElementById("ledger-sub").textContent = state.agent
+      ? `Filtered to ${state.agent} \u00b7 ${rows.length} rounds`
+      : `Every round, every token, every rating point \u00b7 ${rows.length} rounds`;
+
+    document.getElementById("clear-filter").hidden = !state.agent;
+  }
+
+  document.addEventListener("click", event => {
+    const tab = event.target.closest(".tab");
+    if (tab) {
+      state.role = tab.dataset.role;
+      state.key = state.role === "overall" ? "rating" : "rating_" + state.role;
+      state.dir = -1;
+      document.querySelectorAll(".tab").forEach(t => {
+        const active = t === tab;
+        t.classList.toggle("active", active);
+        t.setAttribute("aria-selected", String(active));
+      });
+      renderStandings();
+      return;
+    }
+
+    const agent = event.target.closest("[data-agent]");
+    if (agent) {
+      state.agent = agent.dataset.agent;
+      renderLedger();
+      document.getElementById("ledger-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    const th = event.target.closest("th[data-key]");
+    if (th) {
+      const key = th.dataset.key;
+      state.dir = state.key === key ? -state.dir : -1;
+      state.key = key;
+      renderStandings();
+      return;
+    }
+
+    if (event.target.id === "clear-filter") {
+      state.agent = null;
+      renderLedger();
+    }
+  });
+
+  document.getElementById("search").addEventListener("input", event => {
+    state.query = event.target.value.trim().toLowerCase();
+    renderStandings();
+  });
+
+  renderSummary();
+  renderPodium();
+  renderStandings();
+  renderLedger();
+
+  document.getElementById("season-label").textContent = DATA.season_id
+    ? `Season ${DATA.season_id.toUpperCase()} \u00b7 scoring v${DATA.scoring_version}`
+    : `No season \u00b7 scoring v${DATA.scoring_version}`;
+  document.getElementById("scoring-label").textContent = `Scoring v${DATA.scoring_version}`;
+  document.getElementById("gen").textContent = DATA.generated_at
+    ? new Date(DATA.generated_at).toISOString().replace(".000Z", "Z")
+    : "\u2014";
+  document.getElementById("hash").textContent = DATA.ledger_sha256
+    ? DATA.ledger_sha256.slice(0, 12) + "\u2026"
+    : "\u2014";
+  document.getElementById("empty-banner").hidden = DATA.rows.length > 0;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://inspection-arena.local/schemas/log.schema.json",
+  "title": "RoundLogEntry",
+  "description": "One line of rounds/<id>/log.jsonl. Append-only and hash-chained.",
+  "type": "object",
+  "required": ["seq", "ts", "actor", "event", "prev", "hash"],
+  "additionalProperties": false,
+  "properties": {
+    "seq": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "actor": {
+      "type": "string",
+      "enum": ["gm", "attacker", "defender", "grader"]
+    },
+    "event": {
+      "type": "string",
+      "enum": [
+        "round.created",
+        "coin.committed",
+        "build.started",
+        "build.submitted",
+        "freeze.completed",
+        "audit.started",
+        "audit.submitted",
+        "grade.completed",
+        "settle.completed",
+        "reveal.opened",
+        "violation.detected"
+      ]
+    },
+    "paths": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "sha256": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "spend": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "detail": {
+      "type": "object"
+    },
+    "prev": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

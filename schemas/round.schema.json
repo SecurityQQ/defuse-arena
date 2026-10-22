@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://inspection-arena.local/schemas/round.schema.json",
+  "title": "RoundManifest",
+  "description": "Sealed record of a single round. Written at freeze, revealed after settle.",
+  "type": "object",
+  "required": [
+    "round_id",
+    "theta",
+    "scaffold",
+    "difficulty",
+    "budgets",
+    "freeze_hash"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "round_id": {
+      "type": "string",
+      "pattern": "^r-[0-9]{4,}$"
+    },
+    "theta": {
+      "type": "integer",
+      "enum": [0, 1],
+      "description": "1 = vulnerability required, 0 = clean service required."
+    },
+    "scaffold": {
+      "type": "string"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["D1", "D2", "D3", "D4", "D5"]
+    },
+    "budgets": {
+      "type": "object",
+      "required": ["attacker", "defender"],
+      "additionalProperties": false,
+      "properties": {
+        "attacker": { "type": "integer", "minimum": 0 },
+        "defender": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "spend": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "attacker": { "type": "integer", "minimum": 0 },
+        "defender": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "freeze_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "poc_hash": {
+      "type": ["string", "null"],
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "void": {
+      "type": ["string", "null"],
+      "enum": [null, "V1", "V2", "V3", "V4"]
+    }
+  }
+}

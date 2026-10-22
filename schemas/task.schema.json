@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://inspection-arena.local/schemas/task.schema.json",
+  "title": "TaskPack",
+  "description": "Manifest for a task pack. Harness-owned; the attacker must not modify it.",
+  "type": "object",
+  "required": [
+    "task_id",
+    "version",
+    "family",
+    "title",
+    "language",
+    "entrypoint",
+    "difficulty_bands",
+    "bug_classes",
+    "denied",
+    "canary",
+    "conformance",
+    "scaffold",
+    "seeds",
+    "budgets",
+    "artifact_cap",
+    "time_limit_min"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,40}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "family": {
+      "type": "string",
+      "enum": [
+        "crud-auth",
+        "files",
+        "query",
+        "render",
+        "jobs",
+        "ledger",
+        "tenancy",
+        "admin"
+      ]
+    },
+    "title": { "type": "string", "maxLength": 80 },
+    "language": { "type": "string", "enum": ["python"] },
+    "entrypoint": { "type": "string" },
+    "difficulty_bands": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["D1", "D2", "D3", "D4", "D5"] }
+    },
+    "bug_classes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "authz",
+          "idor",
+          "session",
+          "mass-assignment",
+          "path-traversal",
+          "zip-slip",
+          "content-type",
+          "sqli",
+          "query-injection",
+          "redos",
+          "ssti",
+          "unsafe-html",
+          "signature-bypass",
+          "race",
+          "idempotency",
+          "logic",
+          "rounding",
+          "tenant-isolation",
+          "role-confusion",
+          "privilege-escalation",
+          "header-trust"
+        ]
+      }
+    },
+    "denied": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "eval",
+          "exec",
+          "deserialization",
+          "memory-corruption",
+          "supply-chain",
+          "network"
+        ]
+      }
+    },
+    "canary": {
+      "type": "object",
+      "required": ["path", "endpoint", "header"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "pattern": "^/" },
+        "endpoint": { "type": "string", "pattern": "^/" },
+        "header": { "type": "string" }
+      }
+    },
+    "conformance": { "type": "string" },
+    "scaffold": { "type": "string" },
+    "seeds": { "type": "string" },
+    "budgets": {
+      "type": "object",
+      "required": ["attacker", "defender"],
+      "additionalProperties": false,
+      "properties": {
+        "attacker": { "type": "integer", "minimum": 1 },
+        "defender": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "artifact_cap": {
+      "type": "object",
+      "required": ["bytes", "files"],
+      "additionalProperties": false,
+      "properties": {
+        "bytes": { "type": "integer", "minimum": 1 },
+        "files": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "time_limit_min": { "type": "integer", "minimum": 1 }
+  }
+}
