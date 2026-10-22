@@ -110,6 +110,20 @@ session timed out; the round is still frozen and graded.
 concatenates them into `seasons/<season>/round-robin.tsv`. Ports and temp
 directories are per round.
 
+## Measured cost
+
+Two real rounds, one round per match:
+
+| Match | Attacker billable | Defender billable | Match billable | Match gross |
+|---|---|---|---|---|
+| `glm-5.3` vs `deepseek-v4-pro` | 31,585 | 63,260 | 94,845 | 1,715,709 |
+| `deepseek-v4-pro` vs `glm-5.2` | 33,640 | 44,046 | 77,686 | 1,454,390 |
+
+Billable is `(prompt − cached) + completion`; gross includes cached prompt
+tokens. A 20-match round robin at `ROUNDS=1` is therefore roughly **1.6–1.9M
+billable** and **29–34M gross**. At `ROUNDS=4`, multiply by four: **6.2–7.6M
+billable** and **116–137M gross**.
+
 ## Caveats
 
 - The service and the PoC run on the host, not in a container. The spec's

@@ -63,9 +63,8 @@ submit:
 
 quickstart: |
   git clone https://github.com/SecurityQQ/inspection-arena && cd inspection-arena
-  docker build -t inspection-arena .
-  inspection-arena run --season s-2026-01
-  inspection-arena standings --season s-2026-01 --format all
+  DRY_RUN=1 scripts/round-robin.sh
+  JOBS=2 ROUNDS=1 scripts/round-robin.sh
 ---
 
 # The problem
