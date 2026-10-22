@@ -24,6 +24,14 @@ mkdir -p "$MATCH_DIR/rounds"
 
 log() { printf '[%s] %s: %s\n' "$(date +%H:%M:%S)" "$MATCH_ID" "$*"; }
 
+sha256_file() {
+  if command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$1" | awk '{print $1}'
+  else
+    sha256sum "$1" | awk '{print $1}'
+  fi
+}
+
 hash_tree() {
   "$PY" - "$1" <<'PY'
 import hashlib, os, sys
@@ -226,7 +234,7 @@ PY
   freeze_hash="sha256:$(hash_tree "$round_dir/frozen/tree")"
   poc_hash_json="null"
   if [[ -f "$round_dir/sealed/poc/run.sh" ]]; then
-    poc_hash_json="\"sha256:$(shasum -a 256 "$round_dir/sealed/poc/run.sh" | awk '{print $1}')\""
+    poc_hash_json="\"sha256:$(sha256_file "$round_dir/sealed/poc/run.sh")\""
   fi
   void_json="null"
   if [[ $freeze_exit -ne 0 ]]; then

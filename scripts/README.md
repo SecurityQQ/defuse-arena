@@ -15,6 +15,15 @@ A — using the prompts in `prompts/`. Each round is frozen, graded, and recorde
 
 Five models give 10 unordered pairs and 20 matches.
 
+## Requirements
+
+- `devin` CLI, authenticated (`devin auth`)
+- Python 3.12+
+- `git` (patch application)
+- `rsync`
+- `bash` 3.2+ and `xargs -P`
+- `shasum` or `sha256sum`
+
 ## Usage
 
 ```bash
