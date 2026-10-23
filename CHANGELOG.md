@@ -15,10 +15,13 @@ plain markdown — no HTML, no links to local files.
   `deepseek` = DeepSeek V4 Pro High, `glm-5.2` = GLM-5.2 High, `glm-5.3` =
   GLM-5.3 Low and `gpt-6.1` = GPT-6.1 Sol Low Thinking — the labels alone were
   not a like-for-like comparison.
-- The resolved name is printed under the label in the standings, the podium, the
-  match log, the roster, the draft cards and the champion account. An agent with
-  no usable export falls back to the roster's `model` id; an unplayed champion
-  shows that id.
+- The resolved name is printed under the label in the standings, the match log,
+  the roster, the draft cards and the champion account. An agent with no usable
+  export falls back to the roster's `model` id; an unplayed champion shows that
+  id.
+- The podium shows the score only: no effort, no money.
+- `AGENTS.md` records the family-slug defaults and the explicit all-high ids, so
+  a roster cannot silently run `glm-5.3` as Low while reading as "high".
 
 ## 0.4.0 — 2026-10-23 — forfeits are priced, refusals are published
 

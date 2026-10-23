@@ -81,9 +81,14 @@ resolved display name in `agent.model_name`: `deepseek-v4-pro` resolves to
 **GPT-6.1 Sol Low Thinking**. Two labels that look alike can be different
 efforts, so the name alone is not a like-for-like comparison.
 
+A roster must name the leaf variant (`glm-5-3-high`), never the family slug:
+the slug resolves to the family's own default, which is Low for GLM-5.3 and
+Medium for Opus. See `AGENTS.md` for the resolved defaults and the all-high ids.
+
 `standings.py` reads the first export per agent into `rows[].model_name` and
 `roster[].model_name`, and the board prints it under the label in the standings,
-the podium, the match log, the roster, the draft cards and the champion account.
+the match log, the roster, the draft cards and the champion account. The podium
+deliberately shows the score only: no effort, no money.
 An agent with no usable export (every round void or refused) falls back to the
 roster's `model` id, and an unplayed champion shows that id as well.
 

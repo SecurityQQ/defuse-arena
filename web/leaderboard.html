@@ -264,13 +264,6 @@
 
   .champ.first .champ-rating { font-size: 44px; }
 
-  .champ-meta {
-    font-size: 11px;
-    letter-spacing: .12em;
-    color: var(--muted);
-    text-transform: uppercase;
-  }
-
   /* ---------- panels ---------- */
 
   .panel {
@@ -506,14 +499,6 @@
     letter-spacing: .02em;
     color: var(--teal);
     opacity: .85;
-  }
-
-  .champ-model {
-    margin-top: 3px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--teal);
-    opacity: .9;
   }
 
   .log-model {
@@ -927,10 +912,8 @@
         return `<article class="champ ${i === 0 ? "first" : ""}">
           <div class="champ-rank">${i + 1}</div>
           <h3>${a.agent}</h3>
-          ${a.model_name ? `<div class="champ-model">${a.model_name}</div>` : ""}
           <div class="champ-tier ${cls}">${tier}</div>
           <div class="champ-rating">${a.rating.toFixed(1)}</div>
-          <div class="champ-meta">${a.wins}\u2013${a.losses} \u00b7 ${usd(a.cost_total)}</div>
         </article>`;
       })
       .join("");
