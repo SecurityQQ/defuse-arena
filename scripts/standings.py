@@ -40,11 +40,25 @@ def expected(r_self, r_opp):
     return 1.0 / (1.0 + 10 ** ((r_opp - r_self) / 400.0))
 
 
+def task_meta(scaffold):
+    """Task pack behind a round: the problem the attacker is asked to build."""
+    path = ROOT / "tasks" / scaffold / "task.json"
+    if path.exists():
+        try:
+            t = json.load(open(path))
+            return (t.get("task_id", scaffold), t.get("title", scaffold), t.get("family", ""))
+        except Exception:
+            pass
+    return scaffold, scaffold, ""
+
+
 # ---------------------------------------------------------------- ledger (§10.2)
 raw = []
 for gpath in sorted(SDIR.glob("matches/*/rounds/*/grader/grade.json")):
     g = json.load(open(gpath))
     spend = json.load(open(gpath.parent / "spend.json"))
+    manifest = json.load(open(gpath.parent.parent / "manifest.json"))
+    task_id, task_title, task_family = task_meta(manifest.get("scaffold", "notes-api"))
     try:
         res = json.load(open(gpath.parent / "results.json"))
     except Exception:
@@ -71,6 +85,10 @@ for gpath in sorted(SDIR.glob("matches/*/rounds/*/grader/grade.json")):
         "void": res.get("void"),
         "checks": res.get("checks", {}),
         "mechanism": mech,
+        "task_id": task_id,
+        "task_title": task_title,
+        "task_family": task_family,
+        "scaffold": manifest.get("scaffold", ""),
     })
 raw.sort(key=lambda r: (r["ts"], r["round_id"]))
 
@@ -229,19 +247,26 @@ LEGEND = """<div class="ia-legend">
 
 
 def vault_options(rows):
-    opts = ['<option value="">All games</option>']
+    """Games grouped by the problem the attacker was asked to build."""
+    groups = {}
     for r in sorted(rows, key=lambda x: x["round_id"]):
-        label = (f'{r["round_id"]} \u00b7 {r["attacker"]} vs {r["defender"]} \u00b7 '
-                 f'{r["outcome"]} \u00b7 {"attack" if r["theta"] else "clean"}')
-        opts.append(f'<option value="{r["round_id"]}">{label}</option>')
-    return "".join(opts)
+        groups.setdefault(r["task_title"], []).append(r)
+    out = ['<option value="">All games</option>']
+    for title, items in groups.items():
+        out.append(f'<optgroup label="{title}">')
+        for r in items:
+            label = (f'{r["round_id"]} \u00b7 {r["attacker"]} vs {r["defender"]} \u00b7 '
+                     f'{r["outcome"]} \u00b7 {"attack" if r["theta"] else "clean"}')
+            out.append(f'<option value="{r["round_id"]}">{label}</option>')
+        out.append("</optgroup>")
+    return "".join(out)
 
 
 VAULT = """<section class="ia-vault">
   <div class="ia-vault-head">
     <div>
       <div class="ia-vault-title">Game Archive</div>
-      <div class="ia-vault-sub">Pick a single game to open its dossier, or review the whole schedule.</div>
+      <div class="ia-vault-sub">Games are grouped by the problem the attacker had to build. Pick one to open its dossier, or click any row in the match log.</div>
     </div>
     <label class="ia-picker">
       <span>Game</span>
@@ -329,6 +354,11 @@ EXTRA_HEAD = """<style id="ia-tips-style">
   border-left:2px solid rgba(200,170,110,.35); padding-left:11px; }
 #ledger tr.ia-picked { background:rgba(200,170,110,.10) !important;
   box-shadow:inset 2px 0 0 var(--gold); }
+#ledger tbody tr { cursor:pointer; }
+#ledger tbody tr:hover td { color:var(--gold-2); }
+#ledger tbody button.agent-name { cursor:pointer; }
+.ia-picker optgroup { background:#0B1B33; color:var(--gold); font-style:normal;
+  font-family:var(--font-display); font-size:12px; }
 #ia-tip { position:fixed; z-index:9999; max-width:340px; padding:12px 14px;
   background:linear-gradient(180deg,#0B1B33,#071223); color:var(--text);
   border:1px solid rgba(200,170,110,.45); border-radius:8px;
@@ -380,6 +410,7 @@ EXTRA_JS = r"""<script id="ia-tips-script">
     FPR: ["false positive rate", "FP / (FP + TN) over \u03b8=0 rounds where the defender filed a report. A round with no report is VOID and never counts as a false positive."],
     Chips: ["net chips", "Sum of chip deltas. On a defender win the defender takes the attacker's spend; on an attacker win it takes the defender's."],
     Round: ["round id", "One round is one coin flip, one build, one audit. Ids are stable across reruns."],
+    Type: ["game type", "The problem the attacker had to build this round, taken from the task pack: its title, family and scaffold."],
     Match: ["match id", "A match is one pairing in one direction. Each pair plays twice, so a pair owns two matches."],
     Attacker: ["attacker", "The model that wrote the service. Click to filter the log."],
     Defender: ["defender", "The model that audited the frozen service. Click to filter the log."],
@@ -524,6 +555,8 @@ EXTRA_JS = r"""<script id="ia-tips-script">
       .join("");
 
     const facts = [
+      ["Game type", r.task_title || r.task_id || "—"],
+      ["Family", r.task_family || "—"],
       ["Tokens · attacker", num(r.tokens.attacker)],
       ["Tokens · defender", num(r.tokens.defender)],
       ["ΔElo · attacker", signed(r.rating_delta.attacker)],
@@ -573,6 +606,20 @@ EXTRA_JS = r"""<script id="ia-tips-script">
     highlight(picker.value);
   });
 
+  // Clicking a match-log row opens that game. The agent-name buttons inside the
+  // row still filter the log, so leave those alone.
+  document.addEventListener("click", ev => {
+    if (ev.target.closest("button")) return;
+    const tr = ev.target.closest("#ledger tbody tr");
+    if (!tr || !tr.children.length) return;
+    const id = tr.children[0].textContent.trim();
+    if (!LEDGER.some(r => r.round_id === id)) return;
+    picker.value = id;
+    render(id);
+    highlight(id);
+    detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+
   // The ledger re-renders when the agent filter changes; keep the pick in sync.
   const ledger = document.getElementById("ledger");
   if (ledger) {
@@ -606,6 +653,26 @@ COIN_OLD = r'''<span class="coin ${r.theta ? "h" : "t"}" title="${r.theta ? "Hea
 COIN_NEW = r'''<span class="coin ${r.theta ? "h" : "t"}">${r.theta ? "\u2694\uFE0E" : "\u25cb"}</span>'''
 assert COIN_OLD in rendered, "coin markup not found"
 rendered = rendered.replace(COIN_OLD, COIN_NEW, 1)
+
+# Type the match log by the problem the attacker had to build, not just by id.
+TYPE_HEAD_OLD = r'''      <th>Round</th><th>Match</th>'''
+TYPE_HEAD_NEW = r'''      <th>Round</th><th>Type</th><th>Match</th>'''
+assert TYPE_HEAD_OLD in rendered, "ledger head not found"
+rendered = rendered.replace(TYPE_HEAD_OLD, TYPE_HEAD_NEW, 1)
+
+TYPE_BODY_OLD = r'''      <td class="mono">${r.round_id}</td>
+      <td class="mono dim">${r.match_id}</td>'''
+TYPE_BODY_NEW = r'''      <td class="mono">${r.round_id}</td>
+      <td>${r.task_title || r.task_id || "\u2014"}</td>
+      <td class="mono dim">${r.match_id}</td>'''
+assert TYPE_BODY_OLD in rendered, "ledger row not found"
+rendered = rendered.replace(TYPE_BODY_OLD, TYPE_BODY_NEW, 1)
+
+rendered = rendered.replace(
+    '<td colspan="12" class="dim">No rounds recorded.</td>',
+    '<td colspan="13" class="dim">No rounds recorded.</td>',
+    1,
+)
 
 
 (SDIR / "standings.html").write_text(rendered)
