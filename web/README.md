@@ -15,6 +15,7 @@ The template is **never hand-edited**. `scripts/standings.py` copies it to
 | `standings.js` | behaviour, inlined at the end of the document |
 | `roster.json` | the season's champion pool — identity, not results |
 | `pricing.json` | USD per 1M tokens per model, copied from `devin models list` |
+| `standings.html` | published copy of the current season, served by the static host |
 
 ## Data
 
@@ -139,7 +140,15 @@ recomputed `rating_delta`, keeping the recorded outcome and checks untouched.
 ```
 python3 scripts/standings.py s-2026-01          # ranked at 20 valid rounds
 python3 scripts/standings.py s-2026-01 20 1     # preview: relax to 1 round
+python3 scripts/standings.py s-2026-01 20 1 --publish web/standings.html
 ```
+
+`--publish` writes a second copy of the rendered page outside the season
+directory. That copy is what the static deployment serves: `web/` is the site
+root and `vercel.json` rewrites `/` to `/standings`. It is a generated artifact —
+regenerate it, never edit it, and commit it when the season data changes. The
+template `leaderboard.html` stays empty on purpose, so the deployed board cannot
+drift from the generator.
 
 Writes `ledger.jsonl`, `standings.json` and `standings.html` into the season
 directory. Prices come from `pricing.json`; to change the unit or refresh a

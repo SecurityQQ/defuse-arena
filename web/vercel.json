@@ -1,6 +1,9 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/", "destination": "/leaderboard" }
+    {
+      "source": "/",
+      "destination": "/standings"
+    }
   ]
 }

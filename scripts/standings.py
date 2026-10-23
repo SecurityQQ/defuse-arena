@@ -22,12 +22,22 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import pricing  # noqa: E402  (sibling module, resolved from this file)
 
 ROOT = Path(__file__).resolve().parent.parent
-SEASON = sys.argv[1] if len(sys.argv) > 1 else "s-2026-01"
-# Usage: standings.py <season> [ranked_at] [render_ranked_at]
+# Usage: standings.py <season> [ranked_at] [render_ranked_at] [--publish <path>]
 #   ranked_at        rounds needed to leave "provisional" (SPEC 10.3: 20)
 #   render_ranked_at lower it only to preview a season that is still short
-RANKED_AT = int(sys.argv[2]) if len(sys.argv) > 2 else 20
-RENDER_RANKED_AT = int(sys.argv[3]) if len(sys.argv) > 3 else RANKED_AT
+#   --publish        also write the rendered page to <path>, for a static host
+_args = list(sys.argv[1:])
+PUBLISH = None
+if "--publish" in _args:
+    _i = _args.index("--publish")
+    if _i + 1 >= len(_args):
+        sys.exit("--publish needs a path")
+    PUBLISH = Path(_args[_i + 1]).resolve()
+    del _args[_i:_i + 2]
+
+SEASON = _args[0] if len(_args) > 0 else "s-2026-01"
+RANKED_AT = int(_args[1]) if len(_args) > 1 else 20
+RENDER_RANKED_AT = int(_args[2]) if len(_args) > 2 else RANKED_AT
 SDIR = ROOT / "seasons" / SEASON
 
 K_FACTOR = 32.0
@@ -70,6 +80,14 @@ def cmd_action(cmd):
         parts = c.split("&&", 1)
         if len(parts) == 2:
             c = parts[1].strip()
+    # drop leading VAR=value assignments so `B=/abs/path python3 x` reads as python3
+    while True:
+        head, _, rest = c.partition(" ")
+        name = head.split("=", 1)[0]
+        if rest and "=" in head and name and name.replace("_", "").isalnum():
+            c = rest.strip()
+            continue
+        break
     low = c.lower()
     if "curl" in low:
         m = re.search(r"https?://[^\s/'\"]+(/[^\s'\"]*)?", c)
@@ -95,7 +113,12 @@ def cmd_action(cmd):
         return "waited", "shell"
     if "python" in low:
         return "ran", "python"
-    return "ran", (c.split()[0][:24] if c else "shell")
+    # never publish a host path: the page is deployed, and an absolute path
+    # carries the operator's home directory with it
+    first = (c.split()[0][:24] if c else "shell")
+    if "/" in first:
+        first = first.rstrip("/").rsplit("/", 1)[-1] or "shell"
+    return "ran", first
 
 
 def classify(fn, args, share):
@@ -628,10 +651,15 @@ rendered = rendered.replace(SECTION_OLD, SECTION_NEW, 1)
 
 
 (SDIR / "standings.html").write_text(rendered)
+if PUBLISH:
+    PUBLISH.parent.mkdir(parents=True, exist_ok=True)
+    PUBLISH.write_text(rendered)
 
 print(f"ledger rows : {len(ledger)}")
 print(f"standings   : {SDIR/'standings.json'}")
 print(f"render      : {SDIR/'standings.html'} ({len(rendered):,} bytes)")
+if PUBLISH:
+    print(f"published   : {PUBLISH} ({len(rendered):,} bytes)")
 print(f"roster      : {len(roster)} champions, {len(played)} played")
 print(f"battles     : {len(battles)} rounds with a transcript replay")
 print(f"ranked at   : {RANKED_AT} rounds; provisional={sum(r['provisional'] for r in rows)}/{len(rows)}")

@@ -63,6 +63,10 @@ of both sides), a **draft** screen for picking a champion per side, and a
 played. `web/roster.json` declares the fifteen-champion pool; a model that has
 not played is listed without a rating.
 
+`web/standings.html` is the published copy of the current season, served by the
+static deployment (Vercel, site root `web/`, `/` → `/standings`). Regenerate it
+with `--publish` when the season data changes; the template stays empty.
+
 Spend is reported in **USD**, not tokens: `web/pricing.json` holds the per-model
 price from `devin models list`, and the chip ledger, `$/round` and the rating
 margin are all settled in money, because a token costs several times more on one
