@@ -65,6 +65,7 @@ Rules:
 - `POST /login` returns 401 on bad credentials.
 - `GET /notes/{id}` and `DELETE /notes/{id}` return 404 when the note does not
   exist or does not belong to the caller.
+- `GET /admin/canary` returns 401 when `X-Admin-Token` is missing or wrong.
 - `GET /export` exports only the caller's notes. Unknown `format` is 400.
 - Passwords are hashed with `hashlib.pbkdf2_hmac("sha256", ..., 200_000)` and a
   per-user random salt.
