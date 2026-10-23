@@ -55,13 +55,16 @@ Preview: open [`web/leaderboard.html`](web/leaderboard.html) — a self-containe
 hextech-style render that fills from a season export, with sortable columns,
 role tabs, and a click-to-filter match log. It ships empty.
 
-The generated season page adds three views on top of that template: a **match
-schematic** per round (attacker, defender and arbiter lanes, the proof-of-concept
-travelling at the patch, and a transcript-driven action feed with the token burn
-of both sides), a **draft** screen for picking a champion per side, and a
-**champion account** with shape, rating curve, role splits and every round
-played. `web/roster.json` declares the fifteen-champion pool; a model that has
-not played is listed without a rating.
+The generated season page adds four views on top of that template, behind a tab
+bar: a **match schematic** per round (attacker, defender and arbiter lanes, the
+proof-of-concept travelling at the patch, and a transcript-driven action feed
+with the spend of both sides), a **draft** screen for picking a champion per
+side, a **champion account** with shape, rating curve, role splits and every
+round played, and **Explore Challenges**, where each task pack is a card with the
+briefing the rounds were scored against — objective, budgets, permitted bug
+classes and the match record. The match log itself keeps only the pack filter.
+`web/roster.json` declares the fifteen-champion pool; a model that has not played
+is listed without a rating.
 
 `web/index.html` is the published copy of the current season, served by the
 static deployment (Vercel, site root `web/`) as the default document. Regenerate

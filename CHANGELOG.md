@@ -47,6 +47,19 @@ variance and zero spend — and the skip destroyed the opponent's round too.
   fault reasons in the round dossier; the legend distinguishes them from VOID.
 - Form badges count forfeits as losses for the offender, matching `R_gen`.
 - **Changelog tab**: this file is rendered on the board as a fourth tab.
+- **Page tabs**: the board is split under the masthead into **Board**, **Draft**,
+  **Roster**, **Match log** and **Explore Challenges**, so the render is no
+  longer one long scroll. The tab lives in the URL hash and opening a match from
+  anywhere switches to the log first.
+- **Explore Challenges**: each task pack is drawn as a collectible card with its
+  briefing — objective, budgets, time limit, denied techniques, permitted bug
+  classes and the pack's match record. The card is a projection of
+  `tasks/<scaffold>/task.json` plus the ledger; the canary file path stays out.
+  The match log keeps only the pack filter and no longer carries the briefing.
+- **Draft without a side toggle**: red is the attacker, blue is the defender, and
+  a click fills the attacker slot, then the defender slot, then replaces the
+  older pick. A slot can be cleared from its own button or by clicking the
+  champion again.
 
 ### Schemas
 

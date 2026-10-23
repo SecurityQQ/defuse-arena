@@ -542,7 +542,7 @@ for r in ledger:
     c = challenges.setdefault(r["task_id"], {
         "task_id": r["task_id"], "title": r["task_title"], "family": r["task_family"],
         "scaffold": r["scaffold"], "games": 0, "outcomes": {},
-        "bug_classes": [], "language": "", "difficulty_bands": [],
+        "bug_classes": [], "language": "", "difficulty_bands": [], "spec": {},
     })
     c["games"] += 1
     c["outcomes"][r["outcome"]] = c["outcomes"].get(r["outcome"], 0) + 1
@@ -551,9 +551,23 @@ for c in challenges.values():
     path = ROOT / "tasks" / c["scaffold"] / "task.json"
     if path.exists():
         t = json.load(open(path))
+        canary = t.get("canary") or {}
         c["bug_classes"] = t.get("bug_classes", [])
         c["language"] = t.get("language", "")
         c["difficulty_bands"] = t.get("difficulty_bands", [])
+        # The challenge card is the public briefing, so it carries the parts of
+        # the pack an agent is told about. The canary file path stays out: the
+        # page needs the endpoint and header, not the sandbox location.
+        c["spec"] = {
+            "version": t.get("version", ""),
+            "entrypoint": t.get("entrypoint", ""),
+            "denied": t.get("denied", []),
+            "canary_endpoint": canary.get("endpoint", ""),
+            "canary_header": canary.get("header", ""),
+            "budgets": t.get("budgets", {}),
+            "artifact_cap": t.get("artifact_cap", {}),
+            "time_limit_min": t.get("time_limit_min"),
+        }
 
 challenge_list = sorted(challenges.values(), key=lambda c: c["title"])
 
@@ -626,21 +640,18 @@ def challenge_options(challenges):
     return "".join(out)
 
 
-VAULT = """<section class="ia-vault">
-  <div class="ia-vault-head">
-    <div>
-      <div class="ia-vault-title">Challenges</div>
-      <div class="ia-vault-sub">A challenge is the task pack the attacker has to build. Pick one to filter the match log; click any row to open that match.</div>
-    </div>
-    <label class="ia-picker">
-      <span>Challenge</span>
-      <select id="ia-challenge">%s</select>
-    </label>
-  </div>
-  <div id="ia-challenge-detail" hidden></div>
-  <div id="ia-game-detail" hidden></div>
-</section>
-"""
+LOG_TOOLS = """<div class="ia-logtools">
+      <label class="ia-picker">
+        <span>Challenge</span>
+        <select id="ia-challenge">%s</select>
+      </label>
+      <button class="clear" id="clear-filter" hidden>Clear filter \u2715</button>
+    </div>"""
+
+# The full challenge briefing lives on its own tab, so the match log keeps only
+# the filter that narrows the log by pack.
+CHALLENGES = '<section class="ia-challenges" id="ia-challenges"></section>'
+GAME_DETAIL = '<div id="ia-game-detail" hidden></div>'
 
 # Page styles and behaviour live next to the template in web/, so this file
 # stays data-only and the render can be reviewed on its own.
@@ -649,10 +660,15 @@ EXTRA_HEAD = ('<style id="ia-tips-style">\n'
 EXTRA_JS = ('<script id="ia-tips-script">\n'
             + (ROOT / "web" / "standings.js").read_text() + "</script>\n")
 
+CLEAR_OLD = '<button class="clear" id="clear-filter" hidden>Clear filter \u2715</button>'
+assert CLEAR_OLD in rendered, "clear-filter button not found"
+rendered = rendered.replace(CLEAR_OLD, LOG_TOOLS % challenge_options(challenge_list), 1)
 rendered = rendered.replace(
-    "<table id=\"ledger\">",
-    (VAULT % challenge_options(challenge_list)) + LEGEND + "<table id=\"ledger\">",
-    1,
+    "<table id=\"ledger\">", LEGEND + GAME_DETAIL + "<table id=\"ledger\">", 1,
+)
+assert "  <footer>" in rendered, "page footer not found"
+rendered = rendered.replace(
+    "  <footer>", "  " + CHALLENGES + "\n\n  <footer>", 1,
 )
 rendered = rendered.replace("</head>", EXTRA_HEAD + "</head>", 1)
 rendered = rendered.replace("</body>", EXTRA_JS + "</body>", 1)

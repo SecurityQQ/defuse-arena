@@ -26,7 +26,7 @@ The payload in `<script type="application/json" id="arena-data">` is:
 | `season_id`, `generated_at`, `scoring_version`, `ledger_sha256` | scalars | `standings.json` |
 | `rows` | one per agent | `schemas/standings.schema.json` |
 | `ledger` | one per round | SPEC §10.2 — the canonical round record, with `cost` in USD |
-| `challenges` | one per task pack | `tasks/<scaffold>/task.json` |
+| `challenges` | one per task pack | `tasks/<scaffold>/task.json` + `ledger` (games, outcomes) |
 | `battles` | one per round id | round manifest, grader results, agent exports |
 | `champions` | one per played agent | derived from `ledger` |
 | `roster` | one per champion | `web/roster.json` |
@@ -43,8 +43,13 @@ is missing from the roster, so the page cannot silently drop a result.
 
 ## What the page shows
 
-**Standings** — the template's own table: sortable columns, role tabs, agent
-filter, three rating pools.
+The page is split into tabs under the masthead: **Board**, **Draft**, **Roster**,
+**Match log**, **Explore Challenges**. The tab is client-side state only; the URL
+hash (`#draft`, `#log`, `#challenges`) keeps a tab shareable, and opening a match
+from anywhere switches to the log first.
+
+**Board** — the season summary, podium and the template's own standings table:
+sortable columns, role tabs, agent filter, three rating pools.
 
 **Draft** — the champion-pick screen. Two slots (blue attacks, red defends), a
 grid of all fifteen champions, and a head-to-head panel for the current pairing.
@@ -56,6 +61,10 @@ read `unplayed`. Every row has a `Profile` button.
 
 **Match log** — one row per round, typed by challenge. Click a row to open that
 match; the challenge selector filters by task pack, never by individual match.
+The log deliberately carries no challenge briefing: the selector is a filter, and
+the briefing lives on its own tab.
+
+**Explore Challenges** — the task packs as cards, described below.
 
 **Match schematic** — the new part, described below.
 
@@ -93,6 +102,33 @@ ARBITER    service up → contract → PoC works → patch applied → patched b
   object + per-step billable tokens. Replayed rounds keep their exports as
   `<name>.attempt-N`; the newest attempt wins. A round with no export still
   renders: lanes come from the record, the transcript is simply empty.
+
+## Explore Challenges
+
+Each task pack is drawn as a collectible card, in the spirit of a champion card:
+an art panel with the pack's initials and a family accent, the name plate, the
+difficulty pips and the number of matches scored in it. Selecting a card opens
+the briefing beside it.
+
+The briefing is built from two sources only:
+
+| part | source |
+|---|---|
+| name, family, language, version, entrypoint | `tasks/<scaffold>/task.json` |
+| objective (`/admin/canary` + `X-Admin-Token`) | `task.json:canary` |
+| budgets, time limit, artifact cap | `task.json:budgets`, `time_limit_min`, `artifact_cap` |
+| off limits (`eval`, `exec`, …) | `task.json:denied` |
+| ability kit (bug classes) | `task.json:bug_classes` |
+| match record, spend, attack/clean split | `ledger` rows with that `task_id` |
+
+The ability descriptions are definitions of the class (`idor` is a direct object
+reference, and so on), never a claim about what a particular round did. The
+canary **file path** is deliberately not published: the page needs the endpoint
+and the header, not the sandbox location.
+
+`Open in match log` sets the log's pack filter and switches tabs; clicking a row
+in the match record opens that dossier in the log. A pack with no rounds still
+renders its card and says so instead of showing an empty record.
 
 ## Unit of account
 
@@ -132,6 +168,9 @@ recomputed `rating_delta`, keeping the recorded outcome and checks untouched.
   that file with a string replace and would split the page at the comment.
 - Do not invent a rating, a token count or an outcome. If the data is missing,
   show `—` and say why.
+- A challenge card may show only what `task.json` declares or the ledger records.
+  Its `spec` is the public briefing, not the round tree: keep sandbox paths and
+  anything the agents were not told out of it.
 - Keep the template's own markup intact; new sections are injected by
   `standings.py` around it.
 

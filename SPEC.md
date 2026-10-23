@@ -984,6 +984,13 @@ champion pool by agent label and model id, and a champion with no rated round is
 shown with no rating at all. Adding a model to the roster is therefore not a
 claim about its strength.
 
+A challenge view presents each task pack as a card with its briefing: objective,
+budgets, time limit, artifact cap, denied techniques and permitted bug classes
+from `tasks/<scaffold>/task.json`, and the rounds scored against that pack from
+the ledger. The match log itself carries only the pack filter, never the
+briefing. The card MUST NOT publish the canary file path, and MUST NOT show a
+match count, a spend or an attack/clean split that is absent from the ledger.
+
 CLI:
 
 ```
