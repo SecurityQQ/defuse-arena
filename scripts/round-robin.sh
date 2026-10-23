@@ -6,9 +6,10 @@
 #   ONLY=glm-5.3 scripts/round-robin.sh       # only matches involving glm-5.3
 #   JOBS=4 scripts/round-robin.sh             # four matches in parallel
 #   DRY_RUN=1 scripts/round-robin.sh          # print commands, no model calls
+#   ROSTER_FILE=rosters/season-2026-02.tsv scripts/round-robin.sh
 #
 # Each unordered pair plays twice: A attacks B, then B attacks A.
-# 5 models -> 10 pairs -> 20 matches.
+# 5 models -> 10 pairs -> 20 matches; N models -> N(N-1) matches.
 
 set -euo pipefail
 
@@ -24,6 +25,7 @@ DRY_RUN="${DRY_RUN:-0}"
 DEVIN="${DEVIN:-devin}"
 PY="${PY:-python3}"
 AGENT_TIMEOUT="${AGENT_TIMEOUT:-1800}"
+ROSTER_FILE="${ROSTER_FILE:-}"
 
 export BUDGET BAND DRY_RUN DEVIN AGENT_TIMEOUT
 
@@ -40,6 +42,22 @@ MODELS=(
 
 log() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*"; }
 die() { printf 'error: %s\n' "$*" >&2; exit 1; }
+
+# An explicit roster replaces the built-in five. One `label|model-id` per
+# line; blank lines and # comments are ignored. The runner records the roster
+# it used in season.run.json, so a season stays reproducible.
+if [[ -n "$ROSTER_FILE" ]]; then
+  [[ -f "$ROSTER_FILE" ]] || die "missing roster file: $ROSTER_FILE"
+  MODELS=()
+  while IFS='|' read -r label model_id; do
+    label="${label%$'\r'}"
+    model_id="${model_id%$'\r'}"
+    [[ -z "$label" || "$label" == \#* ]] && continue
+    [[ -n "$model_id" ]] || die "bad roster line: $label"
+    MODELS+=("$label|$model_id")
+  done < "$ROSTER_FILE"
+  [[ ${#MODELS[@]} -ge 2 ]] || die "roster file needs at least two models"
+fi
 
 command -v "$DEVIN" >/dev/null 2>&1 || die "$DEVIN not found on PATH"
 [[ -f "$ROOT/prompts/attacker.md" ]] || die "missing prompts/attacker.md"

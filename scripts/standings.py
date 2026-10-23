@@ -393,7 +393,7 @@ acc = defaultdict(lambda: {
     "def_rounds": 0, "def_rated": 0, "att_rounds": 0, "att_survive": 0,
     "att_tokens": 0, "def_tokens": 0, "cost_total": 0.0, "att_cost": 0.0,
     "def_cost": 0.0, "hist": [], "h2h": {}, "rounds_list": [],
-    "forfeits": 0, "forfeit_att": 0, "forfeit_def": 0,
+    "forfeits": 0, "forfeit_att": 0, "forfeit_def": 0, "opp_forfeits": 0,
     "abstains": 0, "abstain_att": 0, "abstain_def": 0,
 })
 
@@ -447,11 +447,13 @@ for r in ledger:
         A["forfeits"] += 1; A["forfeit_att"] += 1
         if o == "ABSTAIN_A":
             A["abstains"] += 1; A["abstain_att"] += 1
+        D["opp_forfeits"] += 1
         continue
     if o in FORFEIT_D:
         D["forfeits"] += 1; D["forfeit_def"] += 1
         if o == "ABSTAIN_D":
             D["abstains"] += 1; D["abstain_def"] += 1
+        A["opp_forfeits"] += 1
         continue
 
     A["rounds"] += 1; D["rounds"] += 1
@@ -491,6 +493,7 @@ for r in raw:
 rows = []
 for agent, v in acc.items():
     rounds, voids = v["rounds"], v["voids"]
+    eligible = rounds + v["opp_forfeits"]
     attempts = rounds + v["forfeits"]
     rows.append({
         "agent": agent,
@@ -499,6 +502,7 @@ for agent, v in acc.items():
         "rating_att": round(R[agent]["att"], 4),
         "rating_def": round(R[agent]["def"], 4),
         "rounds": rounds,
+        "eligible": eligible,
         "wins": v["wins"],
         "losses": v["losses"],
         "voids": voids,
@@ -528,7 +532,7 @@ for agent, v in acc.items():
         "def": {"rounds": v["def_rounds"], "tp": v["def_tp"], "fn": v["def_fn"],
                 "fp": v["def_fp"], "tn": v["def_tn"], "tokens": v["def_tokens"],
                 "cost": round(v["def_cost"], 6)},
-        "provisional": rounds < RANKED_AT,
+        "provisional": eligible < RANKED_AT,
     })
 
 rows.sort(key=lambda r: (-r["rating"], r["agent"]))
@@ -540,7 +544,7 @@ season_sha = hashlib.sha256(
 standings = {
     "season_id": SEASON,
     "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-    "scoring_version": "0.4.0",
+    "scoring_version": "0.4.1",
     "season_sha256": season_sha,
     "ledger_sha256": ledger_sha,
     "rows": rows,
@@ -613,9 +617,9 @@ changelog_md = changelog_path.read_text() if changelog_path.exists() else ""
 payload = {
     "season_id": SEASON,
     "generated_at": standings["generated_at"],
-    "scoring_version": "0.4.0",
+    "scoring_version": "0.4.1",
     "ledger_sha256": ledger_sha,
-    "rows": [dict(r, provisional=r["rounds"] < RENDER_RANKED_AT) for r in rows],
+    "rows": [dict(r, provisional=r["eligible"] < RENDER_RANKED_AT) for r in rows],
     "ledger": ledger,
     "challenges": challenge_list,
     "battles": battles,
@@ -746,8 +750,8 @@ if PUBLISH:
     print(f"published   : {PUBLISH} ({len(rendered):,} bytes)")
 print(f"roster      : {len(roster)} champions, {len(played)} played")
 print(f"battles     : {len(battles)} rounds with a transcript replay")
-print(f"ranked at   : {RANKED_AT} rounds; provisional={sum(r['provisional'] for r in rows)}/{len(rows)}")
+print(f"ranked at   : {RANKED_AT} eligible rounds; provisional={sum(r['provisional'] for r in rows)}/{len(rows)}")
 for r in rows:
     print(f"  {r['agent']:10s} gen={r['rating']:7.1f} att={r['rating_att']:7.1f} "
           f"def={r['rating_def']:7.1f} W-L={r['wins']}-{r['losses']} void={r['voids']} "
-          f"no-show={r['abstentions']} forf={r['forfeits']} chips={r['net_chips']:+}")
+          f"elig={r['eligible']} no-show={r['abstentions']} forf={r['forfeits']} chips={r['net_chips']:+}")

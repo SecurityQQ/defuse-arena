@@ -3,6 +3,10 @@
 `round-robin.sh` runs every pair of models twice — A attacks B, then B attacks
 A — using the prompts in `prompts/`. Each round is frozen, graded, and recorded.
 
+> A full season is hours of wall clock. Launch it in a background agent or
+> background shell, not the main conversation thread; the runner is unattended
+> and each match writes its own `result.tsv`.
+
 ## Roster
 
 | Label | Model id | Notes |
@@ -13,7 +17,9 @@ A — using the prompts in `prompts/`. Each round is frozen, graded, and recorde
 | `opus-5.5` | `claude-opus-5.5` | |
 | `gpt-6.1` | `gpt-6.1-sol` | the only 6.1 variant |
 
-Five models give 10 unordered pairs and 20 matches.
+Five models give 10 unordered pairs and 20 matches. A season can use a larger
+field with `ROSTER_FILE`; `N` models give `N(N-1)` matches, because every pair
+plays both directions. `rosters/season-2026-02.tsv` is the eleven-model field.
 
 ## Requirements
 
@@ -40,6 +46,9 @@ ONLY=glm-5.3 scripts/round-robin.sh
 # four matches in parallel
 JOBS=4 scripts/round-robin.sh
 
+# an explicit roster file instead of the built-in five
+ROSTER_FILE=rosters/season-2026-02.tsv JOBS=4 scripts/round-robin.sh
+
 # print commands and build an empty skeleton, no model calls
 DRY_RUN=1 scripts/round-robin.sh
 ```
@@ -56,6 +65,7 @@ Environment:
 | `SKIP_DONE` | `0` | skip matches that already have a non-empty `result.tsv` |
 | `JOBS` | `2` | matches in parallel |
 | `AGENT_TIMEOUT` | `1800` | seconds per agent run |
+| `ROSTER_FILE` | empty | `label\|model-id` per line; replaces the built-in five |
 | `DRY_RUN` | `0` | print commands, make no model calls |
 | `DEVIN` | `devin` | CLI binary |
 

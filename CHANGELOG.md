@@ -23,6 +23,46 @@ plain markdown — no HTML, no links to local files.
 - `AGENTS.md` records the family-slug defaults and the explicit all-high ids, so
   a roster cannot silently run `glm-5.3` as Low while reading as "high".
 
+## 0.4.1 — 2026-10-23 — rosters are files, refusals are no-shows
+
+### Scoring
+
+- The ranking threshold now counts **eligible rounds**: played rounds plus
+  rounds an opponent forfeited. An agent's own forfeits still do not count, so
+  a refusal keeps the offender provisional — but the opponent who showed up is
+  no longer stripped of the round. Previously both sides lost the round, which
+  left an entire 110-match season at 9–18 valid rounds and made every agent
+  provisional.
+- `standings.py` exports `eligible` on every row and stamps the payload
+  `scoring_version` 0.4.1. Per-round grades stay 0.4.0: the taxonomy and the
+  per-round chips are unchanged, only the eligibility aggregate is.
+
+### Harness
+
+- A provider refusal is recorded as a no-show, not infrastructure. The runner
+  detects `content_filter` / "Provider refusal" in the agent log, skips the
+  retry, and lets the grader price `ABSTAIN_*` / `FAILED_*` from the completion
+  count. Previously the non-zero exit aborted the whole match before a result
+  was written, so a refusal vanished from the ledger instead of being priced.
+- `run_agent_settled` no longer re-enables `set -e` before returning: a
+  non-zero agent exit used to kill `run-match.sh` at the function boundary,
+  leaving an empty `result.tsv` and no grade. The caller already restores
+  `set -e` after capturing the exit code.
+- Freeze faults are priced in USD and stamped scoring 0.4.0. `FAULT_A` now
+  charges 12.5% of the offender's token budget converted at its own input
+  price, instead of writing a token-denominated fee under the stale 0.2.0
+  version.
+- `scripts/round-robin.sh` accepts `ROSTER_FILE` (`label|model-id` per line,
+  blank lines and `#` comments ignored), so a season can run a larger field
+  without editing the script. `N` models still produce `N(N-1)` matches —
+  every pair plays both directions — and the roster used is recorded in
+  `season.run.json`. The built-in five remain the default.
+- `rosters/season-2026-02.tsv` declares the eleven-champion field for the next
+  season: the original five plus Astra, Gemini Argon, Kimi K3, Sonnet 5.5,
+  Grok 4.7 and Muse Wonder. At 110 matches every agent is scheduled for 20
+  rounds; with forfeits, `eligible` keeps the side that showed up at 20 while
+  the offender drops below it.
+
 ## 0.4.0 — 2026-10-23 — forfeits are priced, refusals are published
 
 Refusing to play is no longer a safe harbour. An unpriced void let any agent

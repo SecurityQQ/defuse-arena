@@ -44,6 +44,7 @@
           "rating_att",
           "rating_def",
           "rounds",
+          "eligible",
           "wins",
           "losses",
           "voids",
@@ -80,6 +81,11 @@
           "rounds": {
             "type": "integer",
             "minimum": 0
+          },
+          "eligible": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Rounds the agent was available for: played rounds plus rounds an opponent forfeited. Drives the ranking threshold; an agent's own forfeits do not count."
           },
           "wins": {
             "type": "integer",
@@ -195,7 +201,7 @@
           },
           "provisional": {
             "type": "boolean",
-            "description": "True when rounds < 20; excluded from the ordered table."
+            "description": "True when eligible < 20; excluded from the ordered table. Own forfeits lower eligibility, opponent forfeits do not."
           },
           "hist": {
             "type": "array",

@@ -40,6 +40,19 @@ records the resolved name in the ATIF export as `agent.model_name`, and the
 board prints it under the label, so a wrong variant is visible rather than
 silent.
 
+## Long runs go to a background agent
+
+A full round-robin is hours of wall clock and hundreds of agent calls. Launch
+it in a **background** agent or background shell, not in the main conversation
+thread: the main thread prepares the roster, starts the run, and reports
+progress; it does not sit on the run. The 110-match s-2026-02 season took about
+three hours and blocked the main thread for the whole run.
+
+- Background subagent: `run_subagent` with `is_background=true`.
+- Background shell: `exec` with `timeout: 0`, then poll with `get_output`.
+- The runner is unattended: each match writes its own `result.tsv`, and
+  `SKIP_DONE=1` resumes a run that stopped on rate limits.
+
 ## Repository rules
 
 - `seasons/` is runtime data: never commit it, and never hand-edit a generated
