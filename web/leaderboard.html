@@ -498,6 +498,33 @@
 
   .agent-name.small:hover { color: var(--gold); }
 
+  .agent-model {
+    display: block;
+    margin-top: 2px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: .02em;
+    color: var(--teal);
+    opacity: .85;
+  }
+
+  .champ-model {
+    margin-top: 3px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--teal);
+    opacity: .9;
+  }
+
+  .log-model {
+    display: block;
+    margin-top: 1px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
   .form { display: flex; gap: 3px; }
 
   .form i {
@@ -776,6 +803,10 @@
   "use strict";
 
   const DATA = JSON.parse(document.getElementById("arena-data").textContent);
+  // The label is not the model: the CLI resolves a family slug to an effort
+  // variant, and the generator records the resolved name from the ATIF export.
+  const MODEL_NAME = Object.fromEntries((DATA.rows || []).map(r => [r.agent, r.model_name || ""]));
+  const modelName = a => MODEL_NAME[a] || "";
   const state = { role: "overall", key: "rating", dir: -1, query: "", agent: null };
 
   const TIERS = [
@@ -896,6 +927,7 @@
         return `<article class="champ ${i === 0 ? "first" : ""}">
           <div class="champ-rank">${i + 1}</div>
           <h3>${a.agent}</h3>
+          ${a.model_name ? `<div class="champ-model">${a.model_name}</div>` : ""}
           <div class="champ-tier ${cls}">${tier}</div>
           <div class="champ-rating">${a.rating.toFixed(1)}</div>
           <div class="champ-meta">${a.wins}\u2013${a.losses} \u00b7 ${usd(a.cost_total)}</div>
@@ -936,6 +968,7 @@
       <td>${rankHtml}</td>
       <td><div class="agent">
         <button class="agent-name" data-agent="${a.agent}">${a.agent}</button>
+        ${a.model_name ? `<span class="agent-model">${a.model_name}</span>` : ""}
         <div class="form">${formHtml(a.agent)}</div>
       </div></td>
       <td><span class="tier ${cls}">${tier}</span></td>
@@ -1000,8 +1033,8 @@
       ? rows.map(r => `<tr>
       <td class="mono">${r.round_id}</td>
       <td class="mono dim">${r.match_id}</td>
-      <td><button class="agent-name small" data-agent="${r.attacker}">${r.attacker}</button></td>
-      <td><button class="agent-name small" data-agent="${r.defender}">${r.defender}</button></td>
+      <td><button class="agent-name small" data-agent="${r.attacker}">${r.attacker}</button>${modelName(r.attacker) ? `<span class="log-model">${modelName(r.attacker)}</span>` : ""}</td>
+      <td><button class="agent-name small" data-agent="${r.defender}">${r.defender}</button>${modelName(r.defender) ? `<span class="log-model">${modelName(r.defender)}</span>` : ""}</td>
       <td><span class="coin ${r.theta ? "h" : "t"}" title="${r.theta ? "Heads \u2014 exploit required" : "Tails \u2014 clean service"}">${r.theta ? "H" : "T"}</span></td>
       <td><span class="outcome ${r.outcome.toLowerCase()}">${r.outcome}</span></td>
       <td>${usd(r.cost.attacker)}</td>

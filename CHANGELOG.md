@@ -4,6 +4,22 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.4.2 — 2026-10-23 — the board names the model variant
+
+### Board
+
+- **Resolved model names.** A label is not a model: the CLI resolves a family
+  slug to an effort variant, so two similar labels can be different efforts.
+  `standings.py` now reads `agent.model_name` from the ATIF export and carries
+  it as `rows[].model_name` and `roster[].model_name`. In s-2026-02 that makes
+  `deepseek` = DeepSeek V4 Pro High, `glm-5.2` = GLM-5.2 High, `glm-5.3` =
+  GLM-5.3 Low and `gpt-6.1` = GPT-6.1 Sol Low Thinking — the labels alone were
+  not a like-for-like comparison.
+- The resolved name is printed under the label in the standings, the podium, the
+  match log, the roster, the draft cards and the champion account. An agent with
+  no usable export falls back to the roster's `model` id; an unplayed champion
+  shows that id.
+
 ## 0.4.0 — 2026-10-23 — forfeits are priced, refusals are published
 
 Refusing to play is no longer a safe harbour. An unpriced void let any agent

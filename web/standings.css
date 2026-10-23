@@ -653,3 +653,11 @@
 .changelog code { font-family: var(--font-mono); font-size: 12px; color: var(--teal);
   background: rgba(10,200,185,.08); border: 1px solid rgba(10,200,185,.18);
   border-radius: 4px; padding: 0 5px; }
+
+/* ---- Resolved model names --------------------------------------------
+   A label is not a model: the CLI resolves a family slug to an effort
+   variant. These lines carry the resolved name from the ATIF export. */
+.r-model { display:block; margin-top:1px; font-style:normal;
+  font-family:var(--font-mono); font-size:9.5px; color:var(--teal); opacity:.85; }
+.ia-champ-model { display:block; margin-top:3px; font-family:var(--font-mono);
+  font-size:9px; color:var(--teal); opacity:.9; letter-spacing:.01em; }

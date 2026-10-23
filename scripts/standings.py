@@ -476,12 +476,25 @@ for r in ledger:
         D["def_brier"].append(r["brier"])
         D["def_rated"] += 1
 
+# A label is not a model. The CLI resolves a family slug to an effort variant
+# (deepseek-v4-pro -> DeepSeek V4 Pro High), and two labels that look alike can
+# be different efforts. The ATIF export records the resolved display name, so
+# the board can show what actually played instead of guessing from the slug.
+resolved = {}
+for r in raw:
+    b = battles.get(r["round_id"]) or {}
+    for side, label in (("att", r["attacker"]), ("def", r["defender"])):
+        name = (b.get(side) or {}).get("model")
+        if name and label not in resolved:
+            resolved[label] = name
+
 rows = []
 for agent, v in acc.items():
     rounds, voids = v["rounds"], v["voids"]
     attempts = rounds + v["forfeits"]
     rows.append({
         "agent": agent,
+        "model_name": resolved.get(agent, ""),
         "rating": round(R[agent]["gen"], 4),
         "rating_att": round(R[agent]["att"], 4),
         "rating_def": round(R[agent]["def"], 4),
@@ -584,10 +597,12 @@ if rpath.exists():
 played = {r["agent"] for r in rows}
 for c in roster:
     c["played"] = c["agent"] in played
+    c["model_name"] = resolved.get(c["agent"], "")
 known = {c["agent"] for c in roster}
 for a in sorted(played - known):
     roster.append({"agent": a, "model": a, "name": a, "title": "", "house": "",
-                   "glyph": a[:2].upper(), "accent": "#C8AA6E", "lane": "", "played": True})
+                   "glyph": a[:2].upper(), "accent": "#C8AA6E", "lane": "", "played": True,
+                   "model_name": resolved.get(a, "")})
 
 # ---------------------------------------------------------------- render (§10.4)
 # The changelog ships with the page: the board renders it as its own tab, so

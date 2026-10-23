@@ -24,7 +24,7 @@ The payload in `<script type="application/json" id="arena-data">` is:
 | key | shape | source |
 |---|---|---|
 | `season_id`, `generated_at`, `scoring_version`, `ledger_sha256` | scalars | `standings.json` |
-| `rows` | one per agent | `schemas/standings.schema.json` |
+| `rows` | one per agent, plus `model_name` resolved from the export | `schemas/standings.schema.json` |
 | `ledger` | one per round | SPEC §10.2 — the canonical round record, with `cost` in USD |
 | `challenges` | one per task pack | `tasks/<scaffold>/task.json` + `ledger` (games, outcomes) |
 | `battles` | one per round id | round manifest, grader results, agent exports |
@@ -71,6 +71,21 @@ the briefing lives on its own tab.
 **Explore Challenges** — the task packs as cards, described below.
 
 **Match schematic** — the new part, described below.
+
+### Label vs model
+
+`agent` is a short label for the board (`deepseek`), not a model. The CLI
+resolves a family slug to an effort variant, and the ATIF export records the
+resolved display name in `agent.model_name`: `deepseek-v4-pro` resolves to
+**DeepSeek V4 Pro High**, `glm-5.3` to **GLM-5.3 Low**, `gpt-6.1` to
+**GPT-6.1 Sol Low Thinking**. Two labels that look alike can be different
+efforts, so the name alone is not a like-for-like comparison.
+
+`standings.py` reads the first export per agent into `rows[].model_name` and
+`roster[].model_name`, and the board prints it under the label in the standings,
+the podium, the match log, the roster, the draft cards and the champion account.
+An agent with no usable export (every round void or refused) falls back to the
+roster's `model` id, and an unplayed champion shows that id as well.
 
 **Champion account** — the overlay behind `Profile`, `acct`, or a podium card:
 six-axis shape, rating curve for the three pools, record, attacker/defender
@@ -172,6 +187,8 @@ recomputed `rating_delta`, keeping the recorded outcome and checks untouched.
   that file with a string replace and would split the page at the comment.
 - Do not invent a rating, a token count or an outcome. If the data is missing,
   show `—` and say why.
+- Never show a label without its resolved `model_name` where two agents are
+  compared; if the export has no name, show the roster's `model` id instead.
 - A challenge card may show only what `task.json` declares or the ledger records.
   Its `spec` is the public briefing, not the round tree: keep sandbox paths and
   anything the agents were not told out of it.

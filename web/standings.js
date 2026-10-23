@@ -209,6 +209,8 @@
     const facts = [
       ["Challenge", r.task_title || r.task_id || "—"],
       ["Family", r.task_family || "—"],
+      ["Model · attacker", champOf(r.attacker).model_name || "—"],
+      ["Model · defender", champOf(r.defender).model_name || "—"],
       ["Spend · attacker", usd(r.cost.attacker)],
       ["Spend · defender", usd(r.cost.defender)],
       ["ΔElo · attacker", signed(r.rating_delta.attacker)],
@@ -540,7 +542,8 @@
         <td>${s ? (rankOf(c.agent) || "\u2014") : "\u2014"}</td>
         <td><div class="r-name"><span class="r-glyph" style="--accent:${c.accent}">${c.glyph}</span>
           <span><b style="font-family:var(--font-display);color:var(--gold-2)">${c.name}</b>
-          <em style="display:block;font-style:normal;font-size:10.5px;color:var(--muted)">${c.house}</em></span></div></td>
+          <em style="display:block;font-style:normal;font-size:10.5px;color:var(--muted)">${c.house}</em>
+          <em class="r-model">${c.model_name || c.model}</em></span></div></td>
         <td>${tier ? `<span class="tier ${tier[2]}">${tier[1]}</span>` : `<span class="dim">unplayed</span>`}</td>
         <td class="num">${s ? s.rating.toFixed(1) : "\u2014"}</td>
         <td class="num dim">${s ? s.rating_att.toFixed(1) : "\u2014"}</td>
@@ -598,7 +601,7 @@
         <span class="ia-slot-hint">click a champion below</span></div>`;
       return `<div class="ia-slot ${side} filled"><span class="ia-slot-role">${role}</span>
         <span class="ia-slot-name">${c.name}</span>
-        <span class="ia-slot-meta">${s ? `${s.rating.toFixed(1)} \u00b7 ${s.wins}\u2013${s.losses}` : "unplayed"} \u00b7 ${c.model || c.agent}</span>
+        <span class="ia-slot-meta">${s ? `${s.rating.toFixed(1)} \u00b7 ${s.wins}\u2013${s.losses}` : "unplayed"} \u00b7 ${c.model_name || c.model || c.agent}</span>
         <button class="ia-slot-clear" data-clear="${key}" aria-label="Clear ${role}" title="Clear this slot">\u2715</button></div>`;
     };
 
@@ -612,6 +615,7 @@
         <span class="ia-champ-prof" data-profile="${c.agent}">acct</span>
         <span class="ia-champ-name">${c.name}</span>
         <span class="ia-champ-title">${c.title}</span>
+        <span class="ia-champ-model">${c.model_name || c.model}</span>
         <span class="ia-champ-stats"><b>${s ? s.rating.toFixed(0) : "\u2014"}</b>
           <em>${s ? tierOf(s.rating)[1] : "unplayed"}</em></span>
         <span class="ia-champ-roles"><i class="att" style="width:${attW}px"></i><i class="def" style="width:${defW}px"></i></span>
@@ -747,7 +751,7 @@
       <div class="ia-acct-id">
         <h3>${c.name}</h3>
         <span class="ia-acct-title">${c.title || ""}${c.house ? ` \u00b7 ${c.house}` : ""}</span>
-        <span class="ia-acct-model">${c.model || agent}</span>
+        <span class="ia-acct-model">${c.model_name ? `${c.model_name} \u00b7 ${c.model}` : (c.model || agent)}</span>
       </div>
       <div class="ia-acct-rating">
         <b>${s ? s.rating.toFixed(1) : "\u2014"}</b>

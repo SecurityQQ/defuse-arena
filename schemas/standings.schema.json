@@ -64,6 +64,10 @@
           "agent": {
             "type": "string"
           },
+          "model_name": {
+            "type": "string",
+            "description": "Resolved display name recorded by the CLI in the ATIF export (agent.model_name), e.g. deepseek-v4-pro -> DeepSeek V4 Pro High. Empty when the agent has no usable export."
+          },
           "rating": {
             "type": "number"
           },
