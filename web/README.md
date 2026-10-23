@@ -49,10 +49,14 @@ hash (`#draft`, `#log`, `#challenges`) keeps a tab shareable, and opening a matc
 from anywhere switches to the log first.
 
 **Board** — the season summary, podium and the template's own standings table:
-sortable columns, role tabs, agent filter, three rating pools.
+sortable columns, role tabs (Overall, Attacker, Defender, Changelog), agent
+filter, three rating pools. The Changelog tab renders `CHANGELOG.md` from the
+payload instead of the table.
 
-**Draft** — the champion-pick screen. Two slots (blue attacks, red defends), a
+**Draft** — the champion-pick screen. Two slots (red attacks, blue defends), a
 grid of all fifteen champions, and a head-to-head panel for the current pairing.
+There is no side toggle: a click fills the attacker slot, then the defender
+slot, then replaces the older pick; a second click or the slot's `✕` clears it.
 Picking is client-side only; it changes nothing in the season.
 
 **Roster** — all fifteen champions in one comparison table. Played champions
