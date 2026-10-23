@@ -26,8 +26,8 @@ AGENT_TIMEOUT="${AGENT_TIMEOUT:-1800}"
 
 export BUDGET BAND DRY_RUN DEVIN AGENT_TIMEOUT
 
-# label|model-id. The strongest variant per family; "max effort" is not a CLI
-# flag in this build (thinking level is cycled in-session with Alt+T).
+# label|model-id. The CLI resolves these to high-effort variants automatically
+# (the export reports names like deepseek-v4-pro-high).
 # deepseek-v4.1-flash is newer but flash-tier; v4-pro is the strong one.
 MODELS=(
   "deepseek|deepseek-v4-pro"

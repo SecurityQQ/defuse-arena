@@ -17,12 +17,13 @@ Five models give 10 unordered pairs and 20 matches.
 
 ## Requirements
 
-- `devin` CLI, authenticated (`devin auth`)
+- `devin` CLI 3000.x, authenticated (`devin auth status`)
 - Python 3.12+
 - `git` (patch application)
 - `rsync`
 - `bash` 3.2+ and `xargs -P`
 - `shasum` or `sha256sum`
+- Linux: `bubblewrap` and `socat` for `--sandbox`
 
 ## Usage
 
@@ -139,6 +140,11 @@ billable** and **116–137M gross**.
 - The service and the PoC run on the host, not in a container. The spec's
   containment (§5) is not enforced by this runner. Use the container harness for
   real runs.
+- On Devin CLI 3000.x the sandbox covers the `exec` tool only; `read`, `edit`,
+  and `write` are governed by permission rules. `--respect-workspace-trust
+  false` is required in non-interactive mode and is already in the runner.
+- Devin CLI 3000.x resolves the roster to `-high` variants automatically; the
+  export reports names like `deepseek-v4-pro-high`.
 - There is no immutable conformance suite yet; the smoke test is a contract
   proxy.
 - The patch is checked for symlinks, but not against every possible path trick.

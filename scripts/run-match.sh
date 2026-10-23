@@ -148,15 +148,16 @@ run_agent() {
   # --sandbox forces the autonomous permission mode, which always prompts for
   # write/edit and therefore cannot run unattended under --print. Use bypass
   # instead; role isolation is enforced by hiding attacker artifacts below.
+  # CLI 3000.x also requires an explicit trust bypass in non-interactive mode.
   if [[ "$DRY_RUN" == "1" ]]; then
-    printf '(cd %s && %s %s/run_with_timeout.py %s %s --permission-mode dangerous --model %s --prompt-file %s --export %s --print)\n' \
+    printf '(cd %s && %s %s/run_with_timeout.py %s %s --permission-mode dangerous --respect-workspace-trust false --model %s --prompt-file %s --export %s --print)\n' \
       "$cwd" "$PY" "$ROOT/scripts" "$AGENT_TIMEOUT" "$DEVIN" "$model" "$prompt" "$export" >> "$logfile"
     return 0
   fi
 
   ( cd "$cwd" && "$PY" "$ROOT/scripts/run_with_timeout.py" "$AGENT_TIMEOUT" \
-      "$DEVIN" --permission-mode dangerous --model "$model" --prompt-file "$prompt" \
-      --export "$export" --print ) >> "$logfile" 2>&1
+      "$DEVIN" --permission-mode dangerous --respect-workspace-trust false --model "$model" \
+      --prompt-file "$prompt" --export "$export" --print ) >> "$logfile" 2>&1
 }
 
 spend_file() {
