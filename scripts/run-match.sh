@@ -18,7 +18,8 @@ BUDGET="${BUDGET:-60000}"
 DRY_RUN="${DRY_RUN:-0}"
 PY="${PY:-python3}"
 
-MATCH_DIR="$ROOT/seasons/$SEASON/matches/$MATCH_ID"
+SEASON_DIR="$ROOT/seasons/$SEASON"
+MATCH_DIR="$SEASON_DIR/matches/$MATCH_ID"
 RESULT_TSV="$MATCH_DIR/result.tsv"
 
 mkdir -p "$MATCH_DIR/rounds"
@@ -266,8 +267,16 @@ for ((k = 1; k <= ROUNDS; k++)); do
   write_configs "$round_dir/attacker" attacker
   write_configs "$round_dir/defender" defender
 
-  # THETA pins the coin so a round can be resumed without re-drawing it.
-  if [[ -n "${THETA:-}" ]]; then theta="$THETA"; else theta=$((RANDOM % 2)); fi
+  # THETA pins the coin so a round can be resumed without re-drawing it. A
+  # season-wide schedule in theta.tsv wins over a fresh draw, so a stratified
+  # season stays balanced and stable across reruns.
+  theta=""
+  if [[ -n "${THETA:-}" ]]; then
+    theta="$THETA"
+  elif [[ -f "$SEASON_DIR/theta.tsv" ]]; then
+    theta=$(awk -F'\t' -v m="$MATCH_ID" '$1 == m { print $2; exit }' "$SEASON_DIR/theta.tsv")
+  fi
+  if [[ -z "$theta" ]]; then theta=$((RANDOM % 2)); fi
   printf '%s' "$theta" > "$round_dir/attacker/theta"
 
   att_export="$round_dir/grader/logs/attacker.export.json"

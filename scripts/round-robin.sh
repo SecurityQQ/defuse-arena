@@ -22,6 +22,7 @@ SKIP_DONE="${SKIP_DONE:-0}"
 JOBS="${JOBS:-2}"
 DRY_RUN="${DRY_RUN:-0}"
 DEVIN="${DEVIN:-devin}"
+PY="${PY:-python3}"
 AGENT_TIMEOUT="${AGENT_TIMEOUT:-1800}"
 
 export BUDGET BAND DRY_RUN DEVIN AGENT_TIMEOUT
@@ -85,6 +86,24 @@ done
 log "season=$SEASON matches=${#SPECS[@]} rounds/match=$ROUNDS jobs=$JOBS dry_run=$DRY_RUN"
 
 "$ROOT/scripts/write-season-run.py" "$SEASON_DIR" "$SEASON" "$ROUNDS" "$BAND" "${MODELS[@]}"
+
+# Stratify the coin. An independent per-round flip leaves a 20-match season with
+# lopsided splits (this one drew 6 attack rounds out of 20), which starves the
+# attack and patch metrics. Assign exactly half the rounds to each side in a
+# random order instead; every theta is still fixed before its build.
+if [[ -z "${THETA:-}" && ! -f "$SEASON_DIR/theta.tsv" ]]; then
+  "$PY" - "$SEASON_DIR/theta.tsv" <<PY
+import random, sys
+from pathlib import Path
+
+specs = """$(printf '%s\n' "${SPECS[@]}")""".strip().splitlines()
+ids = sorted(s.split("|")[1] for s in specs)
+vals = [1] * (len(ids) // 2) + [0] * (len(ids) - len(ids) // 2)
+random.shuffle(vals)
+Path(sys.argv[1]).write_text("".join(f"{m}\t{v}\n" for m, v in zip(ids, vals)))
+PY
+  log "theta: $(awk -F'\t' '{c[$2]++} END {printf "%d attack / %d clean", c[1], c[0]}' "$SEASON_DIR/theta.tsv")"
+fi
 
 set +e
 printf '%s\n' "${SPECS[@]}" | xargs -P "$JOBS" -I{} "$ROOT/scripts/run-match.sh" "{}"
