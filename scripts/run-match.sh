@@ -12,6 +12,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROMPTS="$ROOT/prompts"
 DEVIN="${DEVIN:-devin}"
 AGENT_TIMEOUT="${AGENT_TIMEOUT:-1800}"
+AGENT_RETRIES="${AGENT_RETRIES:-3}"
+RETRY_BACKOFF="${RETRY_BACKOFF:-15}"
 BUDGET="${BUDGET:-60000}"
 DRY_RUN="${DRY_RUN:-0}"
 PY="${PY:-python3}"
@@ -55,24 +57,40 @@ PY
 write_configs() {
   local dir="$1" role="$2"
   mkdir -p "$dir/.devin"
+  local round_dir
+  round_dir="$(cd "$dir/.." && pwd)"
   if [[ "$role" == attacker ]]; then
-    cat > "$dir/.devin/config.json" <<'JSON'
+    cat > "$dir/.devin/config.json" <<JSON
 {
   "permissions": {
     "allow": [
-      "Read(scaffold/**)", "Read(work/**)", "Read(scratch/**)",
-      "Write(work/**)", "Write(scratch/**)"
+      "Read($dir/scaffold/**)", "Read($dir/work/**)", "Read($dir/scratch/**)",
+      "Write($dir/work/**)", "Write($dir/scratch/**)"
     ],
-    "deny": ["Read(../**)", "Write(../**)", "Fetch(*)"]
+    "deny": [
+      "Read($round_dir/defender/**)", "Write($round_dir/defender/**)",
+      "Read($round_dir/sealed/**)", "Write($round_dir/sealed/**)",
+      "Read($round_dir/frozen/**)", "Write($round_dir/frozen/**)",
+      "Read($round_dir/grader/**)", "Write($round_dir/grader/**)",
+      "Read($round_dir/reveal/**)", "Write($round_dir/reveal/**)",
+      "Fetch(*)"
+    ]
   }
 }
 JSON
   else
-    cat > "$dir/.devin/config.json" <<'JSON'
+    cat > "$dir/.devin/config.json" <<JSON
 {
   "permissions": {
-    "allow": ["Read(inbox/**)", "Read(out/**)", "Write(out/**)"],
-    "deny": ["Read(../**)", "Write(../**)", "Fetch(*)"]
+    "allow": ["Read($dir/inbox/**)", "Read($dir/out/**)", "Write($dir/out/**)"],
+    "deny": [
+      "Read($round_dir/attacker/**)", "Write($round_dir/attacker/**)",
+      "Read($round_dir/sealed/**)", "Write($round_dir/sealed/**)",
+      "Read($round_dir/frozen/**)", "Write($round_dir/frozen/**)",
+      "Read($round_dir/grader/**)", "Write($round_dir/grader/**)",
+      "Read($round_dir/reveal/**)", "Write($round_dir/reveal/**)",
+      "Fetch(*)"
+    ]
   }
 }
 JSON
@@ -127,25 +145,79 @@ freeze() {
 run_agent() {
   local cwd="$1" model="$2" prompt="$3" logfile="$4" export="$5"
 
+  # --sandbox forces the autonomous permission mode, which always prompts for
+  # write/edit and therefore cannot run unattended under --print. Use bypass
+  # instead; role isolation is enforced by hiding attacker artifacts below.
   if [[ "$DRY_RUN" == "1" ]]; then
-    printf '(cd %s && %s %s/run_with_timeout.py %s %s --sandbox --model %s --prompt-file %s --export %s --print)\n' \
+    printf '(cd %s && %s %s/run_with_timeout.py %s %s --permission-mode dangerous --model %s --prompt-file %s --export %s --print)\n' \
       "$cwd" "$PY" "$ROOT/scripts" "$AGENT_TIMEOUT" "$DEVIN" "$model" "$prompt" "$export" >> "$logfile"
     return 0
   fi
 
   ( cd "$cwd" && "$PY" "$ROOT/scripts/run_with_timeout.py" "$AGENT_TIMEOUT" \
-      "$DEVIN" --sandbox --model "$model" --prompt-file "$prompt" \
+      "$DEVIN" --permission-mode dangerous --model "$model" --prompt-file "$prompt" \
       --export "$export" --print ) >> "$logfile" 2>&1
 }
 
 spend_file() {
   local export="$1" out="$2"
-  if [[ -f "$export" ]]; then
-    "$PY" "$ROOT/scripts/tokens.py" "$export" > "$out" 2>/dev/null || \
-      printf '{"prompt":0,"completion":0,"cached":0,"total":0,"billable":0}\n' > "$out"
-  else
-    printf '{"prompt":0,"completion":0,"cached":0,"total":0,"billable":0}\n' > "$out"
-  fi
+  "$PY" - "$export" "$out" <<'PY'
+import glob, json, os, sys
+base, out = sys.argv[1], sys.argv[2]
+files = sorted(glob.glob(base + ".attempt-*"))
+if os.path.exists(base):
+    files.append(base)
+prompt = completion = cached = 0
+for f in files:
+    try:
+        m = json.load(open(f)).get("final_metrics") or {}
+    except Exception:
+        continue
+    prompt += int(m.get("total_prompt_tokens", 0))
+    completion += int(m.get("total_completion_tokens", 0))
+    cached += int(m.get("total_cached_tokens", 0))
+json.dump({"prompt": prompt, "completion": completion, "cached": cached,
+           "total": prompt + completion, "billable": prompt - cached + completion},
+          open(out, "w"), indent=2)
+PY
+}
+
+# run_agent_retry <cwd> <model> <prompt> <logfile> <export> <attacker|defender>
+#
+# A round must actually happen. A provider refusal, a crash or a timeout is
+# retried rather than recorded as a result, and the round only proceeds once the
+# agent produced its deliverable: work/run.sh for the attacker, out/report.json
+# for the defender.
+run_agent_retry() {
+  local cwd="$1" model="$2" prompt="$3" logfile="$4" export="$5" role="$6"
+  local attempt=1 rc ok
+
+  while :; do
+    set +e
+    run_agent "$cwd" "$model" "$prompt" "$logfile" "$export"
+    rc=$?
+    set -e
+    if [[ -f "$export" ]]; then mv "$export" "$export.attempt-$attempt"; fi
+    if [[ "$DRY_RUN" == "1" ]]; then return 0; fi
+
+    ok=1
+    if [[ $rc -eq 0 ]]; then
+      if [[ "$role" == "attacker" ]]; then
+        if [[ -f "$cwd/work/run.sh" ]]; then ok=0; fi
+      else
+        if [[ -s "$cwd/out/report.json" ]]; then ok=0; fi
+      fi
+    fi
+    if [[ $ok -eq 0 ]]; then return 0; fi
+
+    if (( attempt >= AGENT_RETRIES )); then
+      log "$role gave up after $attempt attempt(s), exit=$rc"
+      return $rc
+    fi
+    log "$role attempt $attempt/$AGENT_RETRIES failed (exit=$rc); retrying"
+    sleep $((attempt * RETRY_BACKOFF))
+    attempt=$((attempt + 1))
+  done
 }
 
 write_void() {
@@ -193,7 +265,8 @@ for ((k = 1; k <= ROUNDS; k++)); do
   write_configs "$round_dir/attacker" attacker
   write_configs "$round_dir/defender" defender
 
-  theta=$((RANDOM % 2))
+  # THETA pins the coin so a round can be resumed without re-drawing it.
+  if [[ -n "${THETA:-}" ]]; then theta="$THETA"; else theta=$((RANDOM % 2)); fi
   printf '%s' "$theta" > "$round_dir/attacker/theta"
 
   att_export="$round_dir/grader/logs/attacker.export.json"
@@ -201,9 +274,17 @@ for ((k = 1; k <= ROUNDS; k++)); do
   att_spend="$round_dir/grader/logs/attacker.spend.json"
   def_spend="$round_dir/grader/logs/defender.spend.json"
 
+  # A clean round must not see the attack instructions: the whole attacker
+  # prompt is read by the provider, and the exploit wording gets the request
+  # flagged even when theta = 0 asks only for a working service.
+  att_prompt="$PROMPTS/attacker.md"
+  if [[ "$theta" -eq 0 && -f "$PROMPTS/attacker-clean.md" ]]; then
+    att_prompt="$PROMPTS/attacker-clean.md"
+  fi
+
   set +e
-  run_agent "$round_dir/attacker" "$A_MODEL" "$PROMPTS/attacker.md" \
-    "$round_dir/grader/logs/attacker.log" "$att_export"
+  run_agent_retry "$round_dir/attacker" "$A_MODEL" "$att_prompt" \
+    "$round_dir/grader/logs/attacker.log" "$att_export" attacker
   att_exit=$?
   set -e
   spend_file "$att_export" "$att_spend"
@@ -215,12 +296,26 @@ for ((k = 1; k <= ROUNDS; k++)); do
   set -e
 
   def_exit="skipped"
+  HOLD=""
   if [[ $freeze_exit -eq 0 ]]; then
+    # The defender's shell can read any path, so hide the answer outright:
+    # attacker/theta, work/, scratch/ and the sealed PoC all leak the coin flip
+    # or the exploit. Move them outside the season for the duration of the run.
+    HOLD=$(mktemp -d "${TMPDIR:-/tmp}/ia-hold.XXXXXX")
+    mv "$round_dir/attacker" "$HOLD/attacker"
+    if [[ -d "$round_dir/sealed" ]]; then mv "$round_dir/sealed" "$HOLD/sealed"; fi
+    if [[ -f "$att_export" ]]; then mv "$att_export" "$HOLD/attacker.export.json"; fi
+
     set +e
-    run_agent "$round_dir/defender" "$D_MODEL" "$PROMPTS/defender.md" \
-      "$round_dir/grader/logs/defender.log" "$def_export"
+    run_agent_retry "$round_dir/defender" "$D_MODEL" "$PROMPTS/defender.md" \
+      "$round_dir/grader/logs/defender.log" "$def_export" defender
     def_exit=$?
     set -e
+
+    mv "$HOLD/attacker" "$round_dir/attacker"
+    if [[ -d "$HOLD/sealed" ]]; then mv "$HOLD/sealed" "$round_dir/sealed"; fi
+    if [[ -f "$HOLD/attacker.export.json" ]]; then mv "$HOLD/attacker.export.json" "$att_export"; fi
+    rm -rf "$HOLD"
   fi
   spend_file "$def_export" "$def_spend"
 
