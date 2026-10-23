@@ -34,7 +34,7 @@
     "theta": { "type": "integer", "enum": [0, 1] },
     "outcome": {
       "type": "string",
-      "enum": ["TP", "TN", "FP", "FN", "VOID", "DISCOVERY"]
+      "enum": ["TP", "TN", "FP", "FN", "DISCOVERY", "ABSTAIN_A", "ABSTAIN_D", "FAILED_A", "FAILED_D", "FAULT_A", "VOID"]
     },
     "poc_unpatched": {
       "type": ["boolean", "null"]

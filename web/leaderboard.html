@@ -728,13 +728,15 @@
           <button class="tab active" data-role="overall" role="tab" aria-selected="true">Overall</button>
           <button class="tab" data-role="att" role="tab" aria-selected="false">Attacker</button>
           <button class="tab" data-role="def" role="tab" aria-selected="false">Defender</button>
+          <button class="tab" data-role="changelog" role="tab" aria-selected="false">Changelog</button>
         </div>
         <input class="search" id="search" type="search" placeholder="Search agent…" aria-label="Search agent">
       </div>
     </div>
-    <div class="table-wrap">
+    <div class="table-wrap" id="standings-wrap">
       <table id="standings"></table>
     </div>
+    <div class="changelog" id="changelog" hidden></div>
   </section>
 
   <section class="panel" id="ledger-panel">
@@ -811,8 +813,15 @@
   const pct = x => (x == null ? "\u2014" : (x * 100).toFixed(0) + "%");
   const delta = n => (n > 0 ? "+" : "") + n.toFixed(1);
 
+  const FORFEIT_A = new Set(["ABSTAIN_A", "FAILED_A", "FAULT_A"]);
+  const FORFEIT_D = new Set(["ABSTAIN_D", "FAILED_D"]);
+
   const winFor = (row, agent) => {
     if (row.outcome === "VOID") return null;
+    // Forfeits are contest results: a loss for the offender, a win for the
+    // opponent, exactly as the general rating prices them.
+    if (FORFEIT_A.has(row.outcome)) return row.defender === agent;
+    if (FORFEIT_D.has(row.outcome)) return row.attacker === agent;
     if (row.attacker === agent) return row.outcome === "FN" || row.outcome === "FP";
     if (row.defender === agent) {
       return row.outcome === "TP" || row.outcome === "TN" || row.outcome === "DISCOVERY";
@@ -903,6 +912,8 @@
     ["rating_att", "Att", "rating_att"],
     ["rating_def", "Def", "rating_def"],
     ["rounds", "Rounds", "rounds"],
+    ["abstentions", "No-show", "abstentions"],
+    ["forfeits", "Forfeits", "forfeits"],
     ["wl", "W\u2013L", null],
     ["wr", "Winrate", null],
     ["cost_total", "Cost", "cost_total"],
@@ -932,6 +943,8 @@
       <td class="dim">${a.rating_att.toFixed(1)}</td>
       <td class="dim">${a.rating_def.toFixed(1)}</td>
       <td>${a.rounds}</td>
+      <td class="dim">${a.abstentions || 0}</td>
+      <td class="dim">${a.forfeits || 0}</td>
       <td>${a.wins}\u2013${a.losses}</td>
       <td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>
       <td>${usd(a.cost_total)}</td>
@@ -958,11 +971,11 @@
       .join("");
 
     const divider = provisional
-      ? `<tr class="divider"><td colspan="15">Provisional \u2014 fewer than 20 valid rounds</td></tr>`
+      ? `<tr class="divider"><td colspan="17">Provisional \u2014 fewer than 20 valid rounds</td></tr>`
       : "";
 
     const empty = !rows && !provisional
-      ? `<tr><td colspan="15" class="dim">${DATA.rows.length
+      ? `<tr><td colspan="17" class="dim">${DATA.rows.length
           ? `No agents match \u201c${state.query}\u201d.`
           : "No season data. Generate this page from a season export."}</td></tr>`
       : "";
@@ -1009,10 +1022,56 @@
     document.getElementById("clear-filter").hidden = !state.agent;
   }
 
+  // The changelog tab swaps the standings table for CHANGELOG.md, rendered
+  // from the arena-data payload. Keep it plain: headings, bullets, code.
+  const mdInline = s => s
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+
+  function renderChangelog() {
+    const host = document.getElementById("changelog");
+    const md = DATA.changelog || "";
+    if (!md.trim()) {
+      host.innerHTML = `<p class="dim">No changelog recorded.</p>`;
+      return;
+    }
+    const out = [];
+    let list = false;
+    md.split(/\r?\n/).forEach(line => {
+      const t = line.trim();
+      if (!t) {
+        if (list) { out.push("</ul>"); list = false; }
+        return;
+      }
+      if (t.startsWith("# ")) return; // page title, the panel already has one
+      if (t.startsWith("### ")) {
+        if (list) { out.push("</ul>"); list = false; }
+        out.push(`<h4>${mdInline(t.slice(4))}</h4>`);
+        return;
+      }
+      if (t.startsWith("## ")) {
+        if (list) { out.push("</ul>"); list = false; }
+        out.push(`<h3>${mdInline(t.slice(3))}</h3>`);
+        return;
+      }
+      if (/^[-*]\s+/.test(t)) {
+        if (!list) { out.push("<ul>"); list = true; }
+        out.push(`<li>${mdInline(t.replace(/^[-*]\s+/, ""))}</li>`);
+        return;
+      }
+      if (list) { out.push("</ul>"); list = false; }
+      out.push(`<p>${mdInline(t)}</p>`);
+    });
+    if (list) out.push("</ul>");
+    host.innerHTML = out.join("");
+  }
+
   document.addEventListener("click", event => {
     const tab = event.target.closest(".tab");
     if (tab) {
-      state.role = tab.dataset.role;
+      const isLog = tab.dataset.role === "changelog";
+      state.role = isLog ? "overall" : tab.dataset.role;
       state.key = state.role === "overall" ? "rating" : "rating_" + state.role;
       state.dir = -1;
       document.querySelectorAll(".tab").forEach(t => {
@@ -1020,7 +1079,10 @@
         t.classList.toggle("active", active);
         t.setAttribute("aria-selected", String(active));
       });
-      renderStandings();
+      document.getElementById("standings-wrap").hidden = isLog;
+      document.getElementById("search").hidden = isLog;
+      document.getElementById("changelog").hidden = !isLog;
+      if (isLog) renderChangelog(); else renderStandings();
       return;
     }
 
@@ -1051,6 +1113,11 @@
     state.query = event.target.value.trim().toLowerCase();
     renderStandings();
   });
+
+  if (!(DATA.changelog || "").trim()) {
+    const logTab = document.querySelector('[data-role="changelog"]');
+    if (logTab) logTab.remove();
+  }
 
   renderSummary();
   renderPodium();

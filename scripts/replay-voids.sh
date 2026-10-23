@@ -23,7 +23,7 @@ fi
 THETA=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['theta'])" "$ROUND_DIR/manifest.json")
 echo "[$(date +%H:%M:%S)] replay $MATCH_ID theta=$THETA"
 
-THETA="$THETA" AGENT_RETRIES="${AGENT_RETRIES:-3}" RETRY_BACKOFF="${RETRY_BACKOFF:-20}" \
+THETA="$THETA" INFRA_ATTEMPTS="${INFRA_ATTEMPTS:-2}" RETRY_BACKOFF="${RETRY_BACKOFF:-20}" \
   scripts/run-match.sh "$SPEC"
 rc=$?
 echo "[$(date +%H:%M:%S)] $MATCH_ID finished rc=$rc"

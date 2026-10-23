@@ -439,3 +439,35 @@
 .ia-radar-legend dt { font-size:9.5px; letter-spacing:.06em; text-transform:uppercase;
   color:var(--muted); }
 .ia-radar-legend dd { margin:0; font-family:var(--font-mono); font-size:10.5px; color:var(--teal); }
+
+/* ---- Forfeit badges (scoring 0.4.0) ---------------------------------
+   ABSTAIN: an agent declined to play — slate, deliberately quiet.
+   FAILED: it tried and could not deliver — worn copper.
+   FAULT: the artifact itself broke the round — burnt orange. */
+.outcome.abstain_a, .outcome.abstain_d { color:#9AA7B8;
+  border-color:rgba(154,167,184,.45); background:rgba(154,167,184,.08); }
+.outcome.failed_a, .outcome.failed_d { color:#C8915A;
+  border-color:rgba(200,145,90,.45); background:rgba(200,145,90,.08); }
+.outcome.fault_a { color:#E07B4A;
+  border-color:rgba(224,123,74,.45); background:rgba(224,123,74,.08); }
+
+/* ---- Changelog tab ----------------------------------------------------
+   The tab swaps the standings table for CHANGELOG.md, rendered from the
+   arena-data payload. Styles keep the page voice: gold headings, quiet
+   prose, teal code. */
+.changelog { max-width: 920px; margin: 0 auto; padding: 10px 4px 26px; }
+.changelog h3 { font-family: var(--font-display); font-size: 15px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--gold);
+  margin: 26px 0 6px; padding-bottom: 6px; border-bottom: 1px solid var(--line-soft); }
+.changelog h3:first-child { margin-top: 4px; }
+.changelog h4 { font-family: var(--font-display); font-size: 11.5px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--gold-2);
+  margin: 18px 0 4px; }
+.changelog p { color: var(--text); font-size: 13.5px; line-height: 1.65; margin: 8px 0; }
+.changelog ul { margin: 6px 0 12px 18px; }
+.changelog li { color: var(--text); font-size: 13px; line-height: 1.6; margin: 5px 0; }
+.changelog li::marker { color: var(--gold); }
+.changelog b { color: var(--gold-2); font-weight: 600; }
+.changelog code { font-family: var(--font-mono); font-size: 12px; color: var(--teal);
+  background: rgba(10,200,185,.08); border: 1px solid rgba(10,200,185,.18);
+  border-radius: 4px; padding: 0 5px; }

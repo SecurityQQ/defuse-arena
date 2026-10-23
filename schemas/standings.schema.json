@@ -14,14 +14,26 @@
   ],
   "additionalProperties": false,
   "properties": {
-    "season_id": { "type": "string", "pattern": "^s-[0-9]{4}-[0-9]{2}$" },
-    "generated_at": { "type": "string", "format": "date-time" },
+    "season_id": {
+      "type": "string",
+      "pattern": "^s-[0-9]{4}-[0-9]{2}$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "scoring_version": {
       "type": "string",
       "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
     },
-    "season_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-    "ledger_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "season_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "ledger_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
     "rows": {
       "type": "array",
       "items": {
@@ -49,27 +61,189 @@
         ],
         "additionalProperties": false,
         "properties": {
-          "agent": { "type": "string" },
-          "rating": { "type": "number" },
-          "rating_att": { "type": "number" },
-          "rating_def": { "type": "number" },
-          "rounds": { "type": "integer", "minimum": 0 },
-          "wins": { "type": "integer", "minimum": 0 },
-          "losses": { "type": "integer", "minimum": 0 },
-          "voids": { "type": "integer", "minimum": 0 },
-          "tokens_total": { "type": "integer", "minimum": 0 },
-          "tokens_per_round": { "type": "number", "minimum": 0 },
-          "brier": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-          "patch_validity": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-          "fpr": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-          "attack_survival": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-          "defense_win_rate": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-          "net_chips": { "type": "number", "description": "Chip balance in USD." },
-          "cost_total": { "type": "number", "minimum": 0 },
-          "cost_per_round": { "type": "number", "minimum": 0 },
+          "agent": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number"
+          },
+          "rating_att": {
+            "type": "number"
+          },
+          "rating_def": {
+            "type": "number"
+          },
+          "rounds": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "wins": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "losses": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "voids": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "abstentions": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "abstain_att": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "abstain_def": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "refusal_rate": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "forfeits": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "forfeit_att": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "forfeit_def": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "forfeit_rate": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "tokens_total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "tokens_per_round": {
+            "type": "number",
+            "minimum": 0
+          },
+          "brier": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "patch_validity": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "fpr": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "attack_survival": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "defense_win_rate": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "net_chips": {
+            "type": "number",
+            "description": "Chip balance in USD."
+          },
+          "cost_total": {
+            "type": "number",
+            "minimum": 0
+          },
+          "cost_per_round": {
+            "type": "number",
+            "minimum": 0
+          },
           "provisional": {
             "type": "boolean",
             "description": "True when rounds < 20; excluded from the ordered table."
+          },
+          "hist": {
+            "type": "array",
+            "description": "rating trail: [round_id, ts, gen, att, def] per round"
+          },
+          "rounds_list": {
+            "type": "array",
+            "description": "per-round record: [round_id, match_id, role, opponent, theta, outcome, cost_usd, rating_delta]"
+          },
+          "h2h": {
+            "type": "array",
+            "description": "head-to-head vs one opponent: [agent, games, wins, losses, cost_for, cost_against]"
+          },
+          "att": {
+            "type": "object",
+            "properties": {
+              "rounds": {
+                "type": "integer"
+              },
+              "tokens": {
+                "type": "integer"
+              },
+              "cost": {
+                "type": "number"
+              }
+            }
+          },
+          "def": {
+            "type": "object",
+            "properties": {
+              "rounds": {
+                "type": "integer"
+              },
+              "tokens": {
+                "type": "integer"
+              },
+              "cost": {
+                "type": "number"
+              },
+              "tp": {
+                "type": "integer"
+              },
+              "fn": {
+                "type": "integer"
+              },
+              "fp": {
+                "type": "integer"
+              },
+              "tn": {
+                "type": "integer"
+              }
+            }
           }
         }
       }
