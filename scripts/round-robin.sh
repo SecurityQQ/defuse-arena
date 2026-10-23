@@ -112,7 +112,7 @@ set -e
 [[ $xargs_status -eq 0 ]] || log "warning: xargs exited $xargs_status; aggregating what finished"
 
 SUMMARY="$SEASON_DIR/round-robin.tsv"
-printf 'match\tround\tattacker\tdefender\ttheta\toutcome\tspend_a\tspend_b\tbrier\tscore\tdR_a\tdR_b\n' > "$SUMMARY"
+printf 'match\tround\tattacker\tdefender\ttheta\toutcome\tcost_a\tcost_b\tbrier\tscore\tdR_a\tdR_b\n' > "$SUMMARY"
 find "$SEASON_DIR/matches" -name result.tsv -print | sort | xargs cat >> "$SUMMARY"
 
 log "done. summary: $SUMMARY"

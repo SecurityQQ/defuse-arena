@@ -400,7 +400,7 @@ g = json.load(open(rd + "/grader/results.json"))
 row = [
     r.get("match_id", ""), m.get("round_id", ""), r.get("attacker", ""), r.get("defender", ""),
     str(m.get("theta", "")), g.get("outcome", g.get("status", "?")),
-    str(g.get("spend", {}).get("attacker", 0)), str(g.get("spend", {}).get("defender", 0)),
+    f'{g.get("cost", {}).get("attacker", 0):.6f}', f'{g.get("cost", {}).get("defender", 0):.6f}',
     str(g.get("brier", "")), str(g.get("score", "")),
     str(g.get("rating_delta", {}).get("attacker", "")),
     str(g.get("rating_delta", {}).get("defender", "")),

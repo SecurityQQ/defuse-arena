@@ -797,6 +797,17 @@
   };
 
   const fmtSigned = n => (n > 0 ? "+" : n < 0 ? "\u2212" : "") + fmtK(Math.abs(n));
+
+  // Money, not tokens: a round costs cents, a season a few dollars.
+  const usd = x => {
+    if (x == null) return "\u2014";
+    const a = Math.abs(x);
+    if (a === 0) return "$0";
+    if (a < 0.01) return "$" + a.toFixed(4);
+    if (a < 1) return "$" + a.toFixed(3);
+    return "$" + a.toFixed(2);
+  };
+  const usdSigned = x => (x > 0 ? "+" : x < 0 ? "\u2212" : "") + usd(Math.abs(x));
   const pct = x => (x == null ? "\u2014" : (x * 100).toFixed(0) + "%");
   const delta = n => (n > 0 ? "+" : "") + n.toFixed(1);
 
@@ -836,14 +847,14 @@
   function renderSummary() {
     const valid = DATA.rows.reduce((s, r) => s + r.rounds, 0);
     const voids = DATA.rows.reduce((s, r) => s + r.voids, 0);
-    const tokens = DATA.rows.reduce((s, r) => s + r.tokens_total, 0);
+    const spend = DATA.rows.reduce((s, r) => s + r.cost_total, 0);
     const brier = valid ? DATA.rows.reduce((s, r) => s + r.brier * r.rounds, 0) / valid : null;
 
     const stats = [
       ["Agents", DATA.rows.length],
       ["Rounds", valid],
       ["Void", voids],
-      ["Tokens", fmtK(tokens)],
+      ["Spend", usd(spend)],
       ["Mean Brier", brier == null ? "\u2014" : brier.toFixed(3)],
       ["Ledger", DATA.ledger_sha256 ? "Verified" : "\u2014"],
     ];
@@ -878,7 +889,7 @@
           <h3>${a.agent}</h3>
           <div class="champ-tier ${cls}">${tier}</div>
           <div class="champ-rating">${a.rating.toFixed(1)}</div>
-          <div class="champ-meta">${a.wins}\u2013${a.losses} \u00b7 ${fmtK(a.tokens_total)} tokens</div>
+          <div class="champ-meta">${a.wins}\u2013${a.losses} \u00b7 ${usd(a.cost_total)}</div>
         </article>`;
       })
       .join("");
@@ -894,8 +905,8 @@
     ["rounds", "Rounds", "rounds"],
     ["wl", "W\u2013L", null],
     ["wr", "Winrate", null],
-    ["tokens_total", "Tokens", "tokens_total"],
-    ["tokens_per_round", "Tok/round", "tokens_per_round"],
+    ["cost_total", "Cost", "cost_total"],
+    ["cost_per_round", "$/round", "cost_per_round"],
     ["brier", "Brier", "brier"],
     ["patch_validity", "Patch", "patch_validity"],
     ["fpr", "FPR", "fpr"],
@@ -923,12 +934,12 @@
       <td>${a.rounds}</td>
       <td>${a.wins}\u2013${a.losses}</td>
       <td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>
-      <td>${fmtK(a.tokens_total)}</td>
-      <td class="dim">${fmtK(a.tokens_per_round)}</td>
+      <td>${usd(a.cost_total)}</td>
+      <td class="dim">${usd(a.cost_per_round)}</td>
       <td>${a.brier.toFixed(3)}</td>
       <td>${pct(a.patch_validity)}</td>
       <td>${pct(a.fpr)}</td>
-      <td class="${a.net_chips >= 0 ? "pos" : "neg"}">${fmtSigned(a.net_chips)}</td>
+      <td class="${a.net_chips >= 0 ? "pos" : "neg"}">${usdSigned(a.net_chips)}</td>
     </tr>`;
   }
 
@@ -968,7 +979,7 @@
 
     const head = `<thead><tr>
       <th>Round</th><th>Match</th><th>Attacker</th><th>Defender</th><th>\u03b8</th>
-      <th>Outcome</th><th>Tok A</th><th>Tok D</th><th>\u0394R A</th><th>\u0394R D</th>
+      <th>Outcome</th><th>Cost A</th><th>Cost D</th><th>\u0394R A</th><th>\u0394R D</th>
       <th>Chips A</th><th>Chips D</th>
     </tr></thead>`;
 
@@ -980,12 +991,12 @@
       <td><button class="agent-name small" data-agent="${r.defender}">${r.defender}</button></td>
       <td><span class="coin ${r.theta ? "h" : "t"}" title="${r.theta ? "Heads \u2014 exploit required" : "Tails \u2014 clean service"}">${r.theta ? "H" : "T"}</span></td>
       <td><span class="outcome ${r.outcome.toLowerCase()}">${r.outcome}</span></td>
-      <td>${fmtK(r.tokens.attacker)}</td>
-      <td>${fmtK(r.tokens.defender)}</td>
+      <td>${usd(r.cost.attacker)}</td>
+      <td>${usd(r.cost.defender)}</td>
       <td class="${r.rating_delta.attacker >= 0 ? "pos" : "neg"}">${delta(r.rating_delta.attacker)}</td>
       <td class="${r.rating_delta.defender >= 0 ? "pos" : "neg"}">${delta(r.rating_delta.defender)}</td>
-      <td class="${r.chips.attacker >= 0 ? "pos" : "neg"}">${fmtSigned(r.chips.attacker)}</td>
-      <td class="${r.chips.defender >= 0 ? "pos" : "neg"}">${fmtSigned(r.chips.defender)}</td>
+      <td class="${r.chips.attacker >= 0 ? "pos" : "neg"}">${usdSigned(r.chips.attacker)}</td>
+      <td class="${r.chips.defender >= 0 ? "pos" : "neg"}">${usdSigned(r.chips.defender)}</td>
     </tr>`).join("")
       : `<tr><td colspan="12" class="dim">No rounds recorded.</td></tr>`;
 

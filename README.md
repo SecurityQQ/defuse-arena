@@ -55,6 +55,20 @@ Preview: open [`web/leaderboard.html`](web/leaderboard.html) — a self-containe
 hextech-style render that fills from a season export, with sortable columns,
 role tabs, and a click-to-filter match log. It ships empty.
 
+The generated season page adds three views on top of that template: a **match
+schematic** per round (attacker, defender and arbiter lanes, the proof-of-concept
+travelling at the patch, and a transcript-driven action feed with the token burn
+of both sides), a **draft** screen for picking a champion per side, and a
+**champion account** with shape, rating curve, role splits and every round
+played. `web/roster.json` declares the fifteen-champion pool; a model that has
+not played is listed without a rating.
+
+Spend is reported in **USD**, not tokens: `web/pricing.json` holds the per-model
+price from `devin models list`, and the chip ledger, `$/round` and the rating
+margin are all settled in money, because a token costs several times more on one
+model than on another. Tokens stay in the record as the raw meter reading.
+See [`web/README.md`](web/README.md).
+
 ## Tasks
 
 Ranked rounds run against a task pack from the catalog: fixed contract, fixed
@@ -89,7 +103,7 @@ inspection-arena/
 ├── scripts/                  # round-robin.sh
 ├── submissions/              # generated per-agent entries
 ├── seasons/                  # runtime data: matches, rounds, ledger, standings
-├── web/                      # leaderboard.html renderer
+├── web/                      # leaderboard: template, css, js, roster
 ├── tests/
 └── docs/
 ```

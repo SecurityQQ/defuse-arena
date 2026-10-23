@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "note": "Season roster. `agent` is the label the harness writes into the ledger; `model` is the model id the runner resolves. Champions marked \"bench\" have not played a round yet, so the board shows them with no rating rather than a made-up one.",
+  "champions": [
+    {
+      "agent": "deepseek",
+      "model": "deepseek-v4-pro",
+      "name": "DeepSeek V4 Pro",
+      "title": "The Patient Excavator",
+      "house": "The Abyssal Reach",
+      "glyph": "DS",
+      "accent": "#8A6BE8",
+      "lane": "attacker"
+    },
+    {
+      "agent": "glm-5.2",
+      "model": "glm-5.2",
+      "name": "GLM-5.2",
+      "title": "The Younger Twin",
+      "house": "Twin Lotus Court",
+      "glyph": "G2",
+      "accent": "#57D6C4",
+      "lane": "defender"
+    },
+    {
+      "agent": "glm-5.3",
+      "model": "glm-5.3",
+      "name": "GLM-5.3",
+      "title": "The Elder Twin",
+      "house": "Twin Lotus Court",
+      "glyph": "G3",
+      "accent": "#0AC8B9",
+      "lane": "defender"
+    },
+    {
+      "agent": "opus-5.5",
+      "model": "claude-opus-5.5",
+      "name": "Claude Opus 5.5",
+      "title": "The Ivory Auditor",
+      "house": "The Ivory Spire",
+      "glyph": "OP",
+      "accent": "#E8A24A",
+      "lane": "defender"
+    },
+    {
+      "agent": "gpt-6.1",
+      "model": "gpt-6.1-sol",
+      "name": "GPT-6.1 Sol",
+      "title": "The Solar Arbitrator",
+      "house": "Hexgate Wardens",
+      "glyph": "G6",
+      "accent": "#6FB6FF",
+      "lane": "attacker"
+    },
+    {
+      "agent": "gpt-6-astra",
+      "model": "gpt-6-astra-max",
+      "name": "GPT-6 Astra",
+      "title": "The Star Cartographer",
+      "house": "Hexgate Wardens",
+      "glyph": "AS",
+      "accent": "#9BB7FF",
+      "lane": "attacker",
+      "status": "bench"
+    },
+    {
+      "agent": "gpt-6-luna",
+      "model": "gpt-6-luna-max",
+      "name": "GPT-6 Luna",
+      "title": "The Pale Lantern",
+      "house": "Hexgate Wardens",
+      "glyph": "LU",
+      "accent": "#B9C4D0",
+      "lane": "defender",
+      "status": "bench"
+    },
+    {
+      "agent": "gemini-4-argon",
+      "model": "gemini-4-argon-high",
+      "name": "Gemini 4 Argon",
+      "title": "The Noble Gas",
+      "house": "The Sunforge",
+      "glyph": "AR",
+      "accent": "#E3C27A",
+      "lane": "defender",
+      "status": "bench"
+    },
+    {
+      "agent": "kimi-k3",
+      "model": "kimi-k3-max",
+      "name": "Kimi K3",
+      "title": "The Long Memory",
+      "house": "The Quiet Archive",
+      "glyph": "K3",
+      "accent": "#B98BE8",
+      "lane": "attacker",
+      "status": "bench"
+    },
+    {
+      "agent": "sonnet-5.5",
+      "model": "claude-sonnet-5-5-max",
+      "name": "Claude Sonnet 5.5",
+      "title": "The Swift Quill",
+      "house": "The Ivory Spire",
+      "glyph": "SO",
+      "accent": "#F0C987",
+      "lane": "attacker",
+      "status": "bench"
+    },
+    {
+      "agent": "fable-5.1",
+      "model": "claude-fable-5-1-max",
+      "name": "Claude Fable 5.1",
+      "title": "The Storyteller",
+      "house": "The Ivory Spire",
+      "glyph": "FB",
+      "accent": "#D9B26A",
+      "lane": "defender",
+      "status": "bench"
+    },
+    {
+      "agent": "grok-4.7",
+      "model": "grok-4-7-xhigh",
+      "name": "Grok 4.7",
+      "title": "The Contrarian",
+      "house": "Frosthold",
+      "glyph": "GR",
+      "accent": "#8FE9FF",
+      "lane": "attacker",
+      "status": "bench"
+    },
+    {
+      "agent": "nemotron-3-ultra",
+      "model": "nemotron-3-ultra-high",
+      "name": "Nemotron 3 Ultra",
+      "title": "The Iron Foundry",
+      "house": "Emberwake",
+      "glyph": "NE",
+      "accent": "#B97A4E",
+      "lane": "defender",
+      "status": "bench"
+    },
+    {
+      "agent": "swe-2",
+      "model": "swe-2-max",
+      "name": "SWE-2 Max",
+      "title": "The Scaffold",
+      "house": "The Foundry Line",
+      "glyph": "SW",
+      "accent": "#7A8CA3",
+      "lane": "defender",
+      "status": "bench"
+    },
+    {
+      "agent": "muse-wonder",
+      "model": "muse-wonder-1-0-max",
+      "name": "Muse Wonder",
+      "title": "The Wandering Dream",
+      "house": "Starfall Bastion",
+      "glyph": "MU",
+      "accent": "#C6443E",
+      "lane": "attacker",
+      "status": "bench"
+    }
+  ]
+}

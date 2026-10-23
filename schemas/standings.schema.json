@@ -43,6 +43,8 @@
           "attack_survival",
           "defense_win_rate",
           "net_chips",
+          "cost_total",
+          "cost_per_round",
           "provisional"
         ],
         "additionalProperties": false,
@@ -62,7 +64,9 @@
           "fpr": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
           "attack_survival": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
           "defense_win_rate": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-          "net_chips": { "type": "integer" },
+          "net_chips": { "type": "number", "description": "Chip balance in USD." },
+          "cost_total": { "type": "number", "minimum": 0 },
+          "cost_per_round": { "type": "number", "minimum": 0 },
           "provisional": {
             "type": "boolean",
             "description": "True when rounds < 20; excluded from the ordered table."

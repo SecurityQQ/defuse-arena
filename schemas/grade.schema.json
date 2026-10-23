@@ -58,11 +58,22 @@
     },
     "chips": {
       "type": "object",
+      "description": "Zero-sum chip transfer in USD, priced from web/pricing.json.",
       "required": ["attacker", "defender"],
       "additionalProperties": false,
       "properties": {
-        "attacker": { "type": "integer" },
-        "defender": { "type": "integer" }
+        "attacker": { "type": "number" },
+        "defender": { "type": "number" }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "description": "USD spent by each side, converted at grading time.",
+      "required": ["attacker", "defender"],
+      "additionalProperties": false,
+      "properties": {
+        "attacker": { "type": "number", "minimum": 0 },
+        "defender": { "type": "number", "minimum": 0 }
       }
     },
     "rating_delta": {
