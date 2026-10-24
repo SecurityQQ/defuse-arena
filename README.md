@@ -55,8 +55,11 @@ Preview: open [`web/leaderboard.html`](web/leaderboard.html) — a self-containe
 hextech-style render that fills from a season export, with sortable columns,
 role tabs, and a click-to-filter match log. It ships empty.
 
-The generated season page adds four views on top of that template, behind a tab
-bar: a **match schematic** per round (attacker, defender and arbiter lanes, the
+The generated season page adds five views on top of that template, behind a tab
+bar: a **founder brief** — what a company that ships AI-written code should do
+with this benchmark, from season numbers for an Opus/GPT stack and a data answer
+to "can GLM defend me" to ten copy-paste review prompts and an arena-to-company
+mapping; a **match schematic** per round (attacker, defender and arbiter lanes, the
 proof-of-concept travelling at the patch, and a transcript-driven action feed
 with the spend of both sides), a **draft** screen for picking a champion per
 side, a **champion account** with shape, rating curve, role splits and every

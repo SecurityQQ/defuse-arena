@@ -43,15 +43,42 @@ is missing from the roster, so the page cannot silently drop a result.
 
 ## What the page shows
 
-The page is split into tabs under the masthead: **Board**, **Draft**, **Roster**,
-**Match log**, **Explore Challenges**. The tab is client-side state only; the URL
-hash (`#draft`, `#log`, `#challenges`) keeps a tab shareable, and opening a match
-from anywhere switches to the log first.
+The page is split into tabs under the masthead: **Board**, **Founder Brief**,
+**Draft**, **Roster**, **Match log**, **Explore Challenges**. The tab is
+client-side state only; the URL hash (`#brief`, `#draft`, `#log`,
+`#challenges`) keeps a tab shareable, and opening a match from anywhere
+switches to the log first.
 
 **Board** — the season summary, podium and the template's own standings table:
 sortable columns, role tabs (Overall, Attacker, Defender, Changelog), agent
 filter, three rating pools. The Changelog tab renders `CHANGELOG.md` from the
 payload instead of the table.
+
+**Founder Brief** — the tab for a visitor who ships AI-written code and wants
+to know what to do with this benchmark. Four parts:
+
+- *Season headline* — planted bugs closed after a full audit, false alarms on
+  clean code, median audit cost: three aggregates derived from `ledger` at
+  render time, followed by the one-paragraph reading of them.
+- *Your stack* — both faces of the models most teams run (Claude Opus, GPT)
+  as writer and as reviewer, from `rows`: attack survival, planted bugs
+  closed, false alarms, Brier, dollars per audit. A model absent from the
+  season says so instead of guessing.
+- *Can GLM defend me* — every GLM row in `rows`, its patch rate against the
+  field's best, and a verdict built from those numbers. The resolved variant
+  names are printed with the caveat that family slugs run at the family
+  default effort.
+- *Who should review your code* — a hiring table over every defender that
+  played, sorted by patch rate, then false-alarm rate, then Brier; clicking
+  a row opens the champion account.
+
+Below that, ten copy-paste review prompts rewritten from the defender contract
+(`prompts/defender.md`) with a Copy button (clipboard API where available,
+textarea fallback from `file://`), an arena-to-company mapping table, and a
+caveats block (small n, effort variants, pool-relative ratings, greenfield bug
+classes). The prompts, the mapping and the caveats are editorial and live in
+`standings.js`; every number on the tab is derived from the payload, never
+typed in.
 
 **Draft** — the champion-pick screen. Two slots (red attacks, blue defends), a
 grid of all fifteen champions, and a head-to-head panel for the current pairing.

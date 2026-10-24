@@ -648,12 +648,122 @@
 .changelog p { color: var(--text); font-size: 13.5px; line-height: 1.65; margin: 8px 0; }
 .changelog ul { margin: 6px 0 12px 18px; }
 .changelog li { color: var(--text); font-size: 13px; line-height: 1.6; margin: 5px 0; }
+
 .changelog li::marker { color: var(--gold); }
 .changelog b { color: var(--gold-2); font-weight: 600; }
 .changelog code { font-family: var(--font-mono); font-size: 12px; color: var(--teal);
   background: rgba(10,200,185,.08); border: 1px solid rgba(10,200,185,.18);
   border-radius: 4px; padding: 0 5px; }
 
+/* ===================== Founder Brief ================================
+   The tab a founder lands on: what this benchmark means for a company
+   that ships AI-written code. Same voice as the rest of the page — gold
+   headings, teal money, quiet prose. Every number on the tab is derived
+   from the arena-data payload in standings.js, never typed in. */
+.ia-brief { margin:0 0 14px; padding:18px 20px 22px; border-radius:10px;
+  background:linear-gradient(160deg, rgba(15,27,45,.95), rgba(6,16,31,.95));
+  border:1px solid var(--line); position:relative; }
+.ia-brief::before { content:""; position:absolute; inset:5px; border-radius:7px;
+  border:1px solid var(--line-soft); pointer-events:none; }
+.ia-brief-head { display:flex; justify-content:space-between; align-items:flex-end;
+  gap:18px; flex-wrap:wrap; }
+.ia-brief-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:12px; margin:16px 0 0; }
+.ia-brief-stat { border:1px solid rgba(200,170,110,.24); border-radius:8px;
+  padding:12px 14px; background:rgba(1,10,19,.45); }
+.ia-brief-stat b { display:block; font-family:var(--font-display); font-size:26px;
+  color:var(--gold-2); line-height:1.05; }
+.ia-brief-stat span { display:block; font-size:10px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--gold); margin-top:5px; }
+.ia-brief-stat em { display:block; font-style:normal; font-size:11px;
+  color:var(--muted); margin-top:3px; line-height:1.45; }
+.ia-brief-lead { margin:16px 0 0; font-size:13.5px; line-height:1.7; color:var(--text);
+  max-width:92ch; }
+.ia-brief-lead b { color:var(--gold-2); }
+.ia-brief-lead em { color:var(--teal); font-style:normal; }
+.ia-brief-sec { margin:26px 0 0; font-family:var(--font-display); font-size:13px;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--gold); font-weight:500;
+  padding-bottom:7px; border-bottom:1px solid rgba(200,170,110,.18); }
+.ia-brief-sub { margin:8px 0 12px; font-size:12.5px; line-height:1.6;
+  color:var(--muted); max-width:88ch; }
+.ia-brief-note { margin:9px 0 0; font-size:11.5px; line-height:1.55; color:var(--muted); }
+
+.ia-stack-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:12px; }
+.ia-stack-card { border:1px solid rgba(200,170,110,.22); border-radius:8px;
+  background:rgba(1,10,19,.42); padding:13px 15px; }
+.ia-stack-head { padding-bottom:9px; margin-bottom:10px;
+  border-bottom:1px solid rgba(200,170,110,.12); }
+.ia-stack-head b { display:block; font-family:var(--font-display); font-size:15px;
+  color:var(--gold-2); letter-spacing:.03em; }
+.ia-stack-head em { display:block; font-style:normal; font-family:var(--font-mono);
+  font-size:10.5px; color:var(--teal); margin-top:2px; }
+.ia-stack-face h5 { margin:0 0 7px; font-family:var(--font-display); font-size:10px;
+  letter-spacing:.14em; text-transform:uppercase; font-weight:500; color:var(--muted); }
+.ia-stack-face + .ia-stack-face { margin-top:11px; }
+.ia-stack-face.att h5 { color:#FF9E9E; }
+.ia-stack-face.def h5 { color:#8FE9FF; }
+
+.ia-glm { margin-top:16px; border:1px solid rgba(10,200,185,.3); border-radius:8px;
+  background:linear-gradient(180deg, rgba(10,200,185,.07), rgba(1,10,19,.42));
+  padding:14px 16px; }
+.ia-glm h3 { margin:0 0 9px; font-family:var(--font-display); font-size:13px;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--teal); font-weight:500; }
+.ia-glm-verdict { margin:0 0 11px; font-size:13px; line-height:1.65; color:var(--text); }
+.ia-glm-verdict b { color:var(--gold-2); }
+
+.ia-hire { width:100%; border-collapse:collapse; font-size:12px; }
+.ia-hire th { text-align:left; font-size:9.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--muted); font-weight:500;
+  padding:6px 10px 6px 0; border-bottom:1px solid rgba(200,170,110,.18); }
+.ia-hire td { padding:7px 10px 7px 0; border-bottom:1px solid rgba(200,170,110,.06);
+  color:var(--text); }
+.ia-hire td b { font-family:var(--font-display); font-size:12.5px; color:var(--gold-2);
+  font-weight:500; }
+.ia-hire td em.r-model { display:block; font-style:normal; font-family:var(--font-mono);
+  font-size:10px; color:var(--teal); margin-top:1px; }
+.ia-hire .num { font-family:var(--font-mono); font-size:11.5px; }
+.ia-hire tbody tr { cursor:pointer; }
+.ia-hire tbody tr:hover td { color:var(--gold-2); background:rgba(200,170,110,.05); }
+
+.ia-prompts { display:grid; grid-template-columns:1fr; gap:12px; margin-top:14px; }
+.ia-prompt { border:1px solid rgba(200,170,110,.2); border-radius:8px;
+  background:rgba(1,10,19,.42); overflow:hidden; }
+.ia-prompt-head { display:grid; grid-template-columns:34px minmax(0,1fr) auto;
+  gap:12px; align-items:start; padding:12px 14px; }
+.ia-prompt-n { width:30px; height:30px; border-radius:6px; display:flex;
+  align-items:center; justify-content:center; font-family:var(--font-display);
+  font-size:13px; color:var(--gold); background:rgba(1,10,19,.7);
+  border:1px solid rgba(200,170,110,.36); }
+.ia-prompt-head b { font-family:var(--font-display); font-size:13.5px;
+  color:var(--gold-2); letter-spacing:.03em; font-weight:500; }
+.ia-prompt-head p { margin:4px 0 0; font-size:12px; line-height:1.55; color:var(--muted); }
+.ia-prompt-copy { align-self:center; }
+.ia-prompt-pre { margin:0; padding:12px 14px 13px; border-top:1px solid rgba(200,170,110,.12);
+  background:rgba(1,8,16,.75); font-family:var(--font-mono); font-size:11.5px;
+  line-height:1.62; color:#B8D8E8; overflow:auto; white-space:pre-wrap; }
+
+.ia-map { width:100%; border-collapse:collapse; font-size:12.5px; margin-top:12px; }
+.ia-map th { text-align:left; font-size:9.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--muted); font-weight:500;
+  padding:6px 10px 6px 0; border-bottom:1px solid rgba(200,170,110,.18); }
+.ia-map td { padding:8px 10px 8px 0; border-bottom:1px solid rgba(200,170,110,.06);
+  color:var(--text); line-height:1.55; vertical-align:top; }
+.ia-map td:first-child { font-family:var(--font-display); font-size:12px;
+  color:var(--gold-2); white-space:nowrap; }
+
+.ia-caveats { margin-top:18px; border:1px solid rgba(232,162,74,.35); border-radius:8px;
+  background:rgba(232,162,74,.06); padding:13px 15px; }
+.ia-caveats b { font-family:var(--font-display); font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--orange); display:block; margin-bottom:7px; }
+.ia-caveats ul { margin:0; padding-left:18px; }
+.ia-caveats li { font-size:12px; line-height:1.6; color:var(--text); margin:4px 0; }
+
+@media (max-width:700px) {
+  .ia-brief { padding:14px; }
+  .ia-prompt-head { grid-template-columns:30px minmax(0,1fr); }
+  .ia-prompt-copy { grid-column:2; justify-self:start; }
+}
 /* ---- Resolved model names --------------------------------------------
    A label is not a model: the CLI resolves a family slug to an effort
    variant. These lines carry the resolved name from the ATIF export. */

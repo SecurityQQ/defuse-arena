@@ -4,6 +4,27 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.4.4 — 2026-10-23 — the board answers a founder
+
+### Board
+
+- New **Founder Brief** tab, second after Board, shareable as `#brief`. It is
+  written for the visitor who ships AI-written code and has to decide what to
+  do with this benchmark: what the season's numbers mean for a stack built on
+  Claude Opus and GPT, a data answer to **can GLM defend me**, a hiring table
+  over every defender that played, ten copy-paste review prompts rewritten
+  from the defender contract, and a mapping from each arena concept to its
+  equivalent in a company.
+- Every number on the tab is computed from the arena-data payload at render
+  time — season aggregates, per-model cards, the GLM verdict and the hiring
+  table all re-derive themselves, so a new season refreshes the brief with no
+  edits. Nothing numeric is typed into the render.
+- The editorial layer (the ten prompts, the company mapping, the caveats)
+  lives in `web/standings.js`; `standings.py` injects the empty `#ia-brief`
+  host around the untouched template, the same way as the draft and challenges
+  sections. Prompt copying falls back to a textarea when the page is opened
+  from `file://`, where the clipboard API is unavailable.
+
 ## 0.4.3 — 2026-10-23 — the board ranks the whole field
 
 ### Board

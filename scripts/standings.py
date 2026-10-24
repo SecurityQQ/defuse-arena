@@ -670,6 +670,12 @@ LOG_TOOLS = """<div class="ia-logtools">
 # The full challenge briefing lives on its own tab, so the match log keeps only
 # the filter that narrows the log by pack.
 CHALLENGES = '<section class="ia-challenges" id="ia-challenges"></section>'
+
+# The founder brief is a tab too: what a company that ships AI-written code
+# should actually do with this benchmark. All numbers it shows are computed
+# client-side from the arena-data payload; the host is injected here because
+# the template itself stays untouched.
+BRIEF = '<section class="ia-brief" id="ia-brief"></section>'
 GAME_DETAIL = '<div id="ia-game-detail" hidden></div>'
 
 # Page styles and behaviour live next to the template in web/, so this file
@@ -687,7 +693,7 @@ rendered = rendered.replace(
 )
 assert "  <footer>" in rendered, "page footer not found"
 rendered = rendered.replace(
-    "  <footer>", "  " + CHALLENGES + "\n\n  <footer>", 1,
+    "  <footer>", "  " + BRIEF + "\n\n  " + CHALLENGES + "\n\n  <footer>", 1,
 )
 rendered = rendered.replace("</head>", EXTRA_HEAD + "</head>", 1)
 rendered = rendered.replace("</body>", EXTRA_JS + "</body>", 1)
