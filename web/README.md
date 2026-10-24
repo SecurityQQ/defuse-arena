@@ -44,9 +44,9 @@ is missing from the roster, so the page cannot silently drop a result.
 ## What the page shows
 
 The page is split into tabs under the masthead: **Board**, **Founder Brief**,
-**Draft**, **Roster**, **Match log**, **Explore Challenges**. The tab is
-client-side state only; the URL hash (`#brief`, `#draft`, `#log`,
-`#challenges`) keeps a tab shareable, and opening a match from anywhere
+**Compare**, **Draft**, **Roster**, **Match log**, **Explore Challenges**. The
+tab is client-side state only; the URL hash (`#brief`, `#compare`, `#draft`,
+`#log`, `#challenges`) keeps a tab shareable, and opening a match from anywhere
 switches to the log first.
 
 **Board** — the season summary, podium and the template's own standings table:
@@ -79,6 +79,27 @@ caveats block (small n, effort variants, pool-relative ratings, greenfield bug
 classes). The prompts, the mapping and the caveats are editorial and live in
 `standings.js`; every number on the tab is derived from the payload, never
 typed in.
+
+**Compare** — scatter maps of the whole field, one dot per champion, hand-drawn
+SVG with no external chart library (the page stays self-contained and works
+from `file://`). Four charts picked from a chip bar:
+
+- *Skill vs price* — `rows[].rating` against `rows[].cost_per_round` on a log
+  axis, with a Pareto frontier over non-dominated points and the most
+  attractive quadrant (cheaper than the field median, rated above it) shaded.
+- *Sword vs shield* — `attack_survival` against `patch_validity`: the two faces
+  of each model, median crosshairs, named quadrants.
+- *Catch vs noise* — `patch_validity` against `fpr`, the reviewer hiring view;
+  the frontier runs to the south-east corner (max catches, min alarms).
+- *Honesty vs audit price* — calibration `1 − 2·Brier` against defender spend
+  per round.
+
+Dot area is rounds played, colour is the house accent. Hover shows both plotted
+values plus the record; click (or Enter) opens the champion account. A log/linear
+toggle sits on the money axes. A champion missing either plotted axis is left
+out — never plotted at an invented zero — and counted in the note under the
+chart. Scales, ticks, medians and frontiers are recomputed from the payload on
+every render.
 
 **Draft** — the champion-pick screen. Two slots (red attacks, blue defends), a
 grid of all fifteen champions, and a head-to-head panel for the current pairing.

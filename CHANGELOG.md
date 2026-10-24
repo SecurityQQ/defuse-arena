@@ -4,6 +4,28 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.4.5 — 2026-10-23 — compare the field on applied axes
+
+### Board
+
+- New **Compare** tab, after the Founder Brief, shareable as `#compare`: scatter
+  maps of the whole field, one dot per champion. Four charts: **Skill vs price**
+  — general rating against real dollars per round with a Pareto frontier and
+  the most attractive quadrant shaded (the reading popularised by model-index
+  sites) — **Sword vs shield** (attack survival vs patch validity, the two faces
+  of each model), **Catch vs noise** (patch validity vs false-alarm rate, the
+  hiring view), and **Honesty vs audit price** (calibration, one minus twice the
+  Brier score, against defender spend per round).
+- Each chart carries field-median crosshairs with named quadrants, a log/linear
+  toggle on the money axes, dot size by rounds played and house colour. Hover a
+  dot for its two plotted values plus record; click it to open the champion
+  account. Champions missing a plotted axis are left out and counted in the
+  note — never plotted with an invented zero.
+- All scales, ticks, medians and frontiers are computed client-side from the
+  arena-data payload, so a new season redraws every chart with no edits.
+  `standings.py` injects the empty `#ia-compare` host around the untouched
+  template.
+
 ## 0.4.4 — 2026-10-23 — the board answers a founder
 
 ### Board

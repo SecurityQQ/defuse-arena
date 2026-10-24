@@ -676,6 +676,11 @@ CHALLENGES = '<section class="ia-challenges" id="ia-challenges"></section>'
 # client-side from the arena-data payload; the host is injected here because
 # the template itself stays untouched.
 BRIEF = '<section class="ia-brief" id="ia-brief"></section>'
+
+# Compare: scatter maps of the whole field, one dot per champion — skill
+# vs price with a Pareto frontier, and the applied trade-off views. Same
+# contract: numbers from the payload, host injected around the template.
+COMPARE = '<section class="ia-compare" id="ia-compare"></section>'
 GAME_DETAIL = '<div id="ia-game-detail" hidden></div>'
 
 # Page styles and behaviour live next to the template in web/, so this file
@@ -693,7 +698,7 @@ rendered = rendered.replace(
 )
 assert "  <footer>" in rendered, "page footer not found"
 rendered = rendered.replace(
-    "  <footer>", "  " + BRIEF + "\n\n  " + CHALLENGES + "\n\n  <footer>", 1,
+    "  <footer>", "  " + COMPARE + "\n\n  " + BRIEF + "\n\n  " + CHALLENGES + "\n\n  <footer>", 1,
 )
 rendered = rendered.replace("</head>", EXTRA_HEAD + "</head>", 1)
 rendered = rendered.replace("</body>", EXTRA_JS + "</body>", 1)

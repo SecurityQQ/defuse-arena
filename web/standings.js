@@ -1432,10 +1432,245 @@ and useful answer. Silence is not.`
 
   renderBrief();
 
+  // =====================================================================
+  // Compare: scatter maps of the whole field, one dot per champion.
+  // The flagship chart is the capability-vs-price scatter with a Pareto
+  // frontier and the most attractive quadrant shaded; the others are the
+  // applied trade-offs a founder actually asks about. Hover a dot for its
+  // numbers, click it for the champion account. All values come from the
+  // payload; nothing is typed in.
+  // =====================================================================
+  const cmpHost = document.getElementById("ia-compare");
+  const cmpState = { chart: "value", log: true };
+
+  const niceStep = raw => {
+    const exp = Math.floor(Math.log10(raw));
+    const frac = raw / Math.pow(10, exp);
+    return (frac <= 1 ? 1 : frac <= 2 ? 2 : frac <= 2.5 ? 2.5 : frac <= 5 ? 5 : 10) * Math.pow(10, exp);
+  };
+  const linearTicks = (lo, hi, n) => {
+    const step = niceStep((hi - lo) / Math.max(2, n));
+    const first = Math.ceil(lo / step) * step;
+    const out = [];
+    for (let v = first; v <= hi + step * 1e-6; v += step) out.push(+v.toFixed(6));
+    return out;
+  };
+  const moneyTicks = (lo, hi, log) => (log
+    ? [0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20].filter(v => v >= lo && v <= hi)
+    : linearTicks(lo, hi, 5));
+
+  const CMP_CHARTS = [
+    {
+      id: "value", label: "Skill vs price",
+      sub: "What each champion costs per round against how well it plays. The dashed gold line is the Pareto frontier \u2014 nothing above it is beaten on both axes \u2014 and the shaded corner is the most attractive quadrant: cheaper than the median and rated above it.",
+      x: { name: "spend per round", get: r => r.cost_per_round, fmt: usd, money: true, title: "$ per round, both roles" },
+      y: { name: "general rating", get: r => r.rating, fmt: v => v.toFixed(0), title: "general rating" },
+      frontier: "nw", shade: "nw",
+      corners: { nw: "cheap and strong", ne: "strong but pricey", sw: "cheap but weak", se: "pricey and weak" }
+    },
+    {
+      id: "dual", label: "Sword vs shield",
+      sub: "The two faces of every model: how often its attacks survived the season's audits, against how often it closed a planted bug as defender. Top right is dangerous in both directions.",
+      x: { name: "attack survival", get: r => r.attack_survival, fmt: pct, share: true, title: "audits its attacks survive" },
+      y: { name: "patch validity", get: r => r.patch_validity, fmt: pct, share: true, title: "planted bugs it closes" },
+      corners: { nw: "quiet writer, closes bugs", ne: "dangerous both ways", sw: "harmless", se: "loud writer, weak reviewer" }
+    },
+    {
+      id: "review", label: "Catch vs noise",
+      sub: "The hiring view: planted bugs closed against false alarms raised on clean code. The shaded corner is the auditor you want \u2014 it catches what is there and stays silent on what is not.",
+      x: { name: "patch validity", get: r => r.patch_validity, fmt: pct, share: true, title: "planted bugs it closes" },
+      y: { name: "false alarm rate", get: r => r.fpr, fmt: pct, share: true, title: "false alarms on clean code" },
+      frontier: "se", shade: "se",
+      corners: { nw: "alarms, no catches", ne: "alarmist", sw: "quiet but blind", se: "the auditor to hire" }
+    },
+    {
+      id: "honest", label: "Honesty vs audit price",
+      sub: "Calibration \u2014 one minus twice the Brier score, how honest a model is about its own doubt \u2014 against what one audit by that model costs. A vague reviewer is cheap in dollars and expensive in attention.",
+      x: { name: "spend per audit", get: r => r.def.rounds ? r.def.cost / r.def.rounds : null, fmt: usd, money: true, title: "$ per defender round" },
+      y: { name: "calibration", get: r => r.brier ? Math.max(0, 1 - 2 * r.brier) : null, fmt: pct, share: true, title: "calibration (1 \u2212 2\u00b7Brier)" },
+      frontier: "nw", shade: "nw",
+      corners: { nw: "cheap and honest", ne: "honest but pricey", sw: "cheap but vague", se: "pricey and vague" }
+    }
+  ];
+
+  const cmpPts = def => {
+    const pts = [];
+    for (const r of CHAMPS) {
+      const x = def.x.get(r), y = def.y.get(r);
+      if (x == null || y == null || !isFinite(x) || !isFinite(y)) continue;
+      pts.push({ row: r, agent: r.agent, x, y });
+    }
+    return pts.sort((a, b) => a.x - b.x);
+  };
+
+  const cmpDomain = (vals, ax) => {
+    const lo = Math.min(...vals), hi = Math.max(...vals);
+    if (ax.share) return [0, 1];
+    if (ax.money && cmpState.log) return [lo * 0.6, hi * 1.7];
+    const pad = (hi - lo) * 0.12 || 1;
+    return [Math.max(0, lo - pad), hi + pad];
+  };
+
+  const cmpScaleFn = (lo, hi, log) => {
+    if (!log || lo <= 0) return v => (v - lo) / (hi - lo || 1);
+    const l0 = Math.log10(lo), l1 = Math.log10(hi);
+    return v => (Math.log10(v) - l0) / (l1 - l0);
+  };
+
+  const cmpTicks = (lo, hi, ax) => ax.share ? [0, 0.25, 0.5, 0.75, 1]
+    : ax.money ? moneyTicks(lo, hi, cmpState.log)
+    : linearTicks(lo, hi, 5);
+
+  // Non-dominated points for a given best-corner: "nw" = min x, max y;
+  // "se" = max x, min y. Returns a staircase to draw left to right.
+  const cmpFrontier = (pts, dir) => {
+    const k = dir === "se" ? -1 : 1;
+    let best = -Infinity;
+    const out = [];
+    for (const p of pts) {
+      const v = k * p.y;
+      if (v > best) { out.push(p); best = v; }
+    }
+    return out;
+  };
+
+  const median = vals => {
+    const s = vals.slice().sort((a, b) => a - b);
+    return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
+  };
+
+  function renderCompare() {
+    if (!cmpHost) return;
+    if (!CHAMPS.length) {
+      cmpHost.innerHTML = `<div class="ia-cmp-head"><div>
+        <div class="ia-vault-title">Compare</div>
+        <div class="ia-vault-sub">No champion has played in ${DATA.season_id || "this season"} yet, so there is nothing to plot. Run a match first.</div>
+      </div></div>`;
+      return;
+    }
+    const def = CMP_CHARTS.find(c => c.id === cmpState.chart) || CMP_CHARTS[0];
+    const chips = `<div class="ia-cmp-chips">${CMP_CHARTS.map(c =>
+      `<button class="ia-cmp-chip${c.id === def.id ? " on" : ""}" data-cmp-chart="${c.id}">${c.label}</button>`).join("")}</div>
+      ${def.x.money ? `<button class="ia-cmp-chip scale" data-cmp-scale>${cmpState.log ? "log scale" : "linear scale"}</button>` : ""}`;
+
+    const pts = cmpPts(def);
+    if (!pts.length) {
+      cmpHost.innerHTML = `<div class="ia-cmp-head"><div>
+          <div class="ia-vault-title">Compare \u00b7 ${def.label}</div>
+          <div class="ia-vault-sub">${def.sub}</div>
+        </div></div>
+        <div class="ia-cmp-bar">${chips}</div>
+        <div class="ia-h2h-empty" style="margin-top:14px">No champion in ${DATA.season_id || "this season"} has both a ${def.x.name} and a ${def.y.name} to plot.</div>`;
+      return;
+    }
+
+    const W = 780, H = 470, M = { l: 60, r: 20, t: 14, b: 48 };
+    const pw = W - M.l - M.r, ph = H - M.t - M.b;
+    const [xlo, xhi] = cmpDomain(pts.map(p => p.x), def.x);
+    const [ylo, yhi] = cmpDomain(pts.map(p => p.y), def.y);
+    const sx = cmpScaleFn(xlo, xhi, def.x.money && cmpState.log);
+    const sy = cmpScaleFn(ylo, yhi, false);
+    const X = v => M.l + sx(v) * pw;
+    const Y = v => M.t + (1 - sy(v)) * ph;
+
+    const grid = cmpTicks(xlo, xhi, def.x).map(v =>
+      `<line class="ia-cmp-grid" x1="${X(v).toFixed(1)}" y1="${M.t}" x2="${X(v).toFixed(1)}" y2="${M.t + ph}"/>`).join("") +
+      cmpTicks(ylo, yhi, def.y).map(v =>
+        `<line class="ia-cmp-grid" x1="${M.l}" y1="${Y(v).toFixed(1)}" x2="${M.l + pw}" y2="${Y(v).toFixed(1)}"/>`).join("");
+    const ticksX = cmpTicks(xlo, xhi, def.x).map(v =>
+      `<text class="ia-cmp-tick" x="${X(v).toFixed(1)}" y="${M.t + ph + 17}" text-anchor="middle">${def.x.fmt(v)}</text>`).join("");
+    const ticksY = cmpTicks(ylo, yhi, def.y).map(v =>
+      `<text class="ia-cmp-tick" x="${M.l - 9}" y="${(Y(v) + 3).toFixed(1)}" text-anchor="end">${def.y.fmt(v)}</text>`).join("");
+    const axisTitles = `<text class="ia-cmp-axis" x="${M.l + pw / 2}" y="${H - 8}" text-anchor="middle">${def.x.title}</text>
+      <text class="ia-cmp-axis" transform="rotate(-90)" x="${-(M.t + ph / 2)}" y="12" text-anchor="middle">${def.y.title}</text>`;
+
+    const xMed = median(pts.map(p => p.x)), yMed = median(pts.map(p => p.y));
+    let shade = "";
+    if (def.shade) {
+      const xm = X(xMed).toFixed(1), ym = Y(yMed).toFixed(1);
+      shade = def.shade === "nw"
+        ? `<rect class="ia-cmp-shade" x="${M.l}" y="${M.t}" width="${xm - M.l}" height="${ym - M.t}"/>`
+        : `<rect class="ia-cmp-shade" x="${xm}" y="${ym}" width="${M.l + pw - xm}" height="${M.t + ph - ym}"/>`;
+    }
+    const cross = `<line class="ia-cmp-cross" x1="${X(xMed).toFixed(1)}" y1="${M.t}" x2="${X(xMed).toFixed(1)}" y2="${M.t + ph}"/>
+      <line class="ia-cmp-cross" x1="${M.l}" y1="${Y(yMed).toFixed(1)}" x2="${M.l + pw}" y2="${Y(yMed).toFixed(1)}"/>`;
+
+    const corner = (pos, txt) => {
+      const cx = pos.includes("w") ? M.l + 10 : M.l + pw - 10;
+      const cy = pos[0] === "n" ? M.t + 15 : M.t + ph - 8;
+      return `<text class="ia-cmp-corner" x="${cx}" y="${cy}" text-anchor="${pos.includes("w") ? "start" : "end"}">${txt}</text>`;
+    };
+    const corners = Object.entries(def.corners || {}).map(([p, t]) => corner(p, t)).join("");
+
+    let frontier = "";
+    if (def.frontier && pts.length > 1) {
+      const f = cmpFrontier(pts, def.frontier);
+      if (f.length > 1) frontier = `<polyline class="ia-cmp-frontier" points="${f.map(p => `${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join(" ")}"/>`;
+    }
+
+    const dots = pts.map((p, i) => {
+      const c = champOf(p.agent);
+      const rad = Math.min(13, 5 + Math.sqrt(p.row.rounds || 1) * 1.5);
+      const px = X(p.x), py = Y(p.y);
+      const lx = px + rad + 5;
+      const flip = lx > W - M.r - 84;
+      const ly = py + (i % 2 ? -(rad + 4) : rad + 10);
+      return `<g class="ia-cmp-dot" data-cmp-agent="${p.agent}" style="--accent:${c.accent}" tabindex="0" role="button" aria-label="${c.name}">
+        <circle class="halo" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${(rad + 5).toFixed(1)}"/>
+        <circle class="core" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${rad.toFixed(1)}"/>
+        <text class="ia-cmp-lbl" x="${flip ? (px - rad - 5).toFixed(1) : lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${flip ? "end" : "start"}">${c.name}</text>
+      </g>`;
+    }).join("");
+
+    cmpHost.innerHTML = `<div class="ia-cmp-head"><div>
+        <div class="ia-vault-title">Compare \u00b7 ${def.label}</div>
+        <div class="ia-vault-sub">${def.sub}</div>
+      </div></div>
+      <div class="ia-cmp-bar">${chips}</div>
+      <div class="ia-cmp-plot"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${def.label}: one dot per champion">
+        ${shade}${grid}${cross}${frontier}${corners}${ticksX}${ticksY}${axisTitles}${dots}
+      </svg></div>
+      <p class="ia-brief-note">${pts.length} of ${CHAMPS.length} played champions plotted \u2014 the rest lack a ${def.x.name} or a ${def.y.name} this season. Dot size is rounds played, colour is the house, dashed lines are the field median. Hover a dot for its numbers; click it to open the champion account.</p>`;
+  }
+
+  if (cmpHost) {
+    cmpHost.addEventListener("click", ev => {
+      const chip = ev.target.closest("[data-cmp-chart]");
+      if (chip) { cmpState.chart = chip.dataset.cmpChart; renderCompare(); return; }
+      if (ev.target.closest("[data-cmp-scale]")) { cmpState.log = !cmpState.log; renderCompare(); return; }
+      const dot = ev.target.closest("[data-cmp-agent]");
+      if (dot) openAccount(dot.dataset.cmpAgent);
+    });
+    cmpHost.addEventListener("keydown", ev => {
+      if (ev.key !== "Enter" && ev.key !== " ") return;
+      const dot = ev.target.closest("[data-cmp-agent]");
+      if (dot) { ev.preventDefault(); openAccount(dot.dataset.cmpAgent); }
+    });
+    cmpHost.addEventListener("mouseover", ev => {
+      const dot = ev.target.closest("[data-cmp-agent]");
+      if (!dot) return;
+      const r = CHAMPS.find(x => x.agent === dot.dataset.cmpAgent);
+      const def = CMP_CHARTS.find(c => c.id === cmpState.chart) || CMP_CHARTS[0];
+      if (!r) return;
+      tip.innerHTML = `<b>${champOf(r.agent).name}</b>
+        <p>${r.model_name || r.model || ""}</p>
+        <p>${def.x.name}: <span class="ia-cmp-num">${def.x.fmt(def.x.get(r))}</span> \u00b7 ${def.y.name}: <span class="ia-cmp-num">${def.y.fmt(def.y.get(r))}</span></p>
+        <p class="ia-who">${r.rounds} rounds \u00b7 ${r.wins}\u2013${r.losses} \u00b7 rating ${r.rating.toFixed(1)}</p>`;
+      tip.hidden = false;
+      move(ev);
+    });
+    cmpHost.addEventListener("mouseout", ev => {
+      if (ev.target.closest("[data-cmp-agent]")) tip.hidden = true;
+    });
+  }
+
+  renderCompare();
+
   // ---------------------------------------------------------------- tabs
   const TAB_DEFS = [
     ["board", "Board"],
     ["brief", "Founder Brief"],
+    ["compare", "Compare"],
     ["draft", "Draft"],
     ["roster", "Roster"],
     ["log", "Match log"],
@@ -1446,6 +1681,7 @@ and useful answer. Silence is not.`
     board: [document.getElementById("summary"), document.getElementById("podium"),
             standingsTable ? standingsTable.closest("section") : null],
     brief: [document.getElementById("ia-brief")],
+    compare: [document.getElementById("ia-compare")],
     draft: [document.getElementById("ia-draft")],
     roster: [document.getElementById("ia-roster")],
     log: [document.getElementById("ledger-panel")],

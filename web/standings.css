@@ -771,3 +771,52 @@
   font-family:var(--font-mono); font-size:9.5px; color:var(--teal); opacity:.85; }
 .ia-champ-model { display:block; margin-top:3px; font-family:var(--font-mono);
   font-size:9px; color:var(--teal); opacity:.9; letter-spacing:.01em; }
+
+/* ===================== Compare (scatter maps) =======================
+   One dot per champion on applied axes: skill vs price with a Pareto
+   frontier (the Artificial-Analysis reading), the two faces of each
+   model, and the reviewer trade-offs. Median crosshairs split the field
+   into labelled quadrants; the best corner is shaded. */
+.ia-compare { margin:0 0 14px; padding:18px 20px 22px; border-radius:10px;
+  background:linear-gradient(160deg, rgba(15,27,45,.95), rgba(6,16,31,.95));
+  border:1px solid var(--line); position:relative; }
+.ia-compare::before { content:""; position:absolute; inset:5px; border-radius:7px;
+  border:1px solid var(--line-soft); pointer-events:none; }
+.ia-cmp-bar { display:flex; justify-content:space-between; align-items:center;
+  gap:10px; flex-wrap:wrap; margin:14px 0 12px; }
+.ia-cmp-chips { display:flex; gap:8px; flex-wrap:wrap; }
+.ia-cmp-chip { font-family:var(--font-display); font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; padding:7px 13px; border-radius:5px; cursor:pointer;
+  color:var(--muted); background:rgba(200,170,110,.05); border:1px solid rgba(200,170,110,.24);
+  transition:color .15s, background .15s, border-color .15s; }
+.ia-cmp-chip:hover { color:var(--gold-2); border-color:var(--gold); }
+.ia-cmp-chip.on { color:var(--gold-2);
+  background:linear-gradient(180deg, rgba(200,170,110,.16), rgba(200,170,110,.04));
+  box-shadow:inset 0 -2px 0 var(--gold); }
+.ia-cmp-chip.scale { margin-left:auto; color:var(--teal);
+  border-color:rgba(10,200,185,.3); background:rgba(10,200,185,.06); }
+.ia-cmp-plot { border:1px solid rgba(200,170,110,.2); border-radius:8px;
+  background:linear-gradient(180deg, rgba(1,10,19,.5), rgba(1,8,16,.78)); overflow:hidden; }
+.ia-cmp-plot svg { display:block; width:100%; height:auto; }
+.ia-cmp-grid { stroke:rgba(200,170,110,.08); stroke-width:1; }
+.ia-cmp-tick { fill:var(--muted); font-family:var(--font-mono); font-size:9.5px; }
+.ia-cmp-axis { fill:var(--muted); font-family:var(--font-display); font-size:9px;
+  letter-spacing:.14em; text-transform:uppercase; opacity:.85; }
+.ia-cmp-corner { fill:rgba(200,170,110,.5); font-family:var(--font-display);
+  font-size:8.5px; letter-spacing:.14em; text-transform:uppercase; }
+.ia-cmp-cross { stroke:rgba(200,170,110,.22); stroke-width:1; stroke-dasharray:4 4; }
+.ia-cmp-shade { fill:rgba(10,200,185,.05); stroke:rgba(10,200,185,.18);
+  stroke-width:1; stroke-dasharray:3 3; }
+.ia-cmp-frontier { fill:none; stroke:var(--gold); stroke-width:1.6; stroke-dasharray:7 5;
+  filter:drop-shadow(0 0 6px rgba(200,170,110,.55)); }
+.ia-cmp-dot { cursor:pointer; transform-box:fill-box; transform-origin:center;
+  transition:transform .15s; }
+.ia-cmp-dot:hover, .ia-cmp-dot:focus-visible { transform:scale(1.28); }
+.ia-cmp-dot .halo { fill:color-mix(in srgb, var(--accent,#C8AA6E) 22%, transparent); }
+.ia-cmp-dot .core { fill:color-mix(in srgb, var(--accent,#C8AA6E) 78%, #050D1A);
+  stroke:rgba(240,230,210,.85); stroke-width:1.2; }
+.ia-cmp-lbl { fill:var(--gold-2); font-family:var(--font-display); font-size:9.5px;
+  letter-spacing:.04em; paint-order:stroke; stroke:rgba(1,8,16,.85); stroke-width:2.5px; }
+.ia-cmp-dot:hover .ia-cmp-lbl, .ia-cmp-dot:focus-visible .ia-cmp-lbl { fill:#F0E6D2; }
+#ia-tip .ia-cmp-num { color:var(--gold); font-family:var(--font-mono); font-size:11.5px; }
+@media (max-width:700px) { .ia-compare { padding:14px; } }
