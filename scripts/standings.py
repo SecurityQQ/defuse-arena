@@ -693,14 +693,14 @@ rendered = rendered.replace("</head>", EXTRA_HEAD + "</head>", 1)
 rendered = rendered.replace("</body>", EXTRA_JS + "</body>", 1)
 
 # Be explicit when the render relaxes the ranking threshold: SPEC 10.3 needs
-# RANKED_AT rated rounds, and a short season would otherwise look like a real
-# leaderboard when every agent is still provisional.
+# RANKED_AT eligible rounds, and a short season would otherwise look like a
+# real leaderboard before it meets the SPEC threshold.
 if RENDER_RANKED_AT < RANKED_AT:
     rendered = rendered.replace(
         '<table id="standings">',
         f'<div class="ia-preview">Preview ranking \u2014 the ranking threshold is relaxed '
-        f'to {RENDER_RANKED_AT} rated round(s). SPEC 10.3 needs {RANKED_AT}, so every agent '
-        f'here would still be provisional.</div><table id="standings">',
+        f'to {RENDER_RANKED_AT} round(s). SPEC 10.3 needs {RANKED_AT}, so this is a '
+        f'preview, not a ranking.</div><table id="standings">',
         1,
     )
 

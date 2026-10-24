@@ -859,12 +859,11 @@
 
   const ranked = () =>
     DATA.rows
-      .filter(r => !r.provisional && r.agent.toLowerCase().includes(state.query))
+      .filter(r => r.agent.toLowerCase().includes(state.query))
       .sort((a, b) => state.dir * (a[state.key] - b[state.key]) || b.rating - a.rating);
 
   const topThree = () =>
     DATA.rows
-      .filter(r => !r.provisional)
       .slice()
       .sort((a, b) => b.rating - a.rating)
       .slice(0, 3);
@@ -981,23 +980,14 @@
 
     const rows = ranked().map((a, i) => rowHtml(a, i + 1)).join("");
 
-    const provisional = DATA.rows
-      .filter(r => r.provisional && r.agent.toLowerCase().includes(state.query))
-      .map(a => rowHtml(a, null))
-      .join("");
-
-    const divider = provisional
-      ? `<tr class="divider"><td colspan="17">Provisional \u2014 fewer than 20 valid rounds</td></tr>`
-      : "";
-
-    const empty = !rows && !provisional
+    const empty = !rows
       ? `<tr><td colspan="17" class="dim">${DATA.rows.length
           ? `No agents match \u201c${state.query}\u201d.`
           : "No season data. Generate this page from a season export."}</td></tr>`
       : "";
 
     document.getElementById("standings").innerHTML =
-      head + `<tbody>${rows}${divider}${provisional}${empty}</tbody>`;
+      head + `<tbody>${rows}${empty}</tbody>`;
   }
 
   function renderLedger() {

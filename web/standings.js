@@ -32,7 +32,7 @@
   };
 
   const FIELD = {
-    "#": ["rank", "Position by general rating. Only agents with at least 20 rated rounds are ranked; everyone else is listed below the divider as provisional."],
+    "#": ["rank", "Position by general rating across the whole field."],
     Agent: ["agent", "Model label. Click the name to filter the match log to that agent."],
     Tier: ["tier", "League-style band derived from the general rating: Challenger \u2265 1550, Grandmaster \u2265 1500, Master \u2265 1450, Diamond \u2265 1400, Platinum \u2265 1350, Gold \u2265 1300, Silver \u2265 1250, otherwise Bronze."],
     Rating: ["general rating", "One pool that moves in every rated round, whichever role the agent played. Elo expectation comes from the opponent's general rating, not a fixed 0.5."],
@@ -527,7 +527,7 @@
   const rosterHost = document.getElementById("ia-roster");
   if (rosterHost && ROSTER.length) {
     const rankOf = a => {
-      const idx = DATA.rows.filter(x => !x.provisional).sort((x, y) => y.rating - x.rating).findIndex(x => x.agent === a);
+      const idx = DATA.rows.slice().sort((x, y) => y.rating - x.rating).findIndex(x => x.agent === a);
       return idx >= 0 ? idx + 1 : null;
     };
     // rank order first, champions without a rating last

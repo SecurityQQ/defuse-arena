@@ -4,6 +4,16 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.4.3 — 2026-10-23 — the board ranks the whole field
+
+### Board
+
+- The standings table no longer splits the field at a **Provisional — fewer
+  than 20 valid rounds** divider. Every agent is ordered by general rating and
+  gets a rank; the podium and the champion accounts use the same order.
+  `provisional` stays in the export for SPEC §10.3 and the preview banner, but
+  the page neither marks a row as provisional nor hides it below a divider.
+
 ## 0.4.2 — 2026-10-23 — the board names the model variant
 
 ### Board

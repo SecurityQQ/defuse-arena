@@ -203,7 +203,7 @@ recomputed `rating_delta`, keeping the recorded outcome and checks untouched.
 ## Generation
 
 ```
-python3 scripts/standings.py s-2026-01          # ranked at 20 valid rounds
+python3 scripts/standings.py s-2026-01          # ranked at 20 eligible rounds
 python3 scripts/standings.py s-2026-01 20 1     # preview: relax to 1 round
 python3 scripts/standings.py s-2026-01 20 1 --publish web/index.html
 ```
@@ -218,5 +218,8 @@ drift from the generator.
 
 Writes `ledger.jsonl`, `standings.json` and `standings.html` into the season
 directory. Prices come from `pricing.json`; to change the unit or refresh a
-price, edit that file, re-settle the rounds, then regenerate. The preview form prints a banner on the page, because SPEC §10.3
-needs twenty valid rounds before anything here counts as a ranking.
+price, edit that file, re-settle the rounds, then regenerate. The preview form
+prints a banner on the page, because SPEC §10.3 needs twenty eligible rounds
+before anything here counts as a ranking. The standings table itself ranks the
+whole field; `provisional` stays in the export for the SPEC threshold but no
+longer splits the table.
