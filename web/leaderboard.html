@@ -1078,10 +1078,10 @@
     ["net_chips", "Chips", "net_chips"],
   ];
 
-  // One role cell: the rating, then the θ=1 record behind it, its 95% CI and
-  // the role forfeits the pool also prices. A model with no played round in
-  // the pool still carries a rating — it is forfeits only — so the cell says
-  // so instead of inventing a zero.
+  // One role cell: the rating, then the θ=1 record behind it **out of the
+  // rounds the model actually played in that role**. The denominator matters:
+  // 21 played rounds can hold only 4 pentests, because the coin sent the rest
+  // to θ=0, and those are the clean diagnostic, not this pool.
   function roleCell(a, kind) {
     const att = kind === "att";
     const role = att ? a.att : a.def;
@@ -1091,17 +1091,22 @@
     const losses = att ? role.exploit_losses : role.patch_losses;
     const forf = att ? role.exploit_forfeits : role.patch_forfeits;
     const played = att ? role.exploit_rounds : role.patch_rounds;
+    const cleanRating = att ? a.rating_clean_att : a.rating_clean_def;
+    const cleanWins = role.clean_wins;
+    const cleanLosses = role.clean_losses;
     const name = att ? "pentest" : "audit";
-    const game = att ? "\u03b8=1 attack" : "\u03b8=1 defence";
+    const game = att ? "attack" : "defence";
     const title = [
-      `${name} rating \u00b7 ${played} played ${game} round(s) \u00b7 ${wins}\u2013${losses}`,
+      `${name} rating \u00b7 ${played} of ${role.rounds} ${game} rounds were \u03b8=1 \u00b7 ${wins}\u2013${losses}`,
       forf ? `${forf} own forfeit(s) priced as a loss at ${DATA.role_forfeit_weight}\u00d7` : "",
+      `${role.clean_rounds} \u03b8=0 clean round(s): ${cleanWins}\u2013${cleanLosses} \u2014 a separate diagnostic, `
+        + `rating ${cleanRating.toFixed(1)}`,
       `95% CI \u00b1${ci.toFixed(0)}`,
       played ? "" : "no played round in this pool: the rating is forfeits only",
     ].filter(Boolean).join(" \u00b7 ");
     return `<td class="role ${played ? "" : "none"}" title="${title}">
       <b>${rating.toFixed(1)}</b>
-      <span>${wins}\u2013${losses} \u00b7 \u00b1${ci.toFixed(0)}${forf ? ` \u00b7 <i>${forf}F</i>` : ""}</span>
+      <span>${wins}\u2013${losses} / ${role.rounds} \u00b7 \u00b1${ci.toFixed(0)}${forf ? ` \u00b7 <i>${forf}F</i>` : ""}</span>
     </td>`;
   }
 
@@ -1111,8 +1116,9 @@
       ? `<span class="rank">\u2014</span>`
       : `<span class="rank ${rank <= 3 ? "top" + rank : ""}">${rank}</span>`;
     const wlTitle = `played ${a.wins}\u2013${a.losses} \u00b7 as attacker ${a.att.wins}\u2013${a.att.losses} `
-      + `(${a.att.exploit_wins}\u2013${a.att.exploit_losses} on \u03b8=1) \u00b7 as defender `
-      + `${a.def.wins}\u2013${a.def.losses} (${a.def.patch_wins}\u2013${a.def.patch_losses} on \u03b8=1)`;
+      + `(\u03b8=1 ${a.att.exploit_wins}\u2013${a.att.exploit_losses}, \u03b8=0 ${a.att.clean_wins}\u2013${a.att.clean_losses}) `
+      + `\u00b7 as defender ${a.def.wins}\u2013${a.def.losses} `
+      + `(\u03b8=1 ${a.def.patch_wins}\u2013${a.def.patch_losses}, \u03b8=0 ${a.def.clean_wins}\u2013${a.def.clean_losses})`;
 
     return `<tr class="${rank && rank <= 3 ? "podium-row" : ""} ${rank == null ? "prov" : ""}">
       <td>${rankHtml}</td>

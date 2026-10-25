@@ -44,7 +44,10 @@ plain markdown — no HTML, no links to local files.
   coloured dot beside the agent name, and the win rate is the `W–L` cell.
 - Each role cell carries the rating **and** the θ=1 record that feeds it, its
   95% interval and the role forfeits the pool prices: `1670.6` over
-  `5–0 · ±418`. A model with no played round in the pool is dimmed and says
+  `5–0 / 9 · ±418`. The record is shown out of the rounds the model played in
+  that role, because the θ=1 sample and the role record have different
+  denominators — the coin sends most rounds to θ=0, and those are the clean
+  diagnostic. A model with no played round in the pool is dimmed and says
   "forfeits only" instead of showing a number with no sample behind it.
 - `W–L` carries the overall played record and the role split underneath:
   `12–5` over `A 4–4 · D 8–1`. The two role records add up to the overall one,

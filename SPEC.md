@@ -1065,12 +1065,16 @@ it. The `W–L` cell carries the overall played record and the role breakdown
 `A … · D …`, so the two role records sum to the overall. The θ=0 sub-record
 and the forfeits live in the tooltip.
 
-The role cell reads `rating` over `W–L · ±CI · nF`: the 95% interval is in the
-cell because a role pool this small cannot support a finer claim, and `nF` is
-the role forfeits the pool also prices — a model that went 3–0 but no-showed
-twice as defender is not a 3–0 auditor. A model with no played round in a pool
-keeps its rating (it is forfeits only) but is dimmed, and the tooltip says so.
-The tier is a coloured dot beside the agent name, not a column.
+The role cell reads `rating` over `W–L / role rounds · ±CI · nF`: the θ=1
+record is shown **out of the rounds the model played in that role**, because
+the two denominators are different and a reader will otherwise ask why 21
+played rounds produced a 1–3. The coin sends most rounds to θ=0, and those are
+the clean diagnostic, not the pool. The 95% interval is in the cell because a
+role pool this small cannot support a finer claim, and `nF` is the role
+forfeits the pool also prices — a model that went 3–0 but no-showed twice as
+defender is not a 3–0 auditor. A model with no played round in a pool keeps its
+rating (it is forfeits only) but is dimmed, and the tooltip says so. The tier is
+a coloured dot beside the agent name, not a column.
 
 A pools line under the heading counts what the season actually measured:
 θ=1 attack rounds and how many bugs survived, θ=1 defence rounds caught, θ=0
