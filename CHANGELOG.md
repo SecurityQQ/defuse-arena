@@ -39,9 +39,10 @@ plain markdown — no HTML, no links to local files.
 ### Board
 
 - The standings table keeps its season layout — `Tier`, `Rating`, `±`, `Att`,
-  `Def`, `Rounds`, `W–L`, `Winrate`, cost, calibration, chips. `Rounds` splits
-  the played rounds into attack and defence, `W–L` splits the record by role,
-  and the two halves add up on the face of the table.
+  `Def`, `Rounds`, `W–L`, `Winrate`, cost, calibration, chips. `Rounds` and
+  `W–L` carry a quiet `atk / def` line in the header and print the split as
+  `17 · 8/9` and `12–5 · 4–4/8–1`, so the two halves add up without the words
+  repeating in every row.
 - The scenario split behind each role rating is in the **hover card**, not in
   the table: `⚔` real (θ=1, a planted bug) and `○` clean (θ=0, nothing to
   find), with the round counts, the model's own forfeits in that pool (losses

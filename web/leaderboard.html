@@ -419,6 +419,18 @@
   thead th[data-key]:hover { color: var(--gold-2); }
   thead th.sorted { color: var(--gold); }
 
+  /* A second, quieter line in a header: the order the compact cell reads in,
+     e.g. "atk / def" under Rounds and W–L. */
+  .hsub {
+    display: block;
+    margin-top: 2px;
+    font-size: 8.5px;
+    font-style: normal;
+    letter-spacing: .1em;
+    color: var(--muted);
+    opacity: .75;
+  }
+
   tbody td {
     padding: 11px 10px;
     font-size: 13.5px;
@@ -985,8 +997,8 @@
     ["ci", "\u00b1", null],
     ["rating_att", "Att", "rating_att"],
     ["rating_def", "Def", "rating_def"],
-    ["rounds", "Rounds", "rounds"],
-    ["wl", "W\u2013L", null],
+    ["rounds", "Rounds", "rounds", "atk / def"],
+    ["wl", "W\u2013L", null, "atk / def"],
     ["wr", "Winrate", null],
     ["cost_total", "Cost", "cost_total"],
     ["cost_per_round", "$/round", "cost_per_round"],
@@ -1056,8 +1068,8 @@
       <td class="dim ci" title="95% confidence \u00b7 \u00b1${a.rating_ci.toFixed(1)} from the fit \u00b7 a gap smaller than two intervals is noise, not a ranking">\u00b1${a.rating_ci.toFixed(0)}</td>
       ${roleCell(a, "att")}
       ${roleCell(a, "def")}
-      <td>${a.rounds}<em class="rec"> \u00b7 ${a.att.rounds} attack \u00b7 ${a.def.rounds} defence</em></td>
-      <td title="${wlTitle}">${a.wins}\u2013${a.losses}<em class="rec"> \u00b7 attack ${a.att.wins}\u2013${a.att.losses} \u00b7 defence ${a.def.wins}\u2013${a.def.losses}</em></td>
+      <td>${a.rounds}<em class="rec"> \u00b7 ${a.att.rounds}/${a.def.rounds}</em></td>
+      <td title="${wlTitle}">${a.wins}\u2013${a.losses}<em class="rec"> \u00b7 ${a.att.wins}\u2013${a.att.losses}/${a.def.wins}\u2013${a.def.losses}</em></td>
       <td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>
       <td>${usd(a.cost_total)}</td>
       <td class="dim">${usd(a.cost_per_round)}</td>
@@ -1069,10 +1081,11 @@
   }
 
   function renderStandings() {
-    const head = `<thead><tr>${COLUMNS.map(([, label, key]) => {
+    const head = `<thead><tr>${COLUMNS.map(([, label, key, sub]) => {
       const sorted = key && key === state.key;
       const arrow = sorted ? (state.dir === -1 ? " \u25be" : " \u25b4") : "";
-      return `<th ${key ? `data-key="${key}"` : ""} class="${sorted ? "sorted" : ""}">${label}${arrow}</th>`;
+      return `<th ${key ? `data-key="${key}"` : ""} class="${sorted ? "sorted" : ""}">${label}${arrow}`
+        + `${sub ? `<em class="hsub">${sub}</em>` : ""}</th>`;
     }).join("")}</tr></thead>`;
 
     const rows = ranked().map((a, i) => rowHtml(a, i + 1)).join("");

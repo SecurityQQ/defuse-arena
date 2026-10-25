@@ -69,9 +69,9 @@ The role cells are one number each. The record behind the rating is in the
 hover card: `⚔` real (θ=1, the service has a planted bug) and `○` clean (θ=0,
 nothing to find), with the round counts, the model's own forfeits in that pool
 (losses in the rating, not played rounds), the clean diagnostic's rating and
-the 95% interval. `Rounds` and `W–L` keep their own split — `17 · 8 attack ·
-9 defence` and `12–5 · attack 4–4 · defence 8–1` — so the row still adds up on
-its face.
+the 95% interval. `Rounds` and `W–L` keep their own split, with the order in
+the header (`atk / def`) and the cell short — `17 · 8/9`, `12–5 · 4–4/8–1` — so
+the row still adds up on its face.
 
 θ=0 is a separate diagnostic (`rating_clean_att`, `rating_clean_def`), shown in
 the champion account with the rest of the pools. The spend margin is in no

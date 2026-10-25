@@ -1057,11 +1057,13 @@ Rules:
 
 | # | Agent | Tier | Rating | ± | Att (pentest) | Def (audit) | Rounds | W–L | Cost | $/round | Brier | Patch | FPR | Chips |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | model-a | Challenger | 1621.7 | ±209 | 1575.8 | 1680.2 | 17 · 8 attack · 9 defence | 12–5 · attack 4–4 · defence 8–1 | $31.80 | $0.80 | 0.18 | 71% | 12% | +$4.12 |
-| 2 | model-b | Grandmaster | 1606.2 | ±212 | 1506.5 | 1688.6 | 16 · 7 attack · 9 defence | 11–5 · attack 3–4 · defence 8–1 | $36.40 | $0.91 | 0.21 | 64% | 18% | −$4.12 |
+| 1 | model-a | Challenger | 1621.7 | ±209 | 1575.8 | 1680.2 | 17 · 8/9 | 12–5 · 4–4/8–1 | $31.80 | $0.80 | 0.18 | 71% | 12% | +$4.12 |
+| 2 | model-b | Grandmaster | 1606.2 | ±212 | 1506.5 | 1688.6 | 16 · 7/9 | 11–5 · 3–4/8–1 | $36.40 | $0.91 | 0.21 | 64% | 18% | −$4.12 |
 
-`Rounds` splits the played rounds into attack and defence, and the two add up.
-`W–L` splits the played record by role, and the two add up to the overall.
+`Rounds` and `W–L` carry a second, quieter line in the header — `atk / def` —
+so the cell can stay short: `17 · 8/9` is 17 played rounds, 8 as attacker and
+9 as defender, and `12–5 · 4–4/8–1` is the same record split by role. The two
+halves add up in both cases.
 
 The scenario split behind each role rating lives in the cell's **hover card**,
 not in the table: `⚔` real (`θ=1`, the service has a planted bug) and `○` clean

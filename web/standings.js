@@ -39,10 +39,10 @@
     "\u00b1": ["95% confidence", "Half-width of the 95% confidence interval from the fit. With 10\u201322 played rounds per model the top of the field overlaps: a gap smaller than the two intervals is noise, not a ranking."],
     Att: ["pentest rating", "The answer to \u201cwhich model should pentest\u201d: \u03b8=1 attack only, priced against the defender's defence rating. The cell carries the split: \u2694 real (\u03b8=1, a planted bug) and \u25cb clean (\u03b8=0, nothing to find). The rating is fitted on the \u2694 half only; nF is the model's own forfeits in that pool."],
     Def: ["audit rating", "The answer to \u201cwhich model should audit my code\u201d: \u03b8=1 defence only, priced against the attacker's attack rating. The cell carries the split: \u2694 real (\u03b8=1, a planted bug) and \u25cb clean (\u03b8=0, nothing to find). The rating is fitted on the \u2694 half only; nF is the model's own forfeits in that pool."],
-    Rounds: ["played rounds", "Rounds both sides played to a verdict (TP, TN, FP, FN, DISCOVERY), split into rounds as attacker and rounds as defender. No-shows, forfeits and voids are in the all-in table."],
+    Rounds: ["played rounds", "Rounds both sides played to a verdict (TP, TN, FP, FN, DISCOVERY), then atk / def: how many of them as attacker and as defender. The two add up to the total. No-shows, forfeits and voids are in the all-in table."],
     "No-show": ["no-shows", "ABSTAIN_A + ABSTAIN_D: a clean exit with no deliverable, barely any work. Counted separately from a forfeit so the two never double-count."],
     Forfeit: ["forfeits", "FAILED_A/D and FAULT_A: real work with no runnable deliverable, or an artifact that broke the round. Each is priced as a loss and a fee."],
-    "W\u2013L": ["played record", "Wins\u2013losses over played rounds only, split by role: rounds as attacker and rounds as defender, both coins. The two add up to the overall record, and each splits again into \u2694 real and \u25cb clean in the Att and Def cells. The all-in table below adds no-shows and forfeits as losses."],
+    "W\u2013L": ["played record", "Wins\u2013losses over played rounds only, then atk / def: the record as attacker and as defender. The two add up to the overall record, and each splits again into \u2694 real and \u25cb clean in the Att and Def hover cards. The all-in table below adds no-shows and forfeits as losses."],
     Winrate: ["win rate", "wins / (wins + losses) over played rounds only."],
     "All-inrating": ["all-in rating", "Pure win/loss Bradley-Terry over every non-void round, with no-shows and forfeits counted as losses. Opponent-weighted, so a forfeit against a stronger model costs less than one against a weaker model. It answers \u201cwho is reliable when it plays\u201d, not \u201cwho is the best model\u201d."],
     Scheduled: ["scheduled rounds", "Non-void participations: played + own no-shows + own forfeits + rounds the opponent forfeited."],
@@ -127,7 +127,11 @@
       const t = el.classList.contains("h") ? TIPS.THETA_H : TIPS.THETA_T;
       body = `<b>${t.title}</b><p>${t.what}</p>`;
     } else if (el.tagName === "TH") {
-      const f = FIELDN[norm(el.textContent)];
+      // A header can carry a quiet second line (the order a compact cell
+      // reads in); it is not part of the column's name.
+      const first = el.firstChild;
+      const label = first && first.nodeType === 3 ? first.textContent : el.textContent;
+      const f = FIELDN[norm(label)];
       if (!f) return false;
       body = `<b>${f[0]}</b><p>${f[1]}</p>`;
     } else if (el.classList.contains("k")) {
