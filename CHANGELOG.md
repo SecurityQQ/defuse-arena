@@ -4,6 +4,53 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.6.0 — 2026-10-25 — three ratings for three questions
+
+### Scoring
+
+- The leaderboard now answers three separate questions. `rating` is the
+  all-round played-only Bradley-Terry fit (θ=1 and θ=0). `rating_def` is the
+  audit rating: θ=1 defence only. `rating_att` is the pentest rating: θ=1
+  attack only. A good auditor is no longer assumed to be a good pentester.
+- **The spend margin is removed from every skill rating.** A cheap win is a
+  cheaper win, not a better one. The margin stays in the chip ledger,
+  `$/round` and the Compare tab; a margin-weighted view, if kept, is a
+  separate `rating_efficiency` column and never the ranking. The 0.5.0
+  margin-weighted `rating` and the `rating_pure` split are retired.
+- Attack and defence are θ=1 only. `rating_att` scores `FN` as a win and `TP`
+  as a loss; an attacker forfeit is a loss at weight 1.5. `rating_def` scores
+  `TP` as a win and `FN` as a loss; a defender forfeit is a loss at weight
+  1.5. The opponent's forfeit is excluded from the role pool: it is not a
+  test of that role.
+- θ=0 is a separate diagnostic: `rating_clean_att` (clean-build: `FP` wins,
+  `TN` losses) and `rating_clean_def` (false alarms: `TN` wins, `FP` losses).
+  They answer "who writes clean code" and "who avoids false alarms", not
+  "who can audit" or "who can pentest".
+- Role W–L is published next to the role rating: `att.wins/losses` and
+  `def.wins/losses` over every played round by role, plus the θ=1 sub-record
+  `att.exploit_wins/losses` and `def.patch_wins/losses`. The overall record is
+  the sum: `wins = att.wins + def.wins`, `losses = att.losses + def.losses`.
+- `rating_contest` is the all-in pure pool: every non-void round, a forfeit
+  is a loss. It is the reliability-inclusive reading, not the skill ranking.
+
+### Board (planned, after the compact layout)
+
+- `Att` and `Def` cells show the rating and the θ=1 record that feeds it.
+  `W–L` shows the overall record with `A … · D …` underneath, so a 9–7
+  overall is not mistaken for a 9–7 attack record.
+- The table carries a "use it for" legend: Overall / Audit / Pentest.
+- The all-in table keeps the forfeit reading; its rating is pure win/loss.
+
+### Compatibility
+
+- This entry is the specification. The generator and the board still render
+  0.5.0 until the compact-layout pass; the 0.6.0 pools are the target.
+- `rating_pure`/`rating_pure_ci` are retired: the headline `rating` is pure.
+- `att` gains `exploit_wins`/`exploit_losses`; `def` gains
+  `patch_wins`/`patch_losses`.
+- The margin-weighted `rating` and `rating_contest` are gone;
+  `rating_efficiency` is optional and never the ranking.
+
 ## 0.5.0 — 2026-10-25 — honest ratings, and forfeits get their own table
 
 ### Scoring

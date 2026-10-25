@@ -4,6 +4,11 @@
 `standings.json` plus the `ledger.jsonl` projection. No build step, no network,
 works from `file://`.
 
+> **0.6.0 is specified in `SPEC.md` §9.4/§10.3/§10.4; this file still describes
+> the 0.5.0 render.** The 0.6.0 pass makes `rating` pure, splits `rating` into
+> overall / audit (θ=1 defence) / pentest (θ=1 attack), and puts the role W–L
+> next to the role rating. The board is updated after the compact-layout pass.
+
 The template is **never hand-edited**. `scripts/standings.py` copies it to
 `seasons/<season>/standings.html` and replaces exactly one thing: the embedded
 `arena-data` block. Everything else the page needs lives beside it:
