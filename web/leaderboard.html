@@ -522,6 +522,10 @@
 
   .form i.w { background: var(--teal); box-shadow: 0 0 7px rgba(10, 200, 185, .55); }
   .form i.l { background: #5A2A2A; }
+  .form i.f { background: var(--orange); box-shadow: 0 0 7px rgba(232, 162, 74, .45); }
+  .form i.v { background: #2A3A4D; opacity: .45; }
+
+  .ci { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0; opacity: .75; }
 
   .tier {
     display: inline-block;
@@ -687,10 +691,15 @@
 
     #standings th:nth-child(5), #standings td:nth-child(5),
     #standings th:nth-child(6), #standings td:nth-child(6),
+    #standings th:nth-child(7), #standings td:nth-child(7),
     #standings th:nth-child(11), #standings td:nth-child(11),
     #standings th:nth-child(12), #standings td:nth-child(12),
     #standings th:nth-child(13), #standings td:nth-child(13),
-    #standings th:nth-child(14), #standings td:nth-child(14) {
+    #standings th:nth-child(14), #standings td:nth-child(14),
+    #standings th:nth-child(15), #standings td:nth-child(15),
+    #allin th:nth-child(4), #allin td:nth-child(4),
+    #allin th:nth-child(5), #allin td:nth-child(5),
+    #allin th:nth-child(12), #allin td:nth-child(12) {
       display: none;
     }
   }
@@ -733,7 +742,8 @@
     <div class="panel-head">
       <div>
         <h2>Standings</h2>
-        <p class="sub">Combined rating, role splits, spend and calibration. Click a column to re-sort.</p>
+        <p class="sub">Played-only rating, attack and defence pools, spend and calibration.
+        No-shows and forfeits live in the all-in table below. Click a column to re-sort.</p>
       </div>
       <div class="controls">
         <div class="tabs" role="tablist" aria-label="Rating mode">
@@ -749,6 +759,21 @@
       <table id="standings"></table>
     </div>
     <div class="changelog" id="changelog" hidden></div>
+  </section>
+
+  <section class="panel" id="allin-panel">
+    <div class="panel-head">
+      <div>
+        <h2>All-in — no-shows and forfeits</h2>
+        <p class="sub">The same field with every refused or failed round priced as a loss.
+        The all-in rating is opponent-weighted: losing to a stronger model costs less than
+        losing to a weaker one, so a no-show against the top of the field is cheaper than
+        one against the bottom.</p>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="allin"></table>
+    </div>
   </section>
 
   <section class="panel" id="ledger-panel">
@@ -850,12 +875,13 @@
       .filter(r => r.attacker === agent || r.defender === agent)
       .sort((a, b) => a.ts.localeCompare(b.ts))
       .slice(-5)
-      .map(r => winFor(r, agent));
+      .map(r => r.outcome === "VOID" ? "v"
+        : FORFEIT_A.has(r.outcome) || FORFEIT_D.has(r.outcome) ? "f"
+        : winFor(r, agent) ? "w" : "l");
 
+  const FORM_TITLE = { w: "win", l: "loss", f: "no-show / forfeit", v: "void" };
   const formHtml = agent =>
-    formFor(agent)
-      .map(w => `<i class="${w ? "w" : "l"}" title="${w ? "win" : "loss"}"></i>`)
-      .join("");
+    formFor(agent).map(k => `<i class="${k}" title="${FORM_TITLE[k]}"></i>`).join("");
 
   const ranked = () =>
     DATA.rows
@@ -869,14 +895,23 @@
       .slice(0, 3);
 
   function renderSummary() {
-    const valid = DATA.rows.reduce((s, r) => s + r.rounds, 0);
-    const voids = DATA.rows.reduce((s, r) => s + r.voids, 0);
+    // Each round is counted once per side in the rows, so the season totals
+    // are halved. No-shows and forfeits are counted on the offender only.
+    const playedWeight = DATA.rows.reduce((s, r) => s + r.rounds, 0);
+    const played = playedWeight / 2;
+    const voids = DATA.rows.reduce((s, r) => s + r.voids, 0) / 2;
+    const scheduled = DATA.rows.reduce((s, r) => s + r.scheduled, 0) / 2;
+    const noShows = DATA.rows.reduce((s, r) => s + r.no_shows, 0);
+    const forfeits = DATA.rows.reduce((s, r) => s + r.forfeits, 0);
     const spend = DATA.rows.reduce((s, r) => s + r.cost_total, 0);
-    const brier = valid ? DATA.rows.reduce((s, r) => s + r.brier * r.rounds, 0) / valid : null;
+    const brier = playedWeight ? DATA.rows.reduce((s, r) => s + r.brier * r.rounds, 0) / playedWeight : null;
 
     const stats = [
       ["Agents", DATA.rows.length],
-      ["Rounds", valid],
+      ["Played", played],
+      ["All-in", scheduled],
+      ["No-show", noShows],
+      ["Forfeit", forfeits],
       ["Void", voids],
       ["Spend", usd(spend)],
       ["Mean Brier", brier == null ? "\u2014" : brier.toFixed(3)],
@@ -923,11 +958,10 @@
     ["agent", "Agent", null],
     ["tier", "Tier", null],
     ["rating", "Rating", "rating"],
+    ["ci", "\u00b1", null],
     ["rating_att", "Att", "rating_att"],
     ["rating_def", "Def", "rating_def"],
     ["rounds", "Rounds", "rounds"],
-    ["abstentions", "No-show", "abstentions"],
-    ["forfeits", "Forfeits", "forfeits"],
     ["wl", "W\u2013L", null],
     ["wr", "Winrate", null],
     ["cost_total", "Cost", "cost_total"],
@@ -945,6 +979,8 @@
     const rankHtml = rank == null
       ? `<span class="rank">\u2014</span>`
       : `<span class="rank ${rank <= 3 ? "top" + rank : ""}">${rank}</span>`;
+    const attTitle = `${a.att.rounds} played attack round(s) \u00b7 ${a.att.wins}\u2013${a.att.losses} \u00b7 95% CI \u00b1${a.rating_att_ci.toFixed(0)}`;
+    const defTitle = `${a.def.rounds} played defence round(s) \u00b7 ${a.def.wins}\u2013${a.def.losses} \u00b7 95% CI \u00b1${a.rating_def_ci.toFixed(0)}`;
 
     return `<tr class="${rank && rank <= 3 ? "podium-row" : ""} ${rank == null ? "prov" : ""}">
       <td>${rankHtml}</td>
@@ -955,11 +991,10 @@
       </div></td>
       <td><span class="tier ${cls}">${tier}</span></td>
       <td class="rating">${a.rating.toFixed(1)}</td>
-      <td class="dim" title="${a.att && a.att.exploit_rounds ? a.att.exploit_rounds + " \u03b8=1 attack round(s)" : "no \u03b8=1 attack rounds"}">${a.att && a.att.exploit_rounds ? a.rating_att.toFixed(1) : "\u2014"}</td>
-      <td class="dim" title="${a.def && a.def.patch_rounds ? a.def.patch_rounds + " \u03b8=1 defence round(s)" : "no \u03b8=1 defence rounds"}">${a.def && a.def.patch_rounds ? a.rating_def.toFixed(1) : "\u2014"}</td>
+      <td class="dim ci" title="95% confidence interval \u00b1${a.rating_ci.toFixed(1)}">\u00b1${a.rating_ci.toFixed(0)}</td>
+      <td class="dim" title="${attTitle}">${a.att.rounds ? a.rating_att.toFixed(1) : "\u2014"}</td>
+      <td class="dim" title="${defTitle}">${a.def.rounds ? a.rating_def.toFixed(1) : "\u2014"}</td>
       <td>${a.rounds}</td>
-      <td class="dim">${a.abstentions || 0}</td>
-      <td class="dim">${a.forfeits || 0}</td>
       <td>${a.wins}\u2013${a.losses}</td>
       <td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>
       <td>${usd(a.cost_total)}</td>
@@ -981,7 +1016,7 @@
     const rows = ranked().map((a, i) => rowHtml(a, i + 1)).join("");
 
     const empty = !rows
-      ? `<tr><td colspan="17" class="dim">${DATA.rows.length
+      ? `<tr><td colspan="16" class="dim">${DATA.rows.length
           ? `No agents match \u201c${state.query}\u201d.`
           : "No season data. Generate this page from a season export."}</td></tr>`
       : "";
@@ -990,20 +1025,91 @@
       head + `<tbody>${rows}${empty}</tbody>`;
   }
 
+  // The all-in table is the second reading of the same season: every refused
+  // or failed round is a loss, and the rating is refitted with those games in
+  // the pool. It answers "what does the field look like when reliability is
+  // part of the score", next to the played-only table above.
+  const ALLIN_COLUMNS = [
+    ["rank", "#", null],
+    ["agent", "Agent", null],
+    ["rating_contest", "All-in rating", "rating_contest"],
+    ["ci", "\u00b1", null],
+    ["scheduled", "Scheduled", "scheduled"],
+    ["rounds", "Played", "rounds"],
+    ["no_shows", "No-show", "no_shows"],
+    ["forfeits", "Forfeit", "forfeits"],
+    ["opp_forfeits", "Opp F", "opp_forfeits"],
+    ["wl_all", "W\u2013L", null],
+    ["wr_all", "Winrate", null],
+    ["forfeit_cost", "Forfeit $", "forfeit_cost"],
+    ["delta_contest", "\u0394 vs played", "delta_contest"],
+  ];
+
+  const allinState = { key: "rating_contest", dir: -1 };
+
+  function allinRowHtml(a, rank) {
+    const total = a.wins_all + a.losses_all + a.draws_all || 1;
+    const wr = (a.wins_all / total) * 100;
+    const d = a.delta_contest;
+    return `<tr>
+      <td><span class="rank ${rank <= 3 ? "top" + rank : ""}">${rank}</span></td>
+      <td><div class="agent">
+        <button class="agent-name" data-agent="${a.agent}">${a.agent}</button>
+        ${a.model_name ? `<span class="agent-model">${a.model_name}</span>` : ""}
+      </div></td>
+      <td class="rating">${a.rating_contest.toFixed(1)}</td>
+      <td class="dim ci" title="95% confidence interval \u00b1${a.rating_contest_ci.toFixed(1)}">\u00b1${a.rating_contest_ci.toFixed(0)}</td>
+      <td>${a.scheduled}</td>
+      <td>${a.rounds}</td>
+      <td class="dim">${a.no_shows}</td>
+      <td class="dim">${a.forfeits}</td>
+      <td class="dim">${a.opp_forfeits}</td>
+      <td>${a.wins_all}\u2013${a.losses_all}${a.draws_all ? `\u2013${a.draws_all}` : ""}</td>
+      <td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>
+      <td class="dim" title="real spend ${usd(a.forfeit_spend)} + priced fee ${usd(a.forfeit_fee)}">${usd(a.forfeit_cost)}</td>
+      <td class="${d >= 0 ? "pos" : "neg"}">${delta(d)}</td>
+    </tr>`;
+  }
+
+  function renderAllIn() {
+    const host = document.getElementById("allin");
+    if (!host) return;
+    const head = `<thead><tr>${ALLIN_COLUMNS.map(([, label, key]) => {
+      const sorted = key && key === allinState.key;
+      const arrow = sorted ? (allinState.dir === -1 ? " \u25be" : " \u25b4") : "";
+      return `<th ${key ? `data-allin-key="${key}"` : ""} class="${sorted ? "sorted" : ""}">${label}${arrow}</th>`;
+    }).join("")}</tr></thead>`;
+    const rows = DATA.rows.slice()
+      .sort((a, b) => allinState.dir * (a[allinState.key] - b[allinState.key]) || b.rating_contest - a.rating_contest)
+      .map((a, i) => allinRowHtml(a, i + 1)).join("");
+    host.innerHTML = head + `<tbody>${rows}</tbody>`;
+  }
+
   function renderLedger() {
     const rows = DATA.ledger
       .filter(r => !state.agent || r.attacker === state.agent || r.defender === state.agent)
       .slice()
       .sort((a, b) => b.ts.localeCompare(a.ts));
 
+    // A played round moves the played-only rating; a forfeit leaves that pool
+    // untouched and moves the all-in contest rating, so the log shows the
+    // delta that actually applies to the row.
+    const isForfeit = o => FORFEIT_A.has(o) || FORFEIT_D.has(o);
+    const deltaFor = (r, side) => r.outcome === "VOID" ? 0
+      : isForfeit(r.outcome) ? (r.contest_delta || r.rating_delta)[side] : r.rating_delta[side];
+
     const head = `<thead><tr>
       <th>Round</th><th>Match</th><th>Attacker</th><th>Defender</th><th>\u03b8</th>
-      <th>Outcome</th><th>Cost A</th><th>Cost D</th><th>\u0394R A</th><th>\u0394R D</th>
+      <th>Outcome</th><th>Cost A</th><th>Cost D</th>
+      <th title="played-only \u0394; a forfeit row shows the all-in \u0394">\u0394R A</th>
+      <th title="played-only \u0394; a forfeit row shows the all-in \u0394">\u0394R D</th>
       <th>Chips A</th><th>Chips D</th>
     </tr></thead>`;
 
     const body = rows.length
-      ? rows.map(r => `<tr>
+      ? rows.map(r => {
+        const dA = deltaFor(r, "attacker"), dD = deltaFor(r, "defender");
+        return `<tr>
       <td class="mono">${r.round_id}</td>
       <td class="mono dim">${r.match_id}</td>
       <td><button class="agent-name small" data-agent="${r.attacker}">${r.attacker}</button>${modelName(r.attacker) ? `<span class="log-model">${modelName(r.attacker)}</span>` : ""}</td>
@@ -1012,11 +1118,12 @@
       <td><span class="outcome ${r.outcome.toLowerCase()}">${r.outcome}</span></td>
       <td>${usd(r.cost.attacker)}</td>
       <td>${usd(r.cost.defender)}</td>
-      <td class="${r.rating_delta.attacker >= 0 ? "pos" : "neg"}">${delta(r.rating_delta.attacker)}</td>
-      <td class="${r.rating_delta.defender >= 0 ? "pos" : "neg"}">${delta(r.rating_delta.defender)}</td>
+      <td class="${dA >= 0 ? "pos" : "neg"}">${delta(dA)}</td>
+      <td class="${dD >= 0 ? "pos" : "neg"}">${delta(dD)}</td>
       <td class="${r.chips.attacker >= 0 ? "pos" : "neg"}">${usdSigned(r.chips.attacker)}</td>
       <td class="${r.chips.defender >= 0 ? "pos" : "neg"}">${usdSigned(r.chips.defender)}</td>
-    </tr>`).join("")
+    </tr>`;
+      }).join("")
       : `<tr><td colspan="12" class="dim">No rounds recorded.</td></tr>`;
 
     document.getElementById("ledger").innerHTML = head + `<tbody>${body}</tbody>`;
@@ -1100,6 +1207,15 @@
       return;
     }
 
+    const ath = event.target.closest("th[data-allin-key]");
+    if (ath) {
+      const key = ath.dataset.allinKey;
+      allinState.dir = allinState.key === key ? -allinState.dir : -1;
+      allinState.key = key;
+      renderAllIn();
+      return;
+    }
+
     const th = event.target.closest("th[data-key]");
     if (th) {
       const key = th.dataset.key;
@@ -1128,6 +1244,7 @@
   renderSummary();
   renderPodium();
   renderStandings();
+  renderAllIn();
   renderLedger();
 
   document.getElementById("season-label").textContent = DATA.season_id

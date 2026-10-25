@@ -2,12 +2,17 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://inspection-arena.local/schemas/standings.schema.json",
   "title": "Standings",
-  "description": "Derived leaderboard for a season. Regenerable from the round records.",
+  "description": "Derived leaderboard for a season. Regenerable from the round records. Ratings are a batch Bradley-Terry fit (the maximum-likelihood Elo), not a sequential update, so the same ledger always yields the same table.",
   "type": "object",
   "required": [
     "season_id",
     "generated_at",
     "scoring_version",
+    "rating_method",
+    "rating_prior_sd",
+    "margin_lambda",
+    "margin_clip",
+    "defense_advantage",
     "season_sha256",
     "ledger_sha256",
     "rows"
@@ -26,6 +31,32 @@
       "type": "string",
       "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
     },
+    "rating_method": {
+      "type": "string",
+      "const": "bradley-terry",
+      "description": "The rating is a weighted Bradley-Terry maximum-likelihood fit."
+    },
+    "rating_prior_sd": {
+      "type": "number",
+      "description": "Standard deviation of the Gaussian prior toward 1500, in Elo points."
+    },
+    "margin_lambda": {
+      "type": "number",
+      "description": "Weight of the USD spend margin in the per-game likelihood weight."
+    },
+    "margin_clip": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number"
+      },
+      "description": "Lower and upper bound on the spend-margin weight."
+    },
+    "defense_advantage": {
+      "type": "number",
+      "description": "Global defender advantage in Elo points, after centring both role pools at 1500."
+    },
     "season_sha256": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
@@ -41,15 +72,44 @@
         "required": [
           "agent",
           "rating",
+          "rating_ci",
+          "rating_pure",
+          "rating_pure_ci",
           "rating_att",
+          "rating_att_ci",
           "rating_def",
-          "rating_clean_att",
-          "rating_clean_def",
+          "rating_def_ci",
+          "rating_contest",
+          "rating_contest_ci",
+          "delta_contest",
           "rounds",
           "eligible",
           "wins",
           "losses",
+          "wins_all",
+          "losses_all",
+          "draws_all",
           "voids",
+          "no_shows",
+          "no_show_att",
+          "no_show_def",
+          "failed",
+          "failed_att",
+          "failed_def",
+          "faults",
+          "fault_att",
+          "forfeits",
+          "forfeit_att",
+          "forfeit_def",
+          "forfeits_total",
+          "opp_forfeits",
+          "scheduled",
+          "refusal_rate",
+          "forfeit_rate",
+          "failure_rate",
+          "forfeit_spend",
+          "forfeit_fee",
+          "forfeit_cost",
           "tokens_total",
           "tokens_per_round",
           "brier",
@@ -61,7 +121,13 @@
           "net_chips",
           "cost_total",
           "cost_per_round",
-          "provisional"
+          "provisional",
+          "hist",
+          "rounds_list",
+          "h2h",
+          "h2h_all",
+          "att",
+          "def"
         ],
         "additionalProperties": false,
         "properties": {
@@ -73,66 +139,127 @@
             "description": "Resolved display name recorded by the CLI in the ATIF export (agent.model_name), e.g. deepseek-v4-pro -> DeepSeek V4 Pro High. Empty when the agent has no usable export."
           },
           "rating": {
-            "type": "number"
+            "type": "number",
+            "description": "Played-only overall rating: weighted Bradley-Terry over rounds both sides actually played. Forfeits are excluded. 1500 is the field average; the spend margin (lambda, clip) weights each game."
+          },
+          "rating_ci": {
+            "type": "number",
+            "description": "Half-width of the 95% confidence interval on rating, from the Hessian of the fit."
+          },
+          "rating_pure": {
+            "type": "number",
+            "description": "Played-only overall rating with the spend margin removed (pure win/loss). Same rounds and prior as rating, weight 1 for every game."
+          },
+          "rating_pure_ci": {
+            "type": "number",
+            "description": "95% confidence half-width for rating_pure."
           },
           "rating_att": {
-            "type": "number"
+            "type": "number",
+            "description": "Attack pool: pure win/loss Bradley-Terry over every played round the agent attacked (theta=1 and theta=0). Centred at 1500; the defence pool is centred separately."
+          },
+          "rating_att_ci": {
+            "type": "number",
+            "description": "95% confidence half-width for rating_att."
           },
           "rating_def": {
-            "type": "number"
-          },
-          "rating_clean_att": {
             "type": "number",
-            "description": "θ=0 clean-build pool: how well the agent builds a service that does not look vulnerable."
+            "description": "Defence pool: pure win/loss Bradley-Terry over every played round the agent defended (theta=1 and theta=0). Centred at 1500."
           },
-          "rating_clean_def": {
+          "rating_def_ci": {
             "type": "number",
-            "description": "θ=0 false-alarm pool: how well the agent avoids claiming a bug on a clean service."
+            "description": "95% confidence half-width for rating_def."
+          },
+          "rating_contest": {
+            "type": "number",
+            "description": "All-in contest rating: weighted Bradley-Terry over every non-void round, with no-shows and forfeits priced as losses. Opponent-weighted, so a forfeit against a stronger model costs less."
+          },
+          "rating_contest_ci": {
+            "type": "number",
+            "description": "95% confidence half-width for rating_contest."
+          },
+          "delta_contest": {
+            "type": "number",
+            "description": "rating_contest minus rating: what the forfeits and opponent forfeit wins do to the played-only rating."
           },
           "rounds": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Rounds both sides actually played to a verdict (TP, TN, FP, FN, DISCOVERY)."
           },
           "eligible": {
             "type": "integer",
             "minimum": 0,
-            "description": "Rounds the agent was available for: played rounds plus rounds an opponent forfeited. Drives the ranking threshold; an agent's own forfeits do not count."
+            "description": "Played rounds. Drives the ranking threshold; opponent forfeits do not inflate it."
           },
           "wins": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Wins over played rounds only."
           },
           "losses": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Losses over played rounds only."
+          },
+          "wins_all": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "All-in wins: played wins plus rounds the opponent forfeited."
+          },
+          "losses_all": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "All-in losses: played losses plus the agent's own no-shows and forfeits."
+          },
+          "draws_all": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "All-in draws: rounds where both sides failed to deliver. Always 0 in the current taxonomy."
           },
           "voids": {
             "type": "integer",
             "minimum": 0
           },
-          "abstentions": {
+          "no_shows": {
             "type": "integer",
-            "minimum": 0
-          },
-          "abstain_att": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "abstain_def": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "refusal_rate": {
-            "type": [
-              "number",
-              "null"
-            ],
             "minimum": 0,
-            "maximum": 1
+            "description": "ABSTAIN_A + ABSTAIN_D: clean exits with no deliverable. A refusal, not a failed attempt."
+          },
+          "no_show_att": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "no_show_def": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failed": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "FAILED_A + FAILED_D: real work, no runnable deliverable."
+          },
+          "failed_att": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failed_def": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "faults": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "FAULT_A: the artifact broke the round's contract."
+          },
+          "fault_att": {
+            "type": "integer",
+            "minimum": 0
           },
           "forfeits": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "description": "FAILED + FAULT, excluding abstentions. The no-show column is separate so the two never double-count."
           },
           "forfeit_att": {
             "type": "integer",
@@ -142,13 +269,62 @@
             "type": "integer",
             "minimum": 0
           },
+          "forfeits_total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "no_shows + forfeits."
+          },
+          "opp_forfeits": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Rounds the opponent forfeited; a win in the all-in record and a participation in scheduled."
+          },
+          "scheduled": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Non-void participations: played + own no-shows + own forfeits + opponent forfeits."
+          },
+          "refusal_rate": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1,
+            "description": "no_shows / scheduled."
+          },
           "forfeit_rate": {
             "type": [
               "number",
               "null"
             ],
             "minimum": 0,
-            "maximum": 1
+            "maximum": 1,
+            "description": "forfeits / scheduled."
+          },
+          "failure_rate": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1,
+            "description": "forfeits_total / scheduled."
+          },
+          "forfeit_spend": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Real USD the agent spent on its own no-show and forfeit rounds."
+          },
+          "forfeit_fee": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Priced chip penalty paid on its own no-show and forfeit rounds, in USD."
+          },
+          "forfeit_cost": {
+            "type": "number",
+            "minimum": 0,
+            "description": "forfeit_spend + forfeit_fee."
           },
           "tokens_total": {
             "type": "integer",
@@ -189,7 +365,7 @@
             ],
             "minimum": 0,
             "maximum": 1,
-            "description": "FN / (TP + FN) over θ=1 attack rounds: how often a planted bug survived the defender's patch."
+            "description": "FN / (TP + FN) over theta=1 attack rounds: how often a planted bug survived the defender's patch."
           },
           "clean_win_rate": {
             "type": [
@@ -198,7 +374,7 @@
             ],
             "minimum": 0,
             "maximum": 1,
-            "description": "FP / (FP + TN) over θ=0 attack rounds: how often a clean build triggered a false alarm."
+            "description": "FP / (FP + TN) over theta=0 attack rounds: how often a clean build triggered a false alarm."
           },
           "defense_win_rate": {
             "type": [
@@ -222,33 +398,66 @@
           },
           "provisional": {
             "type": "boolean",
-            "description": "True when eligible < 20; excluded from the ordered table. Own forfeits lower eligibility, opponent forfeits do not."
+            "description": "True when eligible (played rounds) < 20."
           },
           "hist": {
             "type": "array",
-            "description": "rating trail: [round_id, ts, gen, att, def] per round"
+            "description": "Rating trail per round: [round_id, ts, rating, rating_att, rating_def, rating_contest]. A final season-end point carries the full-fit rating."
           },
           "rounds_list": {
             "type": "array",
-            "description": "per-round record: [round_id, match_id, role, opponent, theta, outcome, cost_usd, rating_delta]"
+            "description": "Per-round record: [round_id, match_id, role, opponent, theta, outcome, cost_usd, rating_delta, contest_delta]."
           },
           "h2h": {
             "type": "array",
-            "description": "head-to-head vs one opponent: [agent, games, wins, losses, cost_for, cost_against]"
+            "description": "Played-only head-to-head vs one opponent: [agent, games, wins, losses, cost_for, cost_against]."
+          },
+          "h2h_all": {
+            "type": "array",
+            "description": "All-in head-to-head vs one opponent, forfeits included: [agent, games, wins, losses, cost_for, cost_against]."
           },
           "att": {
             "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "rounds",
+              "wins",
+              "losses",
+              "wins_all",
+              "losses_all",
+              "exploit_rounds",
+              "clean_rounds",
+              "tokens",
+              "cost"
+            ],
             "properties": {
               "rounds": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Played attack rounds, both coins."
+              },
+              "wins": {
+                "type": "integer",
+                "description": "Played attack wins: FN/FP on theta=1, FP on theta=0."
+              },
+              "losses": {
+                "type": "integer",
+                "description": "Played attack losses."
+              },
+              "wins_all": {
+                "type": "integer",
+                "description": "All-in attack wins, including opponent forfeits."
+              },
+              "losses_all": {
+                "type": "integer",
+                "description": "All-in attack losses, including own no-shows and forfeits."
               },
               "exploit_rounds": {
                 "type": "integer",
-                "description": "θ=1 attack rounds played."
+                "description": "theta=1 attack rounds played."
               },
               "clean_rounds": {
                 "type": "integer",
-                "description": "θ=0 clean-build rounds played."
+                "description": "theta=0 clean-build rounds played."
               },
               "tokens": {
                 "type": "integer"
@@ -260,17 +469,50 @@
           },
           "def": {
             "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "rounds",
+              "wins",
+              "losses",
+              "wins_all",
+              "losses_all",
+              "patch_rounds",
+              "clean_rounds",
+              "tokens",
+              "cost",
+              "tp",
+              "fn",
+              "fp",
+              "tn"
+            ],
             "properties": {
               "rounds": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Played defence rounds, both coins."
+              },
+              "wins": {
+                "type": "integer",
+                "description": "Played defence wins: TP/TN/DISCOVERY."
+              },
+              "losses": {
+                "type": "integer",
+                "description": "Played defence losses: FP/FN."
+              },
+              "wins_all": {
+                "type": "integer",
+                "description": "All-in defence wins, including attacker forfeits."
+              },
+              "losses_all": {
+                "type": "integer",
+                "description": "All-in defence losses, including own no-shows and forfeits."
               },
               "patch_rounds": {
                 "type": "integer",
-                "description": "θ=1 defence rounds played."
+                "description": "theta=1 defence rounds played."
               },
               "clean_rounds": {
                 "type": "integer",
-                "description": "θ=0 clean-service rounds played."
+                "description": "theta=0 clean-service rounds played."
               },
               "tokens": {
                 "type": "integer"

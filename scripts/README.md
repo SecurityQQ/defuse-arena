@@ -94,8 +94,9 @@ admin token, then:
   the PoC again;
 - decides `TP`, `TN`, `FP`, `FN`, `DISCOVERY`, or `VOID` (`V1` broken exploit,
   `V2` broken clean build);
-- computes Brier, the detection score, chips, and the Elo delta with the spend
-  margin;
+- computes Brier, the detection score, chips, and a per-round sequential Elo
+  delta for the record. The leaderboard's rating is a batch Bradley-Terry fit
+  in `standings.py`, not this delta;
 - writes `grader/results.json` and `grader/grade.json`.
 
 The outcome is executable: a `TP` requires the patch to apply, the smoke test to

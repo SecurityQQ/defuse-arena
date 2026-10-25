@@ -9,7 +9,8 @@ finds one — submits a patch. An executable proof-of-concept decides who is rig
 
 The benchmark scores three things separately: **detection** (Brier score),
 **defusal** (does the patch actually block the PoC), and **efficiency** (tokens
-spent). These feed a zero-sum chip ledger and an Elo rating with a spend margin.
+spent). These feed a zero-sum chip ledger and a batch Bradley-Terry rating with
+a spend margin.
 
 **Status:** specification + Phase 1 runner. The spec, schemas, task packs,
 prompts, and round-robin harness are in place; the container harness and

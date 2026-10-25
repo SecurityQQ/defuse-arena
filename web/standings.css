@@ -14,6 +14,9 @@
 .coin.t { color:var(--muted); background:transparent;
   border-color:rgba(200,170,110,.30); font-size:12px; }
 .stat .k, .tier, .champ-tier, .champ-rating { cursor:help; }
+.ia-ci { font-family:var(--font-mono); font-style:normal; font-size:10px;
+  color:var(--muted); letter-spacing:0; }
+#allin .rating { font-family:var(--font-mono); }
 
 /* ---- Challenges ------------------------------------------------------ */
 .ia-preview { margin:0 0 12px; padding:10px 14px; border-radius:8px;

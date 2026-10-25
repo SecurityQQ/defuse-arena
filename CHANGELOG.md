@@ -4,6 +4,65 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.5.0 — 2026-10-25 — honest ratings, and forfeits get their own table
+
+### Scoring
+
+- **The rating is a batch Bradley-Terry fit, not a sequential Elo update.** The
+  same ledger now yields the same table whatever order the rounds were graded
+  or scheduled in; the old sequential update moved ±50–90 Elo when the round
+  order was shuffled. The fit uses a Gaussian prior toward 1500 (sd 250) and
+  reports a 95% confidence interval from the Hessian.
+- **The spend margin is kept as a per-game weight**, not a per-update
+  multiplier: λ=1.0, clip [0.25, 2.0]. A cheap win counts more than an
+  expensive one; a cheap loss counts less. The weight is a property of the
+  game, so both sides see the same multiplier.
+- **The headline rating is played-only.** No-shows and forfeits are excluded
+  from `rating`; they are priced in a second pool, `rating_contest`, which
+  counts them as losses. The all-in table shows both, plus the delta.
+- **Attack and defence are separate role pools**, fitted jointly as
+  `P(attacker wins) = σ(θ·(A_i − D_j) + c)`. Both pools are pure win/loss and
+  centred at 1500; `c` is published as `defense_advantage` (about +218 Elo in
+  s-2026-02, because defenders win 73% of played rounds). A model's attack
+  rating uses every played round it attacked, θ=1 and θ=0 — not just θ=1.
+  θ=1-only diagnostics remain as `attack_survival` and `patch_validity`.
+- **The no-show/forfeit split is explicit.** `no_shows` is ABSTAIN_A/D;
+  `forfeits` is FAILED_A/D + FAULT_A. The old `forfeits` counter included
+  abstentions, so the board double-counted them. `forfeits_total` is the sum.
+- **Eligibility is played rounds**, not played + opponent forfeits. A model
+  cannot reach the 20-round ranking threshold on rounds it never played.
+- **W–L is played-only**, and the all-in record (`wins_all`/`losses_all`) adds
+  no-shows and forfeits as losses. A double forfeit is a draw; the current
+  taxonomy has no such outcome, so `draws_all` is 0.
+- `rating_pure` is the same played-only fit with the margin removed, for a
+  like-for-like win/loss reading.
+- `scoring_version` is 0.5.0.
+
+### Board
+
+- The standings table now shows the played-only rating, its 95% CI, the attack
+  and defence ratings, the played W–L, and drops the no-show/forfeit columns.
+- A second **All-in** table shows the contest rating, scheduled/played rounds,
+  no-shows, forfeits, opponent forfeits, the all-in W–L, the forfeit cost and
+  the delta against the played-only rating.
+- The champion account shows played, pure and all-in ratings with CIs, both
+  records, and the role pools with their own records.
+- The match log shows the played-only Δ for a played round and the all-in Δ
+  for a forfeit, so the column never reads 0 for a round that moved a rating.
+- The Compare tab gains an **Attack vs defence** scatter.
+- The summary strip now reports played rounds, all-in rounds, no-shows and
+  forfeits, and stops double-counting each round in the season totals.
+
+### Compatibility
+
+- `rating_clean_att` and `rating_clean_def` are removed; the role ratings now
+  cover every played round by role. `abstentions`/`abstain_att`/`abstain_def`
+  are replaced by `no_shows`/`no_show_att`/`no_show_def`.
+- `ledger.jsonl` rows gain `contest_delta` and a `contest` entry in
+  `rating_after`; `rating_delta` is now the played-only delta.
+- The per-round trail is a prefix refit, not a sequential update: the last
+  point is the full-fit rating.
+
 ## 0.4.9 — 2026-10-25 — role ratings are coin-specific
 
 ### Scoring
