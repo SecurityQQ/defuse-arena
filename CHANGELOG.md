@@ -32,24 +32,45 @@ plain markdown — no HTML, no links to local files.
   the sum: `wins = att.wins + def.wins`, `losses = att.losses + def.losses`.
 - `rating_contest` is the all-in pure pool: every non-void round, a forfeit
   is a loss. It is the reliability-inclusive reading, not the skill ranking.
+- The per-round Elo delta the grader writes into `grade.json` is pure win/loss
+  too: it is no longer multiplied by the spend margin, so a cheap round is not
+  a bigger round. The chip transfer still settles in USD.
 
-### Board (planned, after the compact layout)
+### Board
 
-- `Att` and `Def` cells show the rating and the θ=1 record that feeds it.
-  `W–L` shows the overall record with `A … · D …` underneath, so a 9–7
-  overall is not mistaken for a 9–7 attack record.
-- The table carries a "use it for" legend: Overall / Audit / Pentest.
-- The all-in table keeps the forfeit reading; its rating is pure win/loss.
+- The standings table is the compact SPEC §10.4 layout: `Overall`, `±`,
+  `Att (pentest)`, `Def (audit)`, `Rounds`, `W–L`, then cost, calibration and
+  chips. The separate `Tier` and `Winrate` columns are gone — the tier is a
+  coloured dot beside the agent name, and the win rate is the `W–L` cell.
+- Each role cell carries the rating **and** the θ=1 record that feeds it, its
+  95% interval and the role forfeits the pool prices: `1670.6` over
+  `5–0 · ±418`. A model with no played round in the pool is dimmed and says
+  "forfeits only" instead of showing a number with no sample behind it.
+- `W–L` carries the overall played record and the role split underneath:
+  `12–5` over `A 4–4 · D 8–1`. The two role records add up to the overall one,
+  so a 9–7 overall can no longer be read as a 9–7 attack record.
+- A "use it for" legend under the heading names the three questions, and a
+  pools line counts what the season actually measured (θ=1 attack rounds,
+  bugs that survived, θ=1 defence rounds caught, θ=0 false alarms).
+- The match log badge names the pool the round fed: `ATK`/`DEF` on θ=1,
+  `CLEAN` on θ=0, `ALL-IN` on a forfeit.
+- The champion account shows all four pools plus the retired margin-weighted
+  number, the θ=1 record and forfeits per role, and the θ=0 clean record.
+- The Compare tab's role chart is now "Pentest vs audit" on the θ=1 pools.
 
 ### Compatibility
 
-- This entry is the specification. The generator and the board still render
-  0.5.0 until the compact-layout pass; the 0.6.0 pools are the target.
 - `rating_pure`/`rating_pure_ci` are retired: the headline `rating` is pure.
-- `att` gains `exploit_wins`/`exploit_losses`; `def` gains
-  `patch_wins`/`patch_losses`.
-- The margin-weighted `rating` and `rating_contest` are gone;
-  `rating_efficiency` is optional and never the ranking.
+  The old margin-weighted number survives as `rating_efficiency`, shown in the
+  champion account and never used to rank.
+- `att` gains `exploit_wins`/`exploit_losses`/`exploit_forfeits` and
+  `clean_wins`/`clean_losses`; `def` gains
+  `patch_wins`/`patch_losses`/`patch_forfeits` and the clean pair.
+- `standings.json` gains `role_forfeit_weight` and `clean_defense_advantage`;
+  every pool is re-centred so 1500 is exactly the field average, and a model
+  with no games sits at 1500 instead of inheriting an offset.
+- `ledger.jsonl` rows gain `role_pool` and `rating_after.{clean_att,clean_def}`;
+  `role_delta` is the change in the pool the round fed.
 
 ## 0.5.0 — 2026-10-25 — honest ratings, and forfeits get their own table
 

@@ -42,7 +42,6 @@ POC_DIR = ROUND / "sealed" / "poc"
 
 THRESHOLD = 0.5
 K_FACTOR = 32.0
-LAMBDA = 1.0
 
 # Forfeit taxonomy (scoring 0.4.0).
 #
@@ -311,10 +310,11 @@ def forfeit_pot(outcome, opp_cost_usd, offender_model, budget_tokens):
 
 
 def settlement(outcome, e_a, e_b, s_b, pot=None):
-    """Zero-sum chip transfer and the spend-margin Elo delta, both in USD.
+    """Zero-sum chip transfer and the per-round Elo delta, both in USD.
 
-    Forfeits settle at mult = 1: a forfeit is not an efficiency story, and
-    nobody farms a boosted win off an opponent that never showed up.
+    The delta is pure win/loss (0.6.0): the spend margin is an efficiency axis,
+    not a rating term, so a cheap win is not a bigger win. The chip transfer
+    still prices the round in money, which is the point of the ledger.
     """
     if outcome in ("TP", "TN", "DISCOVERY"):
         chips = {"attacker": -e_a, "defender": e_a}
@@ -329,15 +329,7 @@ def settlement(outcome, e_a, e_b, s_b, pot=None):
     else:
         chips = {"attacker": 0, "defender": 0}
 
-    expected = 0.5
-    if outcome in PLAYED:
-        total = e_a + e_b
-        margin = (e_a - e_b) / total if total else 0.0
-        direction = 1.0 if s_b - expected > 0 else -1.0 if s_b - expected < 0 else 0.0
-        multiplier = clip(1.0 + LAMBDA * margin * direction, 0.25, 2.0)
-    else:
-        multiplier = 1.0
-    delta_def = K_FACTOR * (s_b - expected) * multiplier
+    delta_def = K_FACTOR * (s_b - 0.5)
     delta_att = -delta_def
     if outcome == "VOID":
         delta_def = 0.0

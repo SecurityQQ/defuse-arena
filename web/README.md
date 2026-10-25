@@ -4,10 +4,10 @@
 `standings.json` plus the `ledger.jsonl` projection. No build step, no network,
 works from `file://`.
 
-> **0.6.0 is specified in `SPEC.md` §9.4/§10.3/§10.4; this file still describes
-> the 0.5.0 render.** The 0.6.0 pass makes `rating` pure, splits `rating` into
-> overall / audit (θ=1 defence) / pentest (θ=1 attack), and puts the role W–L
-> next to the role rating. The board is updated after the compact-layout pass.
+> **Scoring 0.6.0.** `rating` is pure and splits into overall / audit (θ=1
+> defence) / pentest (θ=1 attack), with the role W–L next to each role rating.
+> The spend margin is not in any skill rating; it survives as the non-ranking
+> `rating_efficiency`. See `SPEC.md` §9.4/§10.3/§10.4.
 
 The template is **never hand-edited**. `scripts/standings.py` copies it to
 `seasons/<season>/standings.html` and replaces exactly one thing: the embedded
@@ -54,24 +54,34 @@ tab is client-side state only; the URL hash (`#brief`, `#compare`, `#draft`,
 `#log`, `#challenges`) keeps a tab shareable, and opening a match from anywhere
 switches to the log first.
 
-**Board** — the season summary, podium and the template's own standings table:
-sortable columns, role tabs (Overall, Attacker, Defender, Changelog), agent
-filter, and the played-only rating pools. The Changelog tab renders
-`CHANGELOG.md` from the payload instead of the table.
+**Board** — the season summary, podium and the compact standings table:
+sortable columns, role tabs (Overall, Att (pentest), Def (audit), Changelog),
+agent filter. The Changelog tab renders `CHANGELOG.md` from the payload instead
+of the table.
 
-**Ratings are a batch Bradley-Terry fit.** The board carries four pools:
-`rating` (played-only, weighted by the spend margin), `rating_pure` (the same
-rounds without the margin), `rating_att` / `rating_def` (pure win/loss by role,
-both centred at 1500), and `rating_contest` (every non-void round, with
-no-shows and forfeits priced as losses). Each carries a 95% CI. The role pools
-use every played round by role, θ=1 and θ=0; the θ=1-only diagnostics stay as
-`attack_survival` and `patch_validity`.
+**Three ratings, three questions.** The board answers "which model overall",
+"which model should audit my code" and "which model should pentest" with three
+separate pure win/loss pools, and a "use it for" legend under the heading names
+them. `rating` is every played round (θ=1 and θ=0); `rating_def` is θ=1 defence
+only; `rating_att` is θ=1 attack only. Each role cell carries the rating and the
+θ=1 record that feeds it — `1670.6` over `5–0 · ±418` — and `W–L` carries the
+overall record with `A … · D …` underneath, so the two role records add up to
+the overall one. A role forfeit is a loss at 1.5× in that pool and is marked
+`nF`; the opponent's forfeit is not a test of the role and is excluded. A model
+with no played round in a pool keeps a dimmed forfeits-only rating rather than
+an invented zero.
+
+θ=0 is a separate diagnostic (`rating_clean_att`, `rating_clean_def`), shown in
+the champion account with the rest of the pools. The spend margin is in no
+skill rating: it survives as `rating_efficiency`, shown in the account and never
+used to rank. A pools line under the heading counts what the season actually
+measured, so a thin attack pool is visible before the ranking is trusted.
 
 **The all-in table** sits below the standings. It is the same field with every
 refused or failed round counted as a loss: scheduled vs played, no-shows,
 forfeits, opponent forfeits, the all-in W–L, the forfeit cost and the delta
-against the played rating. `no_shows` is `ABSTAIN_*`; `forfeits` is `FAILED_*` + `FAULT_A`, so the
-two never double-count.
+against the overall rating. `no_shows` is `ABSTAIN_*`; `forfeits` is `FAILED_*` +
+`FAULT_A`, so the two never double-count.
 
 **Founder Brief** — the tab for a visitor who ships AI-written code and wants
 to know what to do with this benchmark. Four parts:
@@ -101,11 +111,14 @@ typed in.
 
 **Compare** — scatter maps of the whole field, one dot per champion, hand-drawn
 SVG with no external chart library (the page stays self-contained and works
-from `file://`). Four charts picked from a chip bar:
+from `file://`). Five charts picked from a chip bar:
 
 - *Skill vs price* — `rows[].rating` against `rows[].cost_per_round` on a log
   axis, with a Pareto frontier over non-dominated points and the most
   attractive quadrant (cheaper than the field median, rated above it) shaded.
+- *Pentest vs audit* — `rating_att` against `rating_def`, the two θ=1 role
+  pools: the two answers to "who attacks" and "who reviews", median
+  crosshairs, named quadrants.
 - *Sword vs shield* — `attack_survival` against `patch_validity`: the two faces
   of each model, median crosshairs, named quadrants.
 - *Catch vs noise* — `patch_validity` against `fpr`, the reviewer hiring view;
@@ -164,10 +177,11 @@ An agent with no usable export (every round void or refused) falls back to the
 roster's `model` id, and an unplayed champion shows that id as well.
 
 **Champion account** — the overlay behind `Profile`, `acct`, or a podium card:
-six-axis shape, rating curve for the played/attack/defence/all-in pools, record,
-played and all-in ratings with CIs, attacker/defender splits, head-to-head, and
-every round that champion played. Clicking a round in
-the account closes it and opens that match in the log.
+six-axis shape, rating curve for the overall/attack/defence/all-in pools, record
+with the role split, all four pools with CIs plus the non-ranking
+margin-weighted number, the θ=1 record and forfeits per role, the θ=0 clean
+record and clean ratings, head-to-head, and every round that champion played.
+Clicking a round in the account closes it and opens that match in the log.
 
 ## Match schematic
 

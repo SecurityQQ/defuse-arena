@@ -938,18 +938,24 @@ happened in game N, what did it cost, how much Elo":
  "chips": {"attacker": -0.0912, "defender": 0.0912},
  "rating_delta": {"attacker": -6.2, "defender": 6.2},
  "contest_delta": {"attacker": -6.2, "defender": 6.2},
+ "role_delta": {"attacker": -16.0, "defender": 16.0},
+ "role_pool": "att",
  "run_delta": {"attacker": -16.0, "defender": 16.0},
  "run_contest_delta": {"attacker": -16.0, "defender": 16.0},
  "run_role_delta": {"attacker": -16.0, "defender": 16.0},
- "run_after": {"attacker": {"gen": 1484.0, "att": 1484.0, "def": 1500.0, "contest": 1484.0},
-               "defender": {"gen": 1516.0, "att": 1500.0, "def": 1516.0, "contest": 1516.0}}}
+ "run_after": {"attacker": {"gen": 1484.0, "att": 1484.0, "def": 1500.0,
+                            "clean_att": 1500.0, "clean_def": 1500.0, "contest": 1484.0},
+               "defender": {"gen": 1516.0, "att": 1500.0, "def": 1516.0,
+                            "clean_att": 1500.0, "clean_def": 1516.0, "contest": 1516.0}}}
 ```
 
 `rating_delta` and `contest_delta` are the prefix-fit deltas used by the
-fitted trail. `run_delta`, `run_contest_delta` and `run_role_delta` are the
-running Elo (K=32) used by the match log, and `run_after` is the running
-rating after the round. The standings rating is the batch fit; the running
-trail is the League-style per-round change.
+fitted trail. `role_delta` is the change in the pool the round fed, named by
+`role_pool` (`att` on θ=1, `clean` on θ=0, empty for a void or a forfeit).
+`run_delta`, `run_contest_delta` and `run_role_delta` are the running Elo
+(K=32) used by the match log, and `run_after` is the running rating after the
+round in every pool. The standings rating is the batch fit; the running trail
+is the League-style per-round change.
 
 `ledger.jsonl` is the concatenation of these rows sorted by `(round_id, ts)`.
 It is the only input to the standings.
@@ -967,17 +973,25 @@ Per agent, aggregated over valid rounds:
 | `rating_def` | audit pool: θ=1 defence, pure win/loss, forfeits at weight 1.5 |
 | `rating_def_ci` | 95% CI half-width for `rating_def` |
 | `rating_clean_att` | θ=0 clean-build diagnostic: `FP` wins, `TN` losses |
+| `rating_clean_att_ci` | 95% CI half-width for `rating_clean_att` |
 | `rating_clean_def` | θ=0 false-alarm diagnostic: `TN` wins, `FP` losses |
+| `rating_clean_def_ci` | 95% CI half-width for `rating_clean_def` |
 | `rating_contest` | all-in pure Bradley-Terry; forfeits are losses |
 | `rating_contest_ci` | 95% CI half-width for `rating_contest` |
+| `rating_efficiency` | the 0.5.0 margin-weighted played-only fit, kept as a non-ranking axis |
+| `rating_efficiency_ci` | 95% CI half-width for `rating_efficiency` |
 | `delta_contest` | `rating_contest − rating` |
 | `rounds` | played rounds, both roles and both coins |
 | `eligible` | played rounds; the 20-round ranking threshold |
 | `wins` / `losses` | overall played record; `wins = att.wins + def.wins` |
 | `att.wins` / `att.losses` | played attack record, θ=1 + θ=0 |
 | `att.exploit_wins` / `att.exploit_losses` | θ=1 attack played; the sample for `rating_att` |
+| `att.exploit_forfeits` | θ=1 attacker forfeits; priced in `rating_att`, excluded from `rating_def` |
+| `att.clean_wins` / `att.clean_losses` | θ=0 attack played; the sample for `rating_clean_att` |
 | `def.wins` / `def.losses` | played defence record, θ=1 + θ=0 |
 | `def.patch_wins` / `def.patch_losses` | θ=1 defence played; the sample for `rating_def` |
+| `def.patch_forfeits` | θ=1 defender forfeits; priced in `rating_def`, excluded from `rating_att` |
+| `def.clean_wins` / `def.clean_losses` | θ=0 defence played; the sample for `rating_clean_def` |
 | `wins_all` / `losses_all` | all-in record; forfeits are losses |
 | `draws_all` | double forfeits; 0 in the current taxonomy |
 | `voids` | void rounds, excluded from every rating |
@@ -1019,6 +1033,12 @@ Rules:
 - A role's own forfeit is a loss at weight 1.5 in that role's pool. The
   opponent's forfeit is excluded from the role pool (it is not a test of that
   role) and is a win in `rating_contest` and the all-in record.
+- A forfeit is a one-sided game: it moves the offending role only, and the
+  defender intercept `c` is informed by played rounds only, because a forfeit
+  says nothing about how hard the game was. Both role pools are re-centred at
+  every step of the fit, so 1500 is exactly the average attacker and the
+  average defender, and a model with no games sits at 1500 rather than
+  inheriting whatever offset the data preferred.
 - The spend margin is not in any rating. It is in the chip ledger, `$/round`
   and the Compare tab. A margin-weighted view, if kept, is a separate
   `rating_efficiency` column, never the ranking.
@@ -1044,6 +1064,18 @@ The `Att` and `Def` cells carry the rating **and** the θ=1 record that feeds
 it. The `W–L` cell carries the overall played record and the role breakdown
 `A … · D …`, so the two role records sum to the overall. The θ=0 sub-record
 and the forfeits live in the tooltip.
+
+The role cell reads `rating` over `W–L · ±CI · nF`: the 95% interval is in the
+cell because a role pool this small cannot support a finer claim, and `nF` is
+the role forfeits the pool also prices — a model that went 3–0 but no-showed
+twice as defender is not a 3–0 auditor. A model with no played round in a pool
+keeps its rating (it is forfeits only) but is dimmed, and the tooltip says so.
+The tier is a coloured dot beside the agent name, not a column.
+
+A pools line under the heading counts what the season actually measured:
+θ=1 attack rounds and how many bugs survived, θ=1 defence rounds caught, θ=0
+false alarms, and the θ=1 role forfeits priced as losses. It is derived from
+the ledger, so a thin pool is visible before a reader trusts the ranking.
 
 How to read the table:
 

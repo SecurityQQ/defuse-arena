@@ -95,8 +95,10 @@ admin token, then:
 - decides `TP`, `TN`, `FP`, `FN`, `DISCOVERY`, or `VOID` (`V1` broken exploit,
   `V2` broken clean build);
 - computes Brier, the detection score, chips, and a per-round sequential Elo
-  delta for the record. The leaderboard's rating is a batch Bradley-Terry fit
-  in `standings.py`, not this delta;
+  delta for the record. The delta is pure win/loss: the spend margin is not in
+  it. The leaderboard's ratings are batch Bradley-Terry fits in
+  `standings.py` — overall, θ=1 audit, θ=1 pentest and the all-in contest —
+  not this delta;
 - writes `grader/results.json` and `grader/grade.json`.
 
 The outcome is executable: a `TP` requires the patch to apply, the smoke test to
@@ -112,8 +114,8 @@ pass, and the PoC to fail on the patched build.
 
 `scripts/tokens.py` reports both `total` (prompt + completion) and `billable`
 (prompt − cached + completion). The grader uses `billable` for the chip ledger
-and the rating margin. Both numbers land in `grader/spend.json`; the manifest
-carries the billable totals.
+and the efficiency axis; no rating is weighted by it. Both numbers land in
+`grader/spend.json`; the manifest carries the billable totals.
 
 The CLI's fixed system prompt is large — a trivial run already shows ~68k gross
 prompt tokens, ~45k of them cached. The 60,000 budget in the prompt is therefore
