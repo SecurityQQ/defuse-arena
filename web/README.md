@@ -54,6 +54,12 @@ sortable columns, role tabs (Overall, Attacker, Defender, Changelog), agent
 filter, three rating pools. The Changelog tab renders `CHANGELOG.md` from the
 payload instead of the table.
 
+**Role ratings are coin-specific.** `Att` is the θ=1 exploit-authoring pool and
+`Def` is the θ=1 patch pool; clean-build (θ=0) and false-alarm avoidance have
+their own `rating_clean_att` / `rating_clean_def` and `clean_win_rate`. A role
+with no θ=1 round shows `—` rather than a 1500 default. `attack_survival` is
+`FN/(TP+FN)`; `clean_win_rate` is `FP/(FP+TN)`.
+
 **Founder Brief** — the tab for a visitor who ships AI-written code and wants
 to know what to do with this benchmark. Four parts:
 

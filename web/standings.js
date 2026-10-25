@@ -36,8 +36,8 @@
     Agent: ["agent", "Model label. Click the name to filter the match log to that agent."],
     Tier: ["tier", "League-style band derived from the general rating: Challenger \u2265 1550, Grandmaster \u2265 1500, Master \u2265 1450, Diamond \u2265 1400, Platinum \u2265 1350, Gold \u2265 1300, Silver \u2265 1250, otherwise Bronze."],
     Rating: ["general rating", "One pool that moves in every rated round, whichever role the agent played. Elo expectation comes from the opponent's general rating, not a fixed 0.5."],
-    Att: ["attack rating", "Separate pool that moves only in rounds the agent attacked. The expectation uses the opponent's defence rating."],
-    Def: ["defence rating", "Separate pool that moves only in rounds the agent defended. The expectation uses the opponent's attack rating."],
+    Att: ["exploit attack rating", "Moves only in \u03b8=1 rounds the agent attacked \u2014 the rounds where it authored a bug and a PoC. Clean-build (\u03b8=0) rounds are a separate pool and do not move this rating. \u2014 means no \u03b8=1 attack round."],
+    Def: ["patch rating", "Moves only in \u03b8=1 rounds the agent defended \u2014 detection and a patch that blocks the PoC. Clean-service (\u03b8=0) rounds are a separate pool and do not move this rating. \u2014 means no \u03b8=1 defence round."],
     Rounds: ["played rounds", "Rounds the two agents actually played to a verdict (TP, TN, FP, FN, DISCOVERY). Forfeits and voids are excluded from every capability number."],
     "No-show": ["abstentions", "Rounds the agent declined to play: a clean exit, no deliverable, barely any work. A refusal is published as its own axis \u2014 it never corrupts the capability ratings, and it costs the offender a forfeit priced in its own money."],
     Forfeits: ["forfeits", "Rounds lost without play: refusals, failed deliveries, and broken artifacts. Each is priced \u2014 the offender pays the opponent's cost plus a fee, and the contest round goes to the opponent."],
@@ -546,8 +546,8 @@
           <em class="r-model">${c.model_name || c.model}</em></span></div></td>
         <td>${tier ? `<span class="tier ${tier[2]}">${tier[1]}</span>` : `<span class="dim">unplayed</span>`}</td>
         <td class="num">${s ? s.rating.toFixed(1) : "\u2014"}</td>
-        <td class="num dim">${s ? s.rating_att.toFixed(1) : "\u2014"}</td>
-        <td class="num dim">${s ? s.rating_def.toFixed(1) : "\u2014"}</td>
+        <td class="num dim">${s && s.att && s.att.exploit_rounds ? s.rating_att.toFixed(1) : "\u2014"}</td>
+        <td class="num dim">${s && s.def && s.def.patch_rounds ? s.rating_def.toFixed(1) : "\u2014"}</td>
         <td class="num">${s ? s.rounds : "\u2014"}</td>
         <td class="num">${s ? `${s.wins}\u2013${s.losses}` : "\u2014"}</td>
         <td class="num">${s ? usd(s.cost_total) : "\u2014"}</td>
@@ -782,13 +782,16 @@
 
     const role = `<div class="ia-role-block">
       <div class="att"><h5>as attacker</h5><dl class="ia-kv">
-        <div><dt>rounds</dt><dd>${s.att.rounds}</dd></div>
-        <div><dt>survived</dt><dd>${s.attack_survival == null ? "\u2014" : pct(s.attack_survival)}</dd></div>
+        <div><dt>\u03b8=1 rounds</dt><dd>${s.att.exploit_rounds}</dd></div>
+        <div><dt>\u03b8=0 rounds</dt><dd>${s.att.clean_rounds}</dd></div>
+        <div><dt>exploit survives</dt><dd>${s.attack_survival == null ? "\u2014" : pct(s.attack_survival)}</dd></div>
+        <div><dt>clean win rate</dt><dd>${s.clean_win_rate == null ? "\u2014" : pct(s.clean_win_rate)}</dd></div>
         <div><dt>spend</dt><dd>${usd(s.att.cost)}</dd></div>
         <div><dt>$/round</dt><dd>${s.att.rounds ? usd(s.att.cost / s.att.rounds) : "\u2014"}</dd></div>
       </dl></div>
       <div class="def"><h5>as defender</h5><dl class="ia-kv">
-        <div><dt>rounds</dt><dd>${s.def.rounds}</dd></div>
+        <div><dt>\u03b8=1 rounds</dt><dd>${s.def.patch_rounds}</dd></div>
+        <div><dt>\u03b8=0 rounds</dt><dd>${s.def.clean_rounds}</dd></div>
         <div><dt>TP/FN</dt><dd>${s.def.tp}/${s.def.fn}</dd></div>
         <div><dt>FP/TN</dt><dd>${s.def.fp}/${s.def.tn}</dd></div>
         <div><dt>spend</dt><dd>${usd(s.def.cost)}</dd></div>
@@ -1120,7 +1123,7 @@
       ${face("att", "when it writes your code", [attAudit, attCost,
         kv("rounds as writer", r.att.rounds)])}
       ${face("def", "when it reviews your code", [defClosed, defAlarm, defBrier, defCost,
-        kv("defence rating", r.rating_def.toFixed(1))])}
+        kv("defence rating", r.def.patch_rounds ? r.rating_def.toFixed(1) : "\u2014")])}
     </div>`;
   }
 
@@ -1141,7 +1144,7 @@
         <td class="num">${cleanFaced ? `${r.def.fp}/${cleanFaced}` : "\u2014"}</td>
         <td class="num">${r.brier ? r.brier.toFixed(3) : "\u2014"}</td>
         <td class="num">${r.def.rounds ? usd(r.def.cost / r.def.rounds) : "\u2014"}</td>
-        <td class="num">${r.rating_def.toFixed(1)}</td></tr>`;
+        <td class="num">${r.def.patch_rounds ? r.rating_def.toFixed(1) : "\u2014"}</td></tr>`;
     }).join("");
     const best = glm.reduce((a, b) => (b.patch_validity ?? -1) > (a.patch_validity ?? -1) ? b : a);
     const variants = glm.map(r => r.model_name || r.agent).join(", ");
@@ -1178,7 +1181,7 @@
         <td class="num">${r.fpr != null ? pct(r.fpr) : "\u2014"}</td>
         <td class="num">${r.brier ? r.brier.toFixed(3) : "\u2014"}</td>
         <td class="num">${r.def.rounds ? usd(r.def.cost / r.def.rounds) : "\u2014"}</td>
-        <td class="num">${r.rating_def.toFixed(1)}</td></tr>`;
+        <td class="num">${r.def.patch_rounds ? r.rating_def.toFixed(1) : "\u2014"}</td></tr>`;
     }).join("") || `<tr><td colspan="8" class="dim">No defender rounds in this season.</td></tr>`;
     return `<div class="table-wrap"><table class="ia-hire">
       <thead><tr><th>Champion</th><th>planted closed</th><th>patch rate</th>

@@ -955,8 +955,8 @@
       </div></td>
       <td><span class="tier ${cls}">${tier}</span></td>
       <td class="rating">${a.rating.toFixed(1)}</td>
-      <td class="dim">${a.rating_att.toFixed(1)}</td>
-      <td class="dim">${a.rating_def.toFixed(1)}</td>
+      <td class="dim" title="${a.att && a.att.exploit_rounds ? a.att.exploit_rounds + " \u03b8=1 attack round(s)" : "no \u03b8=1 attack rounds"}">${a.att && a.att.exploit_rounds ? a.rating_att.toFixed(1) : "\u2014"}</td>
+      <td class="dim" title="${a.def && a.def.patch_rounds ? a.def.patch_rounds + " \u03b8=1 defence round(s)" : "no \u03b8=1 defence rounds"}">${a.def && a.def.patch_rounds ? a.rating_def.toFixed(1) : "\u2014"}</td>
       <td>${a.rounds}</td>
       <td class="dim">${a.abstentions || 0}</td>
       <td class="dim">${a.forfeits || 0}</td>

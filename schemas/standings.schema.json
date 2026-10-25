@@ -43,6 +43,8 @@
           "rating",
           "rating_att",
           "rating_def",
+          "rating_clean_att",
+          "rating_clean_def",
           "rounds",
           "eligible",
           "wins",
@@ -54,6 +56,7 @@
           "patch_validity",
           "fpr",
           "attack_survival",
+          "clean_win_rate",
           "defense_win_rate",
           "net_chips",
           "cost_total",
@@ -77,6 +80,14 @@
           },
           "rating_def": {
             "type": "number"
+          },
+          "rating_clean_att": {
+            "type": "number",
+            "description": "θ=0 clean-build pool: how well the agent builds a service that does not look vulnerable."
+          },
+          "rating_clean_def": {
+            "type": "number",
+            "description": "θ=0 false-alarm pool: how well the agent avoids claiming a bug on a clean service."
           },
           "rounds": {
             "type": "integer",
@@ -177,7 +188,17 @@
               "null"
             ],
             "minimum": 0,
-            "maximum": 1
+            "maximum": 1,
+            "description": "FN / (TP + FN) over θ=1 attack rounds: how often a planted bug survived the defender's patch."
+          },
+          "clean_win_rate": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1,
+            "description": "FP / (FP + TN) over θ=0 attack rounds: how often a clean build triggered a false alarm."
           },
           "defense_win_rate": {
             "type": [
@@ -221,6 +242,14 @@
               "rounds": {
                 "type": "integer"
               },
+              "exploit_rounds": {
+                "type": "integer",
+                "description": "θ=1 attack rounds played."
+              },
+              "clean_rounds": {
+                "type": "integer",
+                "description": "θ=0 clean-build rounds played."
+              },
               "tokens": {
                 "type": "integer"
               },
@@ -234,6 +263,14 @@
             "properties": {
               "rounds": {
                 "type": "integer"
+              },
+              "patch_rounds": {
+                "type": "integer",
+                "description": "θ=1 defence rounds played."
+              },
+              "clean_rounds": {
+                "type": "integer",
+                "description": "θ=0 clean-service rounds played."
               },
               "tokens": {
                 "type": "integer"
