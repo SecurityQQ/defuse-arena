@@ -303,6 +303,28 @@ PY
   write_forfeit "$1" "V4" "FAULT_A" 1.0 "$fee"
 }
 
+spend_completion() {
+  "$PY" - "$1" <<'PY'
+import json, sys
+try:
+    print(int(json.load(open(sys.argv[1])).get("completion", 0)))
+except Exception:
+    print(0)
+PY
+}
+
+grade_round() {
+  local rd="$1" rc
+  set +e
+  "$PY" "$ROOT/scripts/grade.py" "$rd" > "$rd/grader/logs/grade.log" 2>&1
+  rc=$?
+  set -e
+  if [[ $rc -ne 0 ]]; then
+    printf '{"status":"error","exit":%d}\n' "$rc" > "$rd/grader/results.json"
+  fi
+  return 0
+}
+
 log "attacker=$A_LABEL defender=$D_LABEL rounds=$ROUNDS band=$BAND"
 
 for ((k = 1; k <= ROUNDS; k++)); do
@@ -448,20 +470,23 @@ JSON
   if [[ "$DRY_RUN" == "1" ]]; then
     printf '{"status":"dry-run"}\n' > "$round_dir/grader/results.json"
   elif (( ! att_played )) && [[ $att_exit -ne 0 ]]; then
-    write_infra_void "$round_dir" "attacker-infra"
+    # A crash that burned real completion tokens is a failed delivery, not
+    # infrastructure: let the grader price FAILED_A from the spend.
+    if (( $(spend_completion "$att_spend") >= 1000 )); then
+      grade_round "$round_dir"
+    else
+      write_infra_void "$round_dir" "attacker-infra"
+    fi
   elif [[ $freeze_exit -ne 0 ]]; then
     write_fault "$round_dir" "$FREEZE_REASON"
   elif (( ! def_played )) && [[ $def_exit != "skipped" && $def_exit -ne 0 ]]; then
-    write_infra_void "$round_dir" "defender-infra"
-  else
-    set +e
-    "$PY" "$ROOT/scripts/grade.py" "$round_dir" \
-      > "$round_dir/grader/logs/grade.log" 2>&1
-    grade_exit=$?
-    set -e
-    if [[ $grade_exit -ne 0 ]]; then
-      printf '{"status":"error","exit":%d}\n' "$grade_exit" > "$round_dir/grader/results.json"
+    if (( $(spend_completion "$def_spend") >= 1000 )); then
+      grade_round "$round_dir"
+    else
+      write_infra_void "$round_dir" "defender-infra"
     fi
+  else
+    grade_round "$round_dir"
   fi
 
   "$PY" - "$round_dir" "$RESULT_TSV" <<'PY'

@@ -1,0 +1,4 @@
+# Head-to-head: GLM-5.3 Flash Max vs GLM-5.3 Max.
+# Both directions, one round per match. Leaf ids from `devin models list`.
+glm-5.3-flash|glm-5-3-flash-max
+glm-5.3|glm-5-3-max

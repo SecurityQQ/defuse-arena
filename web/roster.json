@@ -161,6 +161,26 @@
       "accent": "#C6443E",
       "lane": "attacker",
       "status": "bench"
+    },
+    {
+      "agent": "glm-5.3-flash",
+      "model": "glm-5-3-flash-max",
+      "name": "GLM-5.3 Flash",
+      "title": "The Quick Twin",
+      "house": "Twin Lotus Court",
+      "glyph": "GF",
+      "accent": "#2ED3C6",
+      "lane": "defender"
+    },
+    {
+      "agent": "glm-5.3-max",
+      "model": "glm-5-3-max",
+      "name": "GLM-5.3 Max",
+      "title": "The Elder Twin",
+      "house": "Twin Lotus Court",
+      "glyph": "GM",
+      "accent": "#0AC8B9",
+      "lane": "defender"
     }
   ]
 }

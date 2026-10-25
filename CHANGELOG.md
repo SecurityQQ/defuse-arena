@@ -4,6 +4,25 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.4.6 — 2026-10-23 — the GLM twins join the field
+
+### Scoring
+
+- A failed agent run that burned completion tokens is now a failed delivery
+  (`FAILED_A` / `FAILED_D`), not a `VOID`. The runner only voids a round when
+  the failed side spent no completion tokens; a max-output truncation or a
+  crash after real work is priced as a forfeit. Previously any non-zero exit
+  was written as infrastructure, so a model that worked and delivered nothing
+  escaped the ledger.
+
+### Board
+
+- The eleven-model field gains two GLM-5.3 variants: **GLM-5.3 Flash Max** and
+  **GLM-5.3 Max**. Each plays every existing model in both directions, plus
+  each other, for 46 new matches in s-2026-02 — 156 rounds and 13 agents.
+- `web/roster.json` carries both champions, and `web/pricing.json` prices their
+  leaf ids (`glm-5-3-flash-max`, `glm-5-3-max`).
+
 ## 0.4.5 — 2026-10-23 — compare the field on applied axes
 
 ### Board
