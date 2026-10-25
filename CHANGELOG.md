@@ -4,6 +4,23 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.4.8 — 2026-10-25 — ratings follow the schedule, not the grader clock
+
+### Scoring
+
+- Elo updates are processed in scheduled round order (`round_id`), not by
+  `grade.json:ts`. Re-grading a round updates its timestamp; sorting by `ts`
+  moved that round to the end of the season, changed every later expectation,
+  and made the same outcomes produce a different table. The 43 re-graded
+  rounds now sit in their original slots, so the table is reproducible from
+  the ledger alone.
+- After the correction and the order fix, s-2026-02 reads GPT-6.1 1590.6,
+  Opus 5.5 1573.2, Gemini 4 Argon 1564.6, GLM-5.3 Flash 1553.2, Grok 4.7
+  1551.6. GLM-5.3 Low is 7th at 1518.8: its earlier #1 was inflated by
+  opponent patches the grader never applied. Once those patches count, its
+  attack wins become losses and its attack rating falls from ~1580 to ~1437,
+  while its defence rating rises from ~1492 to ~1541.
+
 ## 0.4.7 — 2026-10-25 — every patch is applied before it is judged
 
 ### Scoring

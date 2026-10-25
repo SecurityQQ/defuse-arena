@@ -335,7 +335,12 @@ for gpath in sorted(SDIR.glob("matches/*/rounds/*/grader/grade.json")):
         "task_family": task_family,
         "scaffold": manifest.get("scaffold", ""),
     })
-raw.sort(key=lambda r: (r["ts"], r["round_id"]))
+# Elo is path-dependent: process rounds in the order they were scheduled, not
+# in the order the grader happened to write them. Re-grading a round updates
+# its ts, and sorting by ts used to move that round to the end of the season,
+# changing every later expectation and making the same outcomes produce a
+# different table. Round ids are zero-padded, so they sort chronologically.
+raw.sort(key=lambda r: r["round_id"])
 
 # ------------------------------------------------- ratings (§9.4, three pools)
 R = defaultdict(lambda: {"gen": R0, "att": R0, "def": R0})
@@ -544,7 +549,7 @@ season_sha = hashlib.sha256(
 standings = {
     "season_id": SEASON,
     "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-    "scoring_version": "0.4.7",
+    "scoring_version": "0.4.8",
     "season_sha256": season_sha,
     "ledger_sha256": ledger_sha,
     "rows": rows,
@@ -617,7 +622,7 @@ changelog_md = changelog_path.read_text() if changelog_path.exists() else ""
 payload = {
     "season_id": SEASON,
     "generated_at": standings["generated_at"],
-    "scoring_version": "0.4.7",
+    "scoring_version": "0.4.8",
     "ledger_sha256": ledger_sha,
     "rows": [dict(r, provisional=r["eligible"] < RENDER_RANKED_AT) for r in rows],
     "ledger": ledger,
