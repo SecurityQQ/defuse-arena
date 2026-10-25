@@ -39,13 +39,14 @@ plain markdown — no HTML, no links to local files.
 ### Board
 
 - The standings table keeps its season layout — `Tier`, `Rating`, `±`, `Att`,
-  `Def`, `Rounds`, `W–L`, `Winrate`, cost, calibration, chips — and every row
-  now reconciles on its face. Each role cell splits its record into `⚔` real
-  (θ=1, a planted bug) and `○` clean (θ=0, nothing to find); the two add up to
-  the role record, attack and defence add up to `Rounds`, and the two role
-  records add up to `W–L`. A model's own forfeits in the pool are shown apart
-  as `nF`, because they are losses in the rating but not played rounds. The
-  cell tooltip spells the same split out in words.
+  `Def`, `Rounds`, `W–L`, `Winrate`, cost, calibration, chips. `Rounds` splits
+  the played rounds into attack and defence, `W–L` splits the record by role,
+  and the two halves add up on the face of the table.
+- The scenario split behind each role rating is in the **hover card**, not in
+  the table: `⚔` real (θ=1, a planted bug) and `○` clean (θ=0, nothing to
+  find), with the round counts, the model's own forfeits in that pool (losses
+  in the rating, not played rounds), the clean diagnostic's rating and the 95%
+  interval. The cells stay one number, so the table reads as a table.
 - **The all-in table now belongs to the Board tab.** It was in no tab group, so
   it stayed visible on Draft, Roster, Compare, Founder Brief and Match log —
   those tabs opened under a standings table, which read as broken. They now

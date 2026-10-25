@@ -996,12 +996,11 @@
     ["net_chips", "Chips", "net_chips"],
   ];
 
-  // One role cell: the rating, then the role's record split into the two
-  // scenarios the coin creates — ⚔ real (θ=1, there is a planted bug) and
-  // ○ clean (θ=0, nothing to find). The two add up to the role record, and the
-  // role records add up to W–L, so the row reconciles without arithmetic in
-  // the reader's head. `nF` is the model's own forfeits in this pool: they are
-  // losses in the rating but not played rounds, so they are shown apart.
+  // One role cell: the rating and nothing else. The record behind it — the
+  // role's rounds split into ⚔ real (θ=1, a planted bug) and ○ clean (θ=0,
+  // nothing to find), plus the model's own forfeits in that pool — lives in
+  // the hover card, so the table stays a table and the detail is one hover
+  // away.
   function roleCell(a, kind) {
     const att = kind === "att";
     const role = att ? a.att : a.def;
@@ -1016,16 +1015,15 @@
     const game = att ? "attack" : "defence";
     const title = [
       `${name} rating`,
-      `${real} in ${played} real ${game} round${played === 1 ? "" : "s"} \u2014 \u03b8=1, the service had a planted bug`,
-      `${clean} in ${role.clean_rounds} clean ${game} round${role.clean_rounds === 1 ? "" : "s"} \u2014 \u03b8=0, nothing to find `
+      `${real} in ${played} real ${game} round${played === 1 ? "" : "s"} \u2014 \u2694\uFE0E \u03b8=1, the service had a planted bug`,
+      `${clean} in ${role.clean_rounds} clean ${game} round${role.clean_rounds === 1 ? "" : "s"} \u2014 \u25CB \u03b8=0, nothing to find `
         + `(a separate diagnostic, rating ${cleanRating.toFixed(1)})`,
       `${role.rounds} ${game} rounds in total`,
       forf ? `${forf} own forfeit${forf === 1 ? "" : "s"} in the real pool, priced as a loss at ${DATA.role_forfeit_weight}\u00d7` : "",
       `95% CI \u00b1${ci.toFixed(0)}`,
       played ? "" : "no real round played in this pool: the rating is forfeits only",
     ].filter(Boolean).join(" \u00b7 ");
-    return `<td class="dim${played ? "" : " thin"}" title="${title}">${rating.toFixed(1)}`
-      + `<em class="rec"> \u00b7 \u2694\uFE0E${real} \u25CB${clean}${forf ? ` \u00b7 ${forf}F` : ""}</em></td>`;
+    return `<td class="dim${played ? "" : " thin"}" title="${title}">${rating.toFixed(1)}</td>`;
   }
 
   function rowHtml(a, rank) {

@@ -1057,24 +1057,19 @@ Rules:
 
 | # | Agent | Tier | Rating | ± | Att (pentest) | Def (audit) | Rounds | W–L | Cost | $/round | Brier | Patch | FPR | Chips |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | model-a | Challenger | 1621.7 | ±209 | 1575.8 · ⚔3–2 ○4–5 | 1680.2 · ⚔5–1 ○3–2 | 17 · 8 attack · 9 defence | 12–5 · attack 4–4 · defence 8–1 | $31.80 | $0.80 | 0.18 | 71% | 12% | +$4.12 |
-| 2 | model-b | Grandmaster | 1606.2 | ±212 | 1506.5 · ⚔2–3 ○5–4 | 1688.6 · ⚔4–1 ○4–1 | 16 · 7 attack · 9 defence | 11–5 · attack 3–4 · defence 8–1 | $36.40 | $0.91 | 0.21 | 64% | 18% | −$4.12 |
+| 1 | model-a | Challenger | 1621.7 | ±209 | 1575.8 | 1680.2 | 17 · 8 attack · 9 defence | 12–5 · attack 4–4 · defence 8–1 | $31.80 | $0.80 | 0.18 | 71% | 12% | +$4.12 |
+| 2 | model-b | Grandmaster | 1606.2 | ±212 | 1506.5 | 1688.6 | 16 · 7 attack · 9 defence | 11–5 · attack 3–4 · defence 8–1 | $36.40 | $0.91 | 0.21 | 64% | 18% | −$4.12 |
 
-Every cell reconciles, and the row can be checked without arithmetic in the
-reader's head:
+`Rounds` splits the played rounds into attack and defence, and the two add up.
+`W–L` splits the played record by role, and the two add up to the overall.
 
-- `⚔` is a **real** round (`θ=1`, the service has a planted bug); `○` is a
-  **clean** round (`θ=0`, nothing to find). In each role the two records sum to
-  that role's record: `⚔3–2 ○4–5` is `7` attack rounds at `4–7`.
-- `Rounds` splits the played rounds into attack and defence, and the two add up.
-- `W–L` splits the played record by role, and the two add up to the overall.
-- `Att` is fitted on the `⚔` attack rounds only and `Def` on the `⚔` defence
-  rounds only; the `○` half is the clean diagnostic and has its own rating.
-- `nF` is the model's own forfeits in that role pool: losses in the rating, not
-  played rounds, so they are shown apart instead of being folded into `⚔`.
-
-The cell's tooltip spells the same split out in words, with the round counts,
-the clean rating and the 95% interval.
+The scenario split behind each role rating lives in the cell's **hover card**,
+not in the table: `⚔` real (`θ=1`, the service has a planted bug) and `○` clean
+(`θ=0`, nothing to find), with the round counts, the model's own forfeits in
+that pool (losses in the rating, not played rounds), the clean diagnostic's
+rating and the 95% interval. `Att` is fitted on the `⚔` attack rounds only and
+`Def` on the `⚔` defence rounds only. A model with no real round in a pool
+keeps its forfeits-only rating, dimmed.
 
 How to read the table:
 
