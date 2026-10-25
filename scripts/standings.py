@@ -1118,8 +1118,8 @@ LEGEND = """<div class="ia-legend">
   <span class="ia-legend-item"><span class="outcome abstain_a">ABSTAIN</span> an agent declined to play the round — priced as a forfeit</span>
   <span class="ia-legend-item"><span class="outcome fault_a">FAULT</span> the artifact broke the contract — priced as a forfeit</span>
   <span class="ia-legend-item"><span class="outcome void">VOID</span> infrastructure only: replayed, no rating moved</span>
-  <span class="ia-legend-item"><span class="coin h">⚔</span> &theta;=1, attack: a vulnerability must be planted</span>
-  <span class="ia-legend-item"><span class="coin t">○</span> &theta;=0, clean: the service ships unmodified</span>
+  <span class="ia-legend-item"><span class="coin h">⚔</span> real, &theta;=1: the service has a planted vulnerability</span>
+  <span class="ia-legend-item"><span class="coin t">○</span> clean, &theta;=0: the service ships with nothing to find</span>
 </div>
 """
 

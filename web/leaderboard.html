@@ -756,11 +756,13 @@
     <div class="panel-head">
       <div>
         <h2>Standings</h2>
-        <p class="sub">Overall is every played round, both coins. <b>Def</b> is θ=1 audit only
-        (did it catch the planted bug and close it), <b>Att</b> is θ=1 pentest only (did the
-        planted bug survive). Each role cell carries the record behind its rating, and
-        <b>W–L</b> splits the overall record by role. No-shows and forfeits live in the
-        all-in table below. Click a column to re-sort.</p>
+        <p class="sub">Every row adds up. <b>⚔</b> is a real round — θ=1, the service had a planted
+        bug; <b>○</b> is a clean round — θ=0, there was nothing to find. In each role the two
+        records sum to that role's record, attack and defence sum to <b>Rounds</b>, and the two
+        role records sum to <b>W–L</b>. <b>Att</b> is the pentest rating, fitted on the ⚔ attack
+        rounds only; <b>Def</b> is the audit rating, fitted on the ⚔ defence rounds only.
+        <b>4F</b> means four own forfeits in that pool, priced as losses. No-shows and forfeits
+        live in the all-in table below. Click a column to re-sort.</p>
       </div>
       <div class="controls">
         <div class="tabs" role="tablist" aria-label="Rating mode">
@@ -994,17 +996,19 @@
     ["net_chips", "Chips", "net_chips"],
   ];
 
-  // The role cell keeps the table it had: the rating, then a dim record.
-  // The record is the θ=1 sample the rating is fitted on, out of the rounds
-  // the model played in that role — the coin sends the rest to θ=0, which is
-  // the clean diagnostic, not this pool. The tooltip spells the split out.
+  // One role cell: the rating, then the role's record split into the two
+  // scenarios the coin creates — ⚔ real (θ=1, there is a planted bug) and
+  // ○ clean (θ=0, nothing to find). The two add up to the role record, and the
+  // role records add up to W–L, so the row reconciles without arithmetic in
+  // the reader's head. `nF` is the model's own forfeits in this pool: they are
+  // losses in the rating but not played rounds, so they are shown apart.
   function roleCell(a, kind) {
     const att = kind === "att";
     const role = att ? a.att : a.def;
     const rating = att ? a.rating_att : a.rating_def;
     const ci = att ? a.rating_att_ci : a.rating_def_ci;
-    const wins = att ? role.exploit_wins : role.patch_wins;
-    const losses = att ? role.exploit_losses : role.patch_losses;
+    const real = `${att ? role.exploit_wins : role.patch_wins}\u2013${att ? role.exploit_losses : role.patch_losses}`;
+    const clean = `${role.clean_wins}\u2013${role.clean_losses}`;
     const forf = att ? role.exploit_forfeits : role.patch_forfeits;
     const played = att ? role.exploit_rounds : role.patch_rounds;
     const cleanRating = att ? a.rating_clean_att : a.rating_clean_def;
@@ -1012,15 +1016,16 @@
     const game = att ? "attack" : "defence";
     const title = [
       `${name} rating`,
-      `${wins}\u2013${losses} on ${played} of ${role.rounds} ${game} rounds`,
-      forf ? `${forf} own forfeit${forf === 1 ? "" : "s"} priced as a loss at ${DATA.role_forfeit_weight}\u00d7` : "",
-      `${role.clean_rounds} \u03b8=0 clean rounds: ${role.clean_wins}\u2013${role.clean_losses} `
-        + `\u2014 a separate diagnostic, rating ${cleanRating.toFixed(1)}`,
+      `${real} in ${played} real ${game} round${played === 1 ? "" : "s"} \u2014 \u03b8=1, the service had a planted bug`,
+      `${clean} in ${role.clean_rounds} clean ${game} round${role.clean_rounds === 1 ? "" : "s"} \u2014 \u03b8=0, nothing to find `
+        + `(a separate diagnostic, rating ${cleanRating.toFixed(1)})`,
+      `${role.rounds} ${game} rounds in total`,
+      forf ? `${forf} own forfeit${forf === 1 ? "" : "s"} in the real pool, priced as a loss at ${DATA.role_forfeit_weight}\u00d7` : "",
       `95% CI \u00b1${ci.toFixed(0)}`,
-      played ? "" : "no played round in this pool: the rating is forfeits only",
+      played ? "" : "no real round played in this pool: the rating is forfeits only",
     ].filter(Boolean).join(" \u00b7 ");
     return `<td class="dim${played ? "" : " thin"}" title="${title}">${rating.toFixed(1)}`
-      + `<em class="rec"> \u00b7 ${wins}\u2013${losses}</em></td>`;
+      + `<em class="rec"> \u00b7 \u2694\uFE0E${real} \u25CB${clean}${forf ? ` \u00b7 ${forf}F` : ""}</em></td>`;
   }
 
   function rowHtml(a, rank) {
@@ -1033,10 +1038,12 @@
     const wlTitle = [
       "played record",
       `${a.wins}\u2013${a.losses} over ${a.rounds} rounds`,
-      `as attacker ${a.att.wins}\u2013${a.att.losses} (\u03b8=1 ${a.att.exploit_wins}\u2013${a.att.exploit_losses}, `
-        + `\u03b8=0 ${a.att.clean_wins}\u2013${a.att.clean_losses})`,
-      `as defender ${a.def.wins}\u2013${a.def.losses} (\u03b8=1 ${a.def.patch_wins}\u2013${a.def.patch_losses}, `
-        + `\u03b8=0 ${a.def.clean_wins}\u2013${a.def.clean_losses})`,
+      `as attacker ${a.att.rounds} rounds: ${a.att.wins}\u2013${a.att.losses} `
+        + `(\u2694\uFE0E real ${a.att.exploit_wins}\u2013${a.att.exploit_losses}, `
+        + `\u25CB clean ${a.att.clean_wins}\u2013${a.att.clean_losses})`,
+      `as defender ${a.def.rounds} rounds: ${a.def.wins}\u2013${a.def.losses} `
+        + `(\u2694\uFE0E real ${a.def.patch_wins}\u2013${a.def.patch_losses}, `
+        + `\u25CB clean ${a.def.clean_wins}\u2013${a.def.clean_losses})`,
     ].join(" \u00b7 ");
 
     return `<tr class="${rank && rank <= 3 ? "podium-row" : ""} ${rank == null ? "prov" : ""}">
@@ -1051,8 +1058,8 @@
       <td class="dim ci" title="95% confidence \u00b7 \u00b1${a.rating_ci.toFixed(1)} from the fit \u00b7 a gap smaller than two intervals is noise, not a ranking">\u00b1${a.rating_ci.toFixed(0)}</td>
       ${roleCell(a, "att")}
       ${roleCell(a, "def")}
-      <td>${a.rounds}</td>
-      <td title="${wlTitle}">${a.wins}\u2013${a.losses}<em class="rec"> \u00b7 A ${a.att.wins}\u2013${a.att.losses} \u00b7 D ${a.def.wins}\u2013${a.def.losses}</em></td>
+      <td>${a.rounds}<em class="rec"> \u00b7 ${a.att.rounds} attack \u00b7 ${a.def.rounds} defence</em></td>
+      <td title="${wlTitle}">${a.wins}\u2013${a.losses}<em class="rec"> \u00b7 attack ${a.att.wins}\u2013${a.att.losses} \u00b7 defence ${a.def.wins}\u2013${a.def.losses}</em></td>
       <td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>
       <td>${usd(a.cost_total)}</td>
       <td class="dim">${usd(a.cost_per_round)}</td>

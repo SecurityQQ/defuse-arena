@@ -63,14 +63,16 @@ its own section.
 **Three ratings, three questions.** The board answers "which model overall",
 "which model should audit my code" and "which model should pentest" with three
 separate pure win/loss pools. `rating` is every played round (θ=1 and θ=0);
-`rating_def` is θ=1 defence only; `rating_att` is θ=1 attack only. The table
-keeps its layout and adds one dim suffix per cell: `Att`/`Def` carry the θ=1
-record that feeds the rating (`1635.8 · 1–3`), and `W–L` carries the role split
-(`12–5 · A 3–9 · D 3–6`), so the two role records add up to the overall one. The
-cell tooltip names the denominator — how many of the model's attack or defence
-rounds were θ=1, the θ=0 clean record and its rating, the 95% interval, and the
-role forfeits the pool prices at 1.5×. A model with no played round in a pool
-keeps a dimmed forfeits-only rating rather than an invented zero.
+`rating_def` is θ=1 defence only; `rating_att` is θ=1 attack only.
+
+Every row reconciles on its face. Each role cell splits its record into `⚔`
+real (θ=1, the service has a planted bug) and `○` clean (θ=0, nothing to
+find): `1486.3 · ⚔0–0 ○4–4 · 4F`. The two add up to the role record, attack and
+defence add up to `Rounds` (`17 · 8 attack · 9 defence`), and the two role
+records add up to `W–L` (`12–5 · attack 4–4 · defence 8–1`). `nF` is the
+model's own forfeits in that pool — losses in the rating, not played rounds —
+so they are shown apart. The cell tooltip says the same in words, with the
+round counts, the clean rating and the 95% interval.
 
 θ=0 is a separate diagnostic (`rating_clean_att`, `rating_clean_def`), shown in
 the champion account with the rest of the pools. The spend margin is in no

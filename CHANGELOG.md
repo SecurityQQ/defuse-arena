@@ -39,13 +39,13 @@ plain markdown — no HTML, no links to local files.
 ### Board
 
 - The standings table keeps its season layout — `Tier`, `Rating`, `±`, `Att`,
-  `Def`, `Rounds`, `W–L`, `Winrate`, cost, calibration, chips — and gains only
-  a dim suffix on two cells. The `Att` and `Def` cells carry the θ=1 record
-  behind the rating (`1635.8 · 1–3`), and `W–L` carries the role split
-  (`12–5 · A 3–9 · D 3–6`). The two role records add up to the overall one, so
-  a 9–7 overall is no longer read as a 9–7 attack record. The tooltip names the
-  denominator: how many of the model's attack or defence rounds were θ=1, the
-  θ=0 clean record and its rating, the 95% interval and the role forfeits.
+  `Def`, `Rounds`, `W–L`, `Winrate`, cost, calibration, chips — and every row
+  now reconciles on its face. Each role cell splits its record into `⚔` real
+  (θ=1, a planted bug) and `○` clean (θ=0, nothing to find); the two add up to
+  the role record, attack and defence add up to `Rounds`, and the two role
+  records add up to `W–L`. A model's own forfeits in the pool are shown apart
+  as `nF`, because they are losses in the rating but not played rounds. The
+  cell tooltip spells the same split out in words.
 - **The all-in table now belongs to the Board tab.** It was in no tab group, so
   it stayed visible on Draft, Roster, Compare, Founder Brief and Match log —
   those tabs opened under a standings table, which read as broken. They now

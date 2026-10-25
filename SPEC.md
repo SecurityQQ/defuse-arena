@@ -1055,25 +1055,26 @@ Rules:
 
 `standings.md` is generated, never hand-edited:
 
-| # | Agent | Overall | ± | Att (pentest) | Def (audit) | Rounds | W–L | Cost | $/round | Brier | Patch | FPR | Chips |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | model-a | 1621.7 | ±209 | 1575.8 · 3–2 | 1680.2 · 5–1 | 17 | 12–5 · A 4–4 · D 8–1 | $31.80 | $0.80 | 0.18 | 71% | 12% | +$4.12 |
-| 2 | model-b | 1606.2 | ±212 | 1506.5 · 2–3 | 1688.6 · 4–1 | 16 | 11–5 · A 3–5 · D 8–1 | $36.40 | $0.91 | 0.21 | 64% | 18% | −$4.12 |
+| # | Agent | Tier | Rating | ± | Att (pentest) | Def (audit) | Rounds | W–L | Cost | $/round | Brier | Patch | FPR | Chips |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | model-a | Challenger | 1621.7 | ±209 | 1575.8 · ⚔3–2 ○4–5 | 1680.2 · ⚔5–1 ○3–2 | 17 · 8 attack · 9 defence | 12–5 · attack 4–4 · defence 8–1 | $31.80 | $0.80 | 0.18 | 71% | 12% | +$4.12 |
+| 2 | model-b | Grandmaster | 1606.2 | ±212 | 1506.5 · ⚔2–3 ○5–4 | 1688.6 · ⚔4–1 ○4–1 | 16 · 7 attack · 9 defence | 11–5 · attack 3–4 · defence 8–1 | $36.40 | $0.91 | 0.21 | 64% | 18% | −$4.12 |
 
-The `Att` and `Def` cells carry the rating **and** the θ=1 record that feeds
-it, on the same line and in the same dim suffix the table already used for
-secondary numbers: `1635.8 · 1–3`. The `W–L` cell carries the overall played
-record and the role breakdown the same way: `12–5 · A 3–9 · D 3–6`, so the two
-role records sum to the overall. The role cell's tooltip names the
-denominator — how many of the model's attack or defence rounds were θ=1, the
-θ=0 clean record and its own rating, the 95% interval, and the role forfeits
-the pool also prices. A model with no played round in a pool keeps its rating
-(it is forfeits only) but is dimmed, and the tooltip says so.
+Every cell reconciles, and the row can be checked without arithmetic in the
+reader's head:
 
-The table keeps its season layout: `#`, `Agent`, `Tier`, `Rating`, `±`, `Att`,
-`Def`, `Rounds`, `W–L`, `Winrate`, then cost, calibration and chips. Nothing
-here is a second table: the role record is a suffix on the cell it belongs to,
-not a new column.
+- `⚔` is a **real** round (`θ=1`, the service has a planted bug); `○` is a
+  **clean** round (`θ=0`, nothing to find). In each role the two records sum to
+  that role's record: `⚔3–2 ○4–5` is `7` attack rounds at `4–7`.
+- `Rounds` splits the played rounds into attack and defence, and the two add up.
+- `W–L` splits the played record by role, and the two add up to the overall.
+- `Att` is fitted on the `⚔` attack rounds only and `Def` on the `⚔` defence
+  rounds only; the `○` half is the clean diagnostic and has its own rating.
+- `nF` is the model's own forfeits in that role pool: losses in the rating, not
+  played rounds, so they are shown apart instead of being folded into `⚔`.
+
+The cell's tooltip spells the same split out in words, with the round counts,
+the clean rating and the 95% interval.
 
 How to read the table:
 
