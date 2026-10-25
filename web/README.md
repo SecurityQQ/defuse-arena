@@ -54,28 +54,28 @@ tab is client-side state only; the URL hash (`#brief`, `#compare`, `#draft`,
 `#log`, `#challenges`) keeps a tab shareable, and opening a match from anywhere
 switches to the log first.
 
-**Board** — the season summary, podium and the compact standings table:
-sortable columns, role tabs (Overall, Att (pentest), Def (audit), Changelog),
+**Board** — the season summary, podium and the standings table:
+sortable columns, role tabs (Overall, Attacker, Defender, Changelog),
 agent filter. The Changelog tab renders `CHANGELOG.md` from the payload instead
-of the table.
+of the table. The all-in table belongs to this tab; every other tab shows only
+its own section.
 
 **Three ratings, three questions.** The board answers "which model overall",
 "which model should audit my code" and "which model should pentest" with three
-separate pure win/loss pools, and a "use it for" legend under the heading names
-them. `rating` is every played round (θ=1 and θ=0); `rating_def` is θ=1 defence
-only; `rating_att` is θ=1 attack only. Each role cell carries the rating and the
-θ=1 record that feeds it — `1670.6` over `5–0 · ±418` — and `W–L` carries the
-overall record with `A … · D …` underneath, so the two role records add up to
-the overall one. A role forfeit is a loss at 1.5× in that pool and is marked
-`nF`; the opponent's forfeit is not a test of the role and is excluded. A model
-with no played round in a pool keeps a dimmed forfeits-only rating rather than
-an invented zero.
+separate pure win/loss pools. `rating` is every played round (θ=1 and θ=0);
+`rating_def` is θ=1 defence only; `rating_att` is θ=1 attack only. The table
+keeps its layout and adds one dim suffix per cell: `Att`/`Def` carry the θ=1
+record that feeds the rating (`1635.8 · 1–3`), and `W–L` carries the role split
+(`12–5 · A 3–9 · D 3–6`), so the two role records add up to the overall one. The
+cell tooltip names the denominator — how many of the model's attack or defence
+rounds were θ=1, the θ=0 clean record and its rating, the 95% interval, and the
+role forfeits the pool prices at 1.5×. A model with no played round in a pool
+keeps a dimmed forfeits-only rating rather than an invented zero.
 
 θ=0 is a separate diagnostic (`rating_clean_att`, `rating_clean_def`), shown in
 the champion account with the rest of the pools. The spend margin is in no
 skill rating: it survives as `rating_efficiency`, shown in the account and never
-used to rank. A pools line under the heading counts what the season actually
-measured, so a thin attack pool is visible before the ranking is trusted.
+used to rank.
 
 **The all-in table** sits below the standings. It is the same field with every
 refused or failed round counted as a loss: scheduled vs played, no-shows,

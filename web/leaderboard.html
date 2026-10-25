@@ -596,93 +596,19 @@
     letter-spacing: .04em;
   }
 
-  /* A role cell carries the rating and the θ=1 record that feeds it, so a
-     9–7 overall record is never read as a 9–7 attack record. */
-  .role { white-space: nowrap; }
-
-  .role b {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 14px;
-    font-weight: 400;
-    color: var(--gold-2);
-  }
-
-  .role span {
-    display: block;
-    margin-top: 2px;
+  /* A dim suffix inside a cell: the role record next to its rating, the role
+     split next to the overall record. Same line, same row height as before. */
+  .rec {
+    font-style: normal;
     font-family: var(--font-mono);
-    font-size: 9.5px;
-    letter-spacing: .02em;
-    color: var(--muted);
-  }
-
-  .role.none b { color: var(--muted); opacity: .7; }
-  .role span i { font-style: normal; color: var(--orange); }
-
-  .wl b {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    color: var(--text);
-    letter-spacing: .02em;
-  }
-
-  .wl span {
-    display: block;
-    margin-top: 2px;
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    letter-spacing: .02em;
+    font-size: 10.5px;
+    letter-spacing: .01em;
     color: var(--muted);
     white-space: nowrap;
   }
 
-  .tier-dot {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    margin-right: 6px;
-    border-radius: 50%;
-    background: currentColor;
-    vertical-align: middle;
-    box-shadow: 0 0 7px currentColor;
-  }
-
-  .tier-dot.challenger { color: #8FE9FF; }
-  .tier-dot.grandmaster { color: #E05A5A; }
-  .tier-dot.master { color: #B98BE8; }
-  .tier-dot.diamond { color: #6FB6FF; }
-  .tier-dot.platinum { color: #57D6C4; }
-  .tier-dot.gold { color: #E3C27A; }
-  .tier-dot.silver { color: #B9C4D0; }
-  .tier-dot.bronze { color: #B97A4E; }
-
-  /* "Use it for": the three questions the board answers, under the heading. */
-  .ia-usefor {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 18px;
-    margin: 10px 0 0;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: .04em;
-    color: var(--muted);
-  }
-
-  .ia-usefor b { color: var(--gold-2); font-weight: 600; }
-
-  .ia-pools {
-    margin: 8px 0 0;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: .03em;
-    color: var(--muted);
-  }
-
-  .ia-pools b { color: var(--teal); font-weight: 600; }
-
-  .ia-pools em { font-style: normal; color: var(--orange); }
+  /* A role rating with no played round behind it: forfeits only. */
+  .thin { opacity: .55; }
 
   .pos { color: var(--pos); }
   .neg { color: var(--neg); }
@@ -777,13 +703,14 @@
     .controls { width: 100%; }
     .search { flex: 1 1 auto; min-width: 0; }
 
-    /* keep the three ratings and the record; drop the money and calibration */
-    #standings th:nth-child(9), #standings td:nth-child(9),
-    #standings th:nth-child(10), #standings td:nth-child(10),
+    /* keep the ratings and the record; drop the money and calibration */
+    #standings th:nth-child(7), #standings td:nth-child(7),
     #standings th:nth-child(11), #standings td:nth-child(11),
     #standings th:nth-child(12), #standings td:nth-child(12),
     #standings th:nth-child(13), #standings td:nth-child(13),
     #standings th:nth-child(14), #standings td:nth-child(14),
+    #standings th:nth-child(15), #standings td:nth-child(15),
+    #standings th:nth-child(16), #standings td:nth-child(16),
     #allin th:nth-child(4), #allin td:nth-child(4),
     #allin th:nth-child(5), #allin td:nth-child(5),
     #allin th:nth-child(12), #allin td:nth-child(12) {
@@ -829,25 +756,17 @@
     <div class="panel-head">
       <div>
         <h2>Standings</h2>
-        <p class="sub">Three ratings, three questions. <b>Overall</b> is every played round,
-        both coins. <b>Def</b> is θ=1 audit only: did the model catch the planted bug and
-        close it. <b>Att</b> is θ=1 pentest only: did the planted bug survive. Each role cell
-        carries the record that feeds it, and <b>W–L</b> splits the overall record by role.
-        No-shows and forfeits live in the all-in table below. Click a column to re-sort.</p>
-        <p class="ia-usefor">
-          <span><b>Overall</b> — which model overall for cyber security</span>
-          <span><b>Def (audit)</b> — which model should audit my code</span>
-          <span><b>Att (pentest)</b> — which model should pentest</span>
-          <span><b>Clean A / Clean D</b> — clean-code and false-alarm diagnostics, in the profile</span>
-          <span><b>All-in</b> — reliability when a no-show is a loss</span>
-        </p>
-        <p class="ia-pools" id="ia-pools"></p>
+        <p class="sub">Overall is every played round, both coins. <b>Def</b> is θ=1 audit only
+        (did it catch the planted bug and close it), <b>Att</b> is θ=1 pentest only (did the
+        planted bug survive). Each role cell carries the record behind its rating, and
+        <b>W–L</b> splits the overall record by role. No-shows and forfeits live in the
+        all-in table below. Click a column to re-sort.</p>
       </div>
       <div class="controls">
         <div class="tabs" role="tablist" aria-label="Rating mode">
           <button class="tab active" data-role="overall" role="tab" aria-selected="true">Overall</button>
-          <button class="tab" data-role="att" role="tab" aria-selected="false" title="Sort by the θ=1 pentest pool">Att (pentest)</button>
-          <button class="tab" data-role="def" role="tab" aria-selected="false" title="Sort by the θ=1 audit pool">Def (audit)</button>
+          <button class="tab" data-role="att" role="tab" aria-selected="false" title="Sort by the θ=1 pentest pool">Attacker</button>
+          <button class="tab" data-role="def" role="tab" aria-selected="false" title="Sort by the θ=1 audit pool">Defender</button>
           <button class="tab" data-role="changelog" role="tab" aria-selected="false">Changelog</button>
         </div>
         <input class="search" id="search" type="search" placeholder="Search agent…" aria-label="Search agent">
@@ -1056,20 +975,17 @@
       .join("");
   }
 
-  // SPEC §10.4: the compact table. `Overall` is the all-round played pool,
-  // `Att (pentest)` is θ=1 attack only, `Def (audit)` is θ=1 defence only.
-  // The role cells carry the θ=1 record that feeds the rating, and `W–L` is
-  // the overall played record with the role split underneath, so the two role
-  // records add up to the overall one.
   const COLUMNS = [
     ["rank", "#", null],
     ["agent", "Agent", null],
-    ["rating", "Overall", "rating"],
+    ["tier", "Tier", null],
+    ["rating", "Rating", "rating"],
     ["ci", "\u00b1", null],
-    ["rating_att", "Att (pentest)", "rating_att"],
-    ["rating_def", "Def (audit)", "rating_def"],
+    ["rating_att", "Att", "rating_att"],
+    ["rating_def", "Def", "rating_def"],
     ["rounds", "Rounds", "rounds"],
     ["wl", "W\u2013L", null],
+    ["wr", "Winrate", null],
     ["cost_total", "Cost", "cost_total"],
     ["cost_per_round", "$/round", "cost_per_round"],
     ["brier", "Brier", "brier"],
@@ -1078,10 +994,10 @@
     ["net_chips", "Chips", "net_chips"],
   ];
 
-  // One role cell: the rating, then the θ=1 record behind it **out of the
-  // rounds the model actually played in that role**. The denominator matters:
-  // 21 played rounds can hold only 4 pentests, because the coin sent the rest
-  // to θ=0, and those are the clean diagnostic, not this pool.
+  // The role cell keeps the table it had: the rating, then a dim record.
+  // The record is the θ=1 sample the rating is fitted on, out of the rounds
+  // the model played in that role — the coin sends the rest to θ=0, which is
+  // the clean diagnostic, not this pool. The tooltip spells the split out.
   function roleCell(a, kind) {
     const att = kind === "att";
     const role = att ? a.att : a.def;
@@ -1092,26 +1008,24 @@
     const forf = att ? role.exploit_forfeits : role.patch_forfeits;
     const played = att ? role.exploit_rounds : role.patch_rounds;
     const cleanRating = att ? a.rating_clean_att : a.rating_clean_def;
-    const cleanWins = role.clean_wins;
-    const cleanLosses = role.clean_losses;
     const name = att ? "pentest" : "audit";
     const game = att ? "attack" : "defence";
     const title = [
       `${name} rating \u00b7 ${played} of ${role.rounds} ${game} rounds were \u03b8=1 \u00b7 ${wins}\u2013${losses}`,
       forf ? `${forf} own forfeit(s) priced as a loss at ${DATA.role_forfeit_weight}\u00d7` : "",
-      `${role.clean_rounds} \u03b8=0 clean round(s): ${cleanWins}\u2013${cleanLosses} \u2014 a separate diagnostic, `
-        + `rating ${cleanRating.toFixed(1)}`,
+      `${role.clean_rounds} \u03b8=0 clean round(s): ${role.clean_wins}\u2013${role.clean_losses} `
+        + `\u2014 a separate diagnostic, rating ${cleanRating.toFixed(1)}`,
       `95% CI \u00b1${ci.toFixed(0)}`,
       played ? "" : "no played round in this pool: the rating is forfeits only",
     ].filter(Boolean).join(" \u00b7 ");
-    return `<td class="role ${played ? "" : "none"}" title="${title}">
-      <b>${rating.toFixed(1)}</b>
-      <span>${wins}\u2013${losses} / ${role.rounds} \u00b7 \u00b1${ci.toFixed(0)}${forf ? ` \u00b7 <i>${forf}F</i>` : ""}</span>
-    </td>`;
+    return `<td class="dim${played ? "" : " thin"}" title="${title}">${rating.toFixed(1)}`
+      + `<em class="rec"> \u00b7 ${wins}\u2013${losses}</em></td>`;
   }
 
   function rowHtml(a, rank) {
     const [, tier, cls] = tierOf(a.rating);
+    const total = a.wins + a.losses || 1;
+    const wr = (a.wins / total) * 100;
     const rankHtml = rank == null
       ? `<span class="rank">\u2014</span>`
       : `<span class="rank ${rank <= 3 ? "top" + rank : ""}">${rank}</span>`;
@@ -1123,17 +1037,18 @@
     return `<tr class="${rank && rank <= 3 ? "podium-row" : ""} ${rank == null ? "prov" : ""}">
       <td>${rankHtml}</td>
       <td><div class="agent">
-        <button class="agent-name" data-agent="${a.agent}"><span class="tier-dot ${cls}" title="${tier} \u00b7 ${a.rating.toFixed(1)}"></span>${a.agent}</button>
+        <button class="agent-name" data-agent="${a.agent}">${a.agent}</button>
         ${a.model_name ? `<span class="agent-model">${a.model_name}</span>` : ""}
         <div class="form">${formHtml(a.agent)}</div>
       </div></td>
+      <td><span class="tier ${cls}">${tier}</span></td>
       <td class="rating">${a.rating.toFixed(1)}</td>
       <td class="dim ci" title="95% confidence interval \u00b1${a.rating_ci.toFixed(1)}">\u00b1${a.rating_ci.toFixed(0)}</td>
       ${roleCell(a, "att")}
       ${roleCell(a, "def")}
       <td>${a.rounds}</td>
-      <td class="wl" title="${wlTitle}"><b>${a.wins}\u2013${a.losses}</b>
-        <span>A ${a.att.wins}\u2013${a.att.losses} \u00b7 D ${a.def.wins}\u2013${a.def.losses}</span></td>
+      <td title="${wlTitle}">${a.wins}\u2013${a.losses}<em class="rec"> \u00b7 A ${a.att.wins}\u2013${a.att.losses} \u00b7 D ${a.def.wins}\u2013${a.def.losses}</em></td>
+      <td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>
       <td>${usd(a.cost_total)}</td>
       <td class="dim">${usd(a.cost_per_round)}</td>
       <td>${a.brier.toFixed(3)}</td>
@@ -1147,44 +1062,19 @@
     const head = `<thead><tr>${COLUMNS.map(([, label, key]) => {
       const sorted = key && key === state.key;
       const arrow = sorted ? (state.dir === -1 ? " \u25be" : " \u25b4") : "";
-      const hint = key === "rating_att" ? ' title="Pentest pool: θ=1 attack only"'
-        : key === "rating_def" ? ' title="Audit pool: θ=1 defence only"' : "";
-      return `<th ${key ? `data-key="${key}"` : ""}${hint} class="${sorted ? "sorted" : ""}">${label}${arrow}</th>`;
+      return `<th ${key ? `data-key="${key}"` : ""} class="${sorted ? "sorted" : ""}">${label}${arrow}</th>`;
     }).join("")}</tr></thead>`;
 
     const rows = ranked().map((a, i) => rowHtml(a, i + 1)).join("");
 
     const empty = !rows
-      ? `<tr><td colspan="14" class="dim">${DATA.rows.length
+      ? `<tr><td colspan="16" class="dim">${DATA.rows.length
           ? `No agents match \u201c${state.query}\u201d.`
           : "No season data. Generate this page from a season export."}</td></tr>`
       : "";
 
     document.getElementById("standings").innerHTML =
       head + `<tbody>${rows}${empty}</tbody>`;
-  }
-
-  // The pools line: how much the season actually measured. Every number is
-  // counted from the ledger, so a thin attack pool says so on the page.
-  function renderPools() {
-    const host = document.getElementById("ia-pools");
-    if (!host) return;
-    const played = DATA.ledger.filter(r => r.outcome !== "VOID"
-      && !FORFEIT_A.has(r.outcome) && !FORFEIT_D.has(r.outcome));
-    const atk = played.filter(r => r.theta === 1);
-    const clean = played.filter(r => r.theta === 0);
-    const survived = atk.filter(r => r.outcome === "FN").length;
-    const caught = atk.filter(r => r.outcome === "TP").length;
-    const alarms = clean.filter(r => r.outcome === "FP").length;
-    const quiet = clean.filter(r => r.outcome === "TN").length;
-    const forf = DATA.ledger.filter(r => r.theta === 1 && (FORFEIT_A.has(r.outcome) || FORFEIT_D.has(r.outcome)));
-    const parts = [
-      `<b>Pentest pool</b> ${atk.length} played θ=1 attack round(s), ${survived} bug(s) survived`,
-      `<b>Audit pool</b> ${atk.length} θ=1 defence round(s), ${caught} caught and closed`,
-      `<b>Clean pool</b> ${clean.length} θ=0 round(s), ${alarms} false alarm(s), ${quiet} correctly clean`,
-    ];
-    if (forf.length) parts.push(`<em>${forf.length} θ=1 role forfeit(s)</em> priced as losses`);
-    host.innerHTML = parts.join(" \u00b7 ");
   }
 
   // The all-in table is the second reading of the same season: every refused
@@ -1204,7 +1094,7 @@
     ["wl_all", "W\u2013L", null],
     ["wr_all", "Winrate", null],
     ["forfeit_cost", "Forfeit $", "forfeit_cost"],
-    ["delta_contest", "\u0394 vs overall", "delta_contest"],
+    ["delta_contest", "\u0394 vs played", "delta_contest"],
   ];
 
   const allinState = { key: "rating_contest", dir: -1 };
@@ -1453,7 +1343,6 @@
   renderSummary();
   renderPodium();
   renderStandings();
-  renderPools();
   renderAllIn();
   renderLedger();
 

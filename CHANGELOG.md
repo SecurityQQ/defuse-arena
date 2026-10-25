@@ -38,23 +38,18 @@ plain markdown — no HTML, no links to local files.
 
 ### Board
 
-- The standings table is the compact SPEC §10.4 layout: `Overall`, `±`,
-  `Att (pentest)`, `Def (audit)`, `Rounds`, `W–L`, then cost, calibration and
-  chips. The separate `Tier` and `Winrate` columns are gone — the tier is a
-  coloured dot beside the agent name, and the win rate is the `W–L` cell.
-- Each role cell carries the rating **and** the θ=1 record that feeds it, its
-  95% interval and the role forfeits the pool prices: `1670.6` over
-  `5–0 / 9 · ±418`. The record is shown out of the rounds the model played in
-  that role, because the θ=1 sample and the role record have different
-  denominators — the coin sends most rounds to θ=0, and those are the clean
-  diagnostic. A model with no played round in the pool is dimmed and says
-  "forfeits only" instead of showing a number with no sample behind it.
-- `W–L` carries the overall played record and the role split underneath:
-  `12–5` over `A 4–4 · D 8–1`. The two role records add up to the overall one,
-  so a 9–7 overall can no longer be read as a 9–7 attack record.
-- A "use it for" legend under the heading names the three questions, and a
-  pools line counts what the season actually measured (θ=1 attack rounds,
-  bugs that survived, θ=1 defence rounds caught, θ=0 false alarms).
+- The standings table keeps its season layout — `Tier`, `Rating`, `±`, `Att`,
+  `Def`, `Rounds`, `W–L`, `Winrate`, cost, calibration, chips — and gains only
+  a dim suffix on two cells. The `Att` and `Def` cells carry the θ=1 record
+  behind the rating (`1635.8 · 1–3`), and `W–L` carries the role split
+  (`12–5 · A 3–9 · D 3–6`). The two role records add up to the overall one, so
+  a 9–7 overall is no longer read as a 9–7 attack record. The tooltip names the
+  denominator: how many of the model's attack or defence rounds were θ=1, the
+  θ=0 clean record and its rating, the 95% interval and the role forfeits.
+- **The all-in table now belongs to the Board tab.** It was in no tab group, so
+  it stayed visible on Draft, Roster, Compare, Founder Brief and Match log —
+  those tabs opened under a standings table, which read as broken. They now
+  show their own section and nothing else.
 - The match log badge names the pool the round fed: `ATK`/`DEF` on θ=1,
   `CLEAN` on θ=0, `ALL-IN` on a forfeit.
 - The champion account shows all four pools plus the retired margin-weighted

@@ -35,12 +35,9 @@
     "#": ["rank", "Position by overall rating across the whole field."],
     Agent: ["agent", "Model label. Click the name to filter the match log to that agent."],
     Tier: ["tier", "League-style band derived from the overall rating: Challenger \u2265 1550, Grandmaster \u2265 1500, Master \u2265 1450, Diamond \u2265 1400, Platinum \u2265 1350, Gold \u2265 1300, Silver \u2265 1250, otherwise Bronze."],
-    Overall: ["overall rating", "The answer to \u201cwhich model overall for cyber security\u201d: a pure win/loss Bradley-Terry fit over every played round, \u03b8=1 and \u03b8=0. 1500 is the field average. The spend margin is not in it \u2014 a cheap win is a cheaper win, not a better one. Forfeits are excluded here and priced in the all-in table."],
     Rating: ["overall rating", "The answer to \u201cwhich model overall for cyber security\u201d: a pure win/loss Bradley-Terry fit over every played round, \u03b8=1 and \u03b8=0. 1500 is the field average. The spend margin is not in it. Forfeits are excluded here and priced in the all-in table."],
     "\u00b1": ["95% confidence", "Half-width of the 95% confidence interval from the fit. With 10\u201322 played rounds per model the top of the field overlaps: a gap smaller than the two intervals is noise, not a ranking."],
-    "Att(pentest)": ["pentest rating", "The answer to \u201cwhich model should pentest\u201d: \u03b8=1 attack only. FN is a win (the planted bug survived the patch), TP a loss (the defender caught and closed it). An attacker forfeit is a loss at 1.5\u00d7; a defender forfeit is not an attack test and is excluded. Each attack is priced against the defender's defence rating, so beating a strong auditor counts more. The cell carries the \u03b8=1 record behind the rating, its 95% interval, and the role forfeits the pool also prices."],
     Att: ["pentest rating", "The answer to \u201cwhich model should pentest\u201d: \u03b8=1 attack only, priced against the defender's defence rating. The cell carries the \u03b8=1 record behind the rating."],
-    "Def(audit)": ["audit rating", "The answer to \u201cwhich model should audit my code\u201d: \u03b8=1 defence only. TP is a win (the bug was caught and the patch held), FN a loss (it survived). A defender forfeit is a loss at 1.5\u00d7; an attacker forfeit is not an audit test and is excluded. Each defence is priced against the attacker's attack rating. The cell carries the \u03b8=1 record behind the rating, its 95% interval, and the role forfeits the pool also prices. Crying wolf on clean code is a separate diagnostic \u2014 the FPR column and Clean D in the profile \u2014 not part of this rating."],
     Def: ["audit rating", "The answer to \u201cwhich model should audit my code\u201d: \u03b8=1 defence only, priced against the attacker's attack rating. The cell carries the \u03b8=1 record behind the rating."],
     Rounds: ["played rounds", "Rounds both sides played to a verdict (TP, TN, FP, FN, DISCOVERY). No-shows, forfeits and voids are in the all-in table."],
     "No-show": ["no-shows", "ABSTAIN_A + ABSTAIN_D: a clean exit with no deliverable, barely any work. Counted separately from a forfeit so the two never double-count."],
@@ -52,7 +49,7 @@
     Played: ["played rounds", "Rounds both sides played to a verdict. The difference from Scheduled is the forfeits."],
     OppF: ["opponent forfeits", "Rounds the opponent forfeited. Counted as wins in the all-in record and in Scheduled; they are why an all-in W\u2013L can be better than the played one."],
     "Forfeit$": ["forfeit cost", "Real spend on the agent's own no-show and forfeit rounds plus the priced chip fee. Hover the cell for the split."],
-    "\u0394vsoverall": ["all-in minus overall", "The all-in rating minus the overall rating. A negative number means the forfeits cost more than the opponent forfeits gave back."],
+    "\u0394vsplayed": ["all-in minus played", "The all-in rating minus the overall rating. A negative number means the forfeits cost more than the opponent forfeits gave back."],
     Cost: ["spend in USD", "What the season actually cost, priced per model from web/pricing.json: uncached input, cached input and output are billed at different rates, so a token count is not comparable across models. Includes forfeits and voids, because that money was really spent."],
     "$/round": ["cost per round", "cost_total / (played + forfeit + void rounds)."],
     Brier: ["Brier score", "Mean Brier over rounds played as defender. Diagnostic only \u2014 it does not drive the rating. Lower is better: 0 is a perfect call, 0.25 is a coin flip."],
@@ -563,8 +560,8 @@
           <em class="r-model">${c.model_name || c.model}</em></span></div></td>
         <td>${tier ? `<span class="tier ${tier[2]}">${tier[1]}</span>` : `<span class="dim">unplayed</span>`}</td>
         <td class="num">${s ? s.rating.toFixed(1) : "\u2014"}</td>
-        <td class="num dim" title="${s ? `\u03b8=1 attack ${s.att.exploit_wins}\u2013${s.att.exploit_losses} over ${s.att.exploit_rounds} played round(s)` : ""}">${s ? `${s.rating_att.toFixed(0)} \u00b7 ${s.att.exploit_wins}\u2013${s.att.exploit_losses}` : "\u2014"}</td>
-        <td class="num dim" title="${s ? `\u03b8=1 defence ${s.def.patch_wins}\u2013${s.def.patch_losses} over ${s.def.patch_rounds} played round(s)` : ""}">${s ? `${s.rating_def.toFixed(0)} \u00b7 ${s.def.patch_wins}\u2013${s.def.patch_losses}` : "\u2014"}</td>
+        <td class="num dim" title="${s ? `\u03b8=1 attack ${s.att.exploit_wins}\u2013${s.att.exploit_losses} over ${s.att.exploit_rounds} played round(s) \u00b7 95% CI \u00b1${s.rating_att_ci.toFixed(0)}` : ""}">${s && s.att.rounds ? s.rating_att.toFixed(1) : "\u2014"}</td>
+        <td class="num dim" title="${s ? `\u03b8=1 defence ${s.def.patch_wins}\u2013${s.def.patch_losses} over ${s.def.patch_rounds} played round(s) \u00b7 95% CI \u00b1${s.rating_def_ci.toFixed(0)}` : ""}">${s && s.def.rounds ? s.rating_def.toFixed(1) : "\u2014"}</td>
         <td class="num">${s ? s.rounds : "\u2014"}</td>
         <td class="num" title="${s ? `played ${s.wins}\u2013${s.losses} \u00b7 as attacker ${s.att.wins}\u2013${s.att.losses} \u00b7 as defender ${s.def.wins}\u2013${s.def.losses} \u00b7 all-in ${s.wins_all}\u2013${s.losses_all}` : ""}">${s ? `${s.wins}\u2013${s.losses}` : "\u2014"}</td>
         <td class="num">${s ? usd(s.cost_total) : "\u2014"}</td>
@@ -579,7 +576,7 @@
       </div>
     </div>
     <div class="table-wrap"><table>
-      <thead><tr><th>#</th><th>Champion</th><th>Tier</th><th>Overall</th><th>Att (pentest)</th><th>Def (audit)</th>
+      <thead><tr><th>#</th><th>Champion</th><th>Tier</th><th>Rating</th><th>Att</th><th>Def</th>
       <th>Rounds</th><th>W\u2013L</th><th>Cost</th><th>Chips</th><th></th></tr></thead>
       <tbody>${rows}</tbody></table></div>`;
   }
@@ -1170,8 +1167,7 @@
       ${face("att", "when it writes your code", [attAudit, attCost,
         kv("rounds as writer", r.att.rounds)])}
       ${face("def", "when it reviews your code", [defClosed, defAlarm, defBrier, defCost,
-        kv("audit rating", r.def.patch_rounds ? r.rating_def.toFixed(1) : "\u2014"),
-        kv("\u03b8=1 record", `${r.def.patch_wins}\u2013${r.def.patch_losses}`)])}
+        kv("defence rating", r.def.rounds ? r.rating_def.toFixed(1) : "\u2014")])}
     </div>`;
   }
 
@@ -1192,7 +1188,7 @@
         <td class="num">${cleanFaced ? `${r.def.fp}/${cleanFaced}` : "\u2014"}</td>
         <td class="num">${r.brier ? r.brier.toFixed(3) : "\u2014"}</td>
         <td class="num">${r.def.rounds ? usd(r.def.cost / r.def.rounds) : "\u2014"}</td>
-        <td class="num">${r.def.patch_rounds ? `${r.rating_def.toFixed(0)} \u00b7 ${r.def.patch_wins}\u2013${r.def.patch_losses}` : "\u2014"}</td></tr>`;
+        <td class="num">${r.def.rounds ? r.rating_def.toFixed(1) : "\u2014"}</td></tr>`;
     }).join("");
     const best = glm.reduce((a, b) => (b.patch_validity ?? -1) > (a.patch_validity ?? -1) ? b : a);
     const variants = glm.map(r => r.model_name || r.agent).join(", ");
@@ -1206,7 +1202,7 @@
       not into a merge button.</p>
       <div class="table-wrap"><table class="ia-hire">
         <thead><tr><th>Variant that played</th><th>planted closed</th><th>patch rate</th>
-        <th>false alarms</th><th>Brier</th><th>$ per audit</th><th>audit rating \u00b7 \u03b8=1</th></tr></thead>
+        <th>false alarms</th><th>Brier</th><th>$ per audit</th><th>def rating</th></tr></thead>
         <tbody>${lines}</tbody></table></div>
       <p class="ia-brief-note">These are the variants that actually played (${variants}). Family slugs
       resolve to a default effort \u2014 an all-high roster can read differently, and the resolved
@@ -1229,11 +1225,11 @@
         <td class="num">${r.fpr != null ? pct(r.fpr) : "\u2014"}</td>
         <td class="num">${r.brier ? r.brier.toFixed(3) : "\u2014"}</td>
         <td class="num">${r.def.rounds ? usd(r.def.cost / r.def.rounds) : "\u2014"}</td>
-        <td class="num">${r.def.patch_rounds ? `${r.rating_def.toFixed(0)} \u00b7 ${r.def.patch_wins}\u2013${r.def.patch_losses}` : "\u2014"}</td></tr>`;
+        <td class="num">${r.def.rounds ? r.rating_def.toFixed(1) : "\u2014"}</td></tr>`;
     }).join("") || `<tr><td colspan="8" class="dim">No defender rounds in this season.</td></tr>`;
     return `<div class="table-wrap"><table class="ia-hire">
       <thead><tr><th>Champion</th><th>planted closed</th><th>patch rate</th>
-      <th>false alarms</th><th>FPR</th><th>Brier</th><th>$ per audit</th><th>audit rating \u00b7 \u03b8=1</th></tr></thead>
+      <th>false alarms</th><th>FPR</th><th>Brier</th><th>$ per audit</th><th>def rating</th></tr></thead>
       <tbody>${body}</tbody></table></div>
       <p class="ia-brief-note">Sorted by patch rate, then by how rarely it cries wolf, then by calibration.
       Every column is a season aggregate; with a handful of rounds per defender the order is a
@@ -1736,8 +1732,11 @@ and useful answer. Silence is not.`
   ];
   const standingsTable = document.getElementById("standings");
   const tabGroups = {
+    // The all-in table belongs to the board: without it here it stayed visible
+    // on every other tab, so Draft and Roster opened under a standings table.
     board: [document.getElementById("summary"), document.getElementById("podium"),
-            standingsTable ? standingsTable.closest("section") : null],
+            standingsTable ? standingsTable.closest("section") : null,
+            document.getElementById("allin-panel")],
     brief: [document.getElementById("ia-brief")],
     compare: [document.getElementById("ia-compare")],
     draft: [document.getElementById("ia-draft")],

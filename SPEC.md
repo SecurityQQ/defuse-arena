@@ -1061,25 +1061,19 @@ Rules:
 | 2 | model-b | 1606.2 | ±212 | 1506.5 · 2–3 | 1688.6 · 4–1 | 16 | 11–5 · A 3–5 · D 8–1 | $36.40 | $0.91 | 0.21 | 64% | 18% | −$4.12 |
 
 The `Att` and `Def` cells carry the rating **and** the θ=1 record that feeds
-it. The `W–L` cell carries the overall played record and the role breakdown
-`A … · D …`, so the two role records sum to the overall. The θ=0 sub-record
-and the forfeits live in the tooltip.
+it, on the same line and in the same dim suffix the table already used for
+secondary numbers: `1635.8 · 1–3`. The `W–L` cell carries the overall played
+record and the role breakdown the same way: `12–5 · A 3–9 · D 3–6`, so the two
+role records sum to the overall. The role cell's tooltip names the
+denominator — how many of the model's attack or defence rounds were θ=1, the
+θ=0 clean record and its own rating, the 95% interval, and the role forfeits
+the pool also prices. A model with no played round in a pool keeps its rating
+(it is forfeits only) but is dimmed, and the tooltip says so.
 
-The role cell reads `rating` over `W–L / role rounds · ±CI · nF`: the θ=1
-record is shown **out of the rounds the model played in that role**, because
-the two denominators are different and a reader will otherwise ask why 21
-played rounds produced a 1–3. The coin sends most rounds to θ=0, and those are
-the clean diagnostic, not the pool. The 95% interval is in the cell because a
-role pool this small cannot support a finer claim, and `nF` is the role
-forfeits the pool also prices — a model that went 3–0 but no-showed twice as
-defender is not a 3–0 auditor. A model with no played round in a pool keeps its
-rating (it is forfeits only) but is dimmed, and the tooltip says so. The tier is
-a coloured dot beside the agent name, not a column.
-
-A pools line under the heading counts what the season actually measured:
-θ=1 attack rounds and how many bugs survived, θ=1 defence rounds caught, θ=0
-false alarms, and the θ=1 role forfeits priced as losses. It is derived from
-the ledger, so a thin pool is visible before a reader trusts the ranking.
+The table keeps its season layout: `#`, `Agent`, `Tier`, `Rating`, `±`, `Att`,
+`Def`, `Rounds`, `W–L`, `Winrate`, then cost, calibration and chips. Nothing
+here is a second table: the role record is a suffix on the cell it belongs to,
+not a new column.
 
 How to read the table:
 
