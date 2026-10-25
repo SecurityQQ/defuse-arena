@@ -117,7 +117,7 @@
     if (el.classList.contains("outcome")) {
       const code = el.textContent.trim().toUpperCase();
       const t = TIPS[code];
-      if (!t) return;
+      if (!t) return false;
       const [A, D] = names(row);
       body = `<b>${code} — ${t.title}</b><p>${t.what}</p>`;
       if (A && D && t.who) {
@@ -128,34 +128,83 @@
       body = `<b>${t.title}</b><p>${t.what}</p>`;
     } else if (el.tagName === "TH") {
       const f = FIELDN[norm(el.textContent)];
-      if (!f) return;
+      if (!f) return false;
       body = `<b>${f[0]}</b><p>${f[1]}</p>`;
     } else if (el.classList.contains("k")) {
       const s = STAT[el.textContent.trim()];
-      if (!s) return;
+      if (!s) return false;
       body = `<b>${s[0]}</b><p>${s[1]}</p>`;
     } else if (el.classList.contains("tier") || el.classList.contains("champ-tier")) {
       body = `<b>${el.textContent.trim()}</b><p>${TIER}</p>`;
     } else if (el.classList.contains("champ-rating")) {
       body = `<b>overall rating</b><p>Every played round, both coins, pure win/loss. It is the answer to \u201cwhich model overall for cyber security\u201d, not to \u201cwho audits\u201d or \u201cwho pentests\u201d.</p>`;
     } else {
-      return;
+      return false;
     }
     tip.innerHTML = body;
+    tip.hidden = false;
+    move(ev);
+    return true;
+  };
+
+  // --------------------------------------------------------- title cards
+  // Every plain `title` on the page is adopted into the same card the column
+  // headers use. The browser's own tooltip is the one grey, OS-shaped box left
+  // on an otherwise themed board: the text moves to data-ia-title on enter,
+  // which suppresses it, and goes back when the pointer leaves the element.
+  // The first `·` segment becomes the card's gold heading, the rest its lines.
+  const adopt = el => {
+    const t = el.getAttribute("title");
+    if (t) {
+      el.setAttribute("data-ia-title", t);
+      el.removeAttribute("title");
+    }
+    return el.getAttribute("data-ia-title") || "";
+  };
+
+  const giveBack = el => {
+    const t = el.getAttribute("data-ia-title");
+    if (!t) return;
+    el.setAttribute("title", t);
+    el.removeAttribute("data-ia-title");
+  };
+
+  const titleCard = (el, ev, raw) => {
+    const text = raw || adopt(el);
+    if (!text) return;
+    const parts = text.split(" \u00b7 ").map(s => s.trim()).filter(Boolean);
+    const head = parts.length > 1 ? `<b>${parts.shift()}</b>` : "";
+    tip.innerHTML = head + parts.map(p => `<p>${p}</p>`).join("");
     tip.hidden = false;
     move(ev);
   };
 
   const SEL = ".outcome, .coin, th, .stat .k, .tier, .champ-tier, .champ-rating";
+
   document.addEventListener("mouseover", ev => {
     const el = ev.target.closest(SEL);
-    if (el) show(el, ev);
+    if (el) {
+      const raw = adopt(el);
+      if (!show(el, ev) && raw) titleCard(el, ev, raw);
+      return;
+    }
+    const held = ev.target.closest("[title], [data-ia-title]");
+    if (held) titleCard(held, ev);
   });
   document.addEventListener("mousemove", ev => { if (!tip.hidden) move(ev); });
   document.addEventListener("mouseout", ev => {
+    const held = ev.target.closest("[data-ia-title]");
+    // Moving between children of the same element is not leaving it.
+    if (held && !(ev.relatedTarget && held.contains(ev.relatedTarget))) {
+      giveBack(held);
+      tip.hidden = true;
+    }
     if (ev.target.closest(SEL)) tip.hidden = true;
   });
-  document.addEventListener("scroll", () => { tip.hidden = true; }, true);
+  document.addEventListener("scroll", () => {
+    tip.hidden = true;
+    document.querySelectorAll("[data-ia-title]").forEach(giveBack);
+  }, true);
 
   // ---------------------------------------------------------- Challenges
   const picker = document.getElementById("ia-challenge");
@@ -560,10 +609,10 @@
           <em class="r-model">${c.model_name || c.model}</em></span></div></td>
         <td>${tier ? `<span class="tier ${tier[2]}">${tier[1]}</span>` : `<span class="dim">unplayed</span>`}</td>
         <td class="num">${s ? s.rating.toFixed(1) : "\u2014"}</td>
-        <td class="num dim" title="${s ? `\u03b8=1 attack ${s.att.exploit_wins}\u2013${s.att.exploit_losses} over ${s.att.exploit_rounds} played round(s) \u00b7 95% CI \u00b1${s.rating_att_ci.toFixed(0)}` : ""}">${s && s.att.rounds ? s.rating_att.toFixed(1) : "\u2014"}</td>
-        <td class="num dim" title="${s ? `\u03b8=1 defence ${s.def.patch_wins}\u2013${s.def.patch_losses} over ${s.def.patch_rounds} played round(s) \u00b7 95% CI \u00b1${s.rating_def_ci.toFixed(0)}` : ""}">${s && s.def.rounds ? s.rating_def.toFixed(1) : "\u2014"}</td>
+        <td class="num dim" title="${s ? `pentest rating \u00b7 \u03b8=1 ${s.att.exploit_wins}\u2013${s.att.exploit_losses} over ${s.att.exploit_rounds} played rounds \u00b7 95% CI \u00b1${s.rating_att_ci.toFixed(0)}` : ""}">${s && s.att.rounds ? s.rating_att.toFixed(1) : "\u2014"}</td>
+        <td class="num dim" title="${s ? `audit rating \u00b7 \u03b8=1 ${s.def.patch_wins}\u2013${s.def.patch_losses} over ${s.def.patch_rounds} played rounds \u00b7 95% CI \u00b1${s.rating_def_ci.toFixed(0)}` : ""}">${s && s.def.rounds ? s.rating_def.toFixed(1) : "\u2014"}</td>
         <td class="num">${s ? s.rounds : "\u2014"}</td>
-        <td class="num" title="${s ? `played ${s.wins}\u2013${s.losses} \u00b7 as attacker ${s.att.wins}\u2013${s.att.losses} \u00b7 as defender ${s.def.wins}\u2013${s.def.losses} \u00b7 all-in ${s.wins_all}\u2013${s.losses_all}` : ""}">${s ? `${s.wins}\u2013${s.losses}` : "\u2014"}</td>
+        <td class="num" title="${s ? `played record \u00b7 ${s.wins}\u2013${s.losses} over ${s.rounds} rounds \u00b7 as attacker ${s.att.wins}\u2013${s.att.losses} \u00b7 as defender ${s.def.wins}\u2013${s.def.losses} \u00b7 all-in ${s.wins_all}\u2013${s.losses_all}` : ""}">${s ? `${s.wins}\u2013${s.losses}` : "\u2014"}</td>
         <td class="num">${s ? usd(s.cost_total) : "\u2014"}</td>
         <td class="num ${s && s.net_chips < 0 ? "neg" : s ? "pos" : ""}">${s ? usdSigned(s.net_chips) : "\u2014"}</td>
         <td><button class="r-btn" data-profile="${c.agent}">Profile</button></td>
@@ -839,7 +888,7 @@
     const h2hRows = (s.h2h || []).map(([opp, n, w, l]) => {
       const oc = champOf(opp);
       const a = h2hAll[opp] || [0, 0, 0];
-      return `<div class="ia-h2hrow" title="all-in ${a[1]}\u2013${a[2]}"><b>${oc.name}</b><span>${w}\u2013${l}</span><span>${n} played</span></div>`;
+      return `<div class="ia-h2hrow" title="head to head \u00b7 all-in ${a[1]}\u2013${a[2]}"><b>${oc.name}</b><span>${w}\u2013${l}</span><span>${n} played</span></div>`;
     }).join("") || `<div class="ia-h2h-empty">No meetings recorded.</div>`;
 
     const hist = (s.rounds_list || []).map(([rid, mid, roleName, opp, theta, outcome, tok, d, cd]) => {
@@ -870,7 +919,7 @@
           <div class="ia-panel-mini"><h4>Head to head \u00b7 played</h4><div class="ia-h2hlist">${h2hRows}</div></div>
           <div class="ia-panel-mini"><h4>Every round</h4>
             <div style="max-height:220px;overflow:auto">
-            <table class="ia-hist"><thead><tr><th>round</th><th>role</th><th>vs</th><th>\u03b8</th><th>outcome</th><th>cost</th><th title="running Elo (K=32); a forfeit row shows the running all-in \u0394">\u0394 run</th></tr></thead>
+            <table class="ia-hist"><thead><tr><th>round</th><th>role</th><th>vs</th><th>\u03b8</th><th>outcome</th><th>cost</th><th title="\u0394 run \u00b7 running Elo (K=32) \u00b7 a forfeit row shows the running all-in \u0394">\u0394 run</th></tr></thead>
             <tbody>${hist}</tbody></table></div></div>
         </div>
       </div></div>`;

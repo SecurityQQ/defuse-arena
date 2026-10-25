@@ -901,7 +901,7 @@
         : FORFEIT_A.has(r.outcome) || FORFEIT_D.has(r.outcome) ? "f"
         : winFor(r, agent) ? "w" : "l");
 
-  const FORM_TITLE = { w: "win", l: "loss", f: "no-show / forfeit", v: "void" };
+  const FORM_TITLE = { w: "form \u00b7 win", l: "form \u00b7 loss", f: "form \u00b7 no-show or forfeit", v: "form \u00b7 void" };
   const formHtml = agent =>
     formFor(agent).map(k => `<i class="${k}" title="${FORM_TITLE[k]}"></i>`).join("");
 
@@ -1011,9 +1011,10 @@
     const name = att ? "pentest" : "audit";
     const game = att ? "attack" : "defence";
     const title = [
-      `${name} rating \u00b7 ${played} of ${role.rounds} ${game} rounds were \u03b8=1 \u00b7 ${wins}\u2013${losses}`,
-      forf ? `${forf} own forfeit(s) priced as a loss at ${DATA.role_forfeit_weight}\u00d7` : "",
-      `${role.clean_rounds} \u03b8=0 clean round(s): ${role.clean_wins}\u2013${role.clean_losses} `
+      `${name} rating`,
+      `${wins}\u2013${losses} on ${played} of ${role.rounds} ${game} rounds`,
+      forf ? `${forf} own forfeit${forf === 1 ? "" : "s"} priced as a loss at ${DATA.role_forfeit_weight}\u00d7` : "",
+      `${role.clean_rounds} \u03b8=0 clean rounds: ${role.clean_wins}\u2013${role.clean_losses} `
         + `\u2014 a separate diagnostic, rating ${cleanRating.toFixed(1)}`,
       `95% CI \u00b1${ci.toFixed(0)}`,
       played ? "" : "no played round in this pool: the rating is forfeits only",
@@ -1029,10 +1030,14 @@
     const rankHtml = rank == null
       ? `<span class="rank">\u2014</span>`
       : `<span class="rank ${rank <= 3 ? "top" + rank : ""}">${rank}</span>`;
-    const wlTitle = `played ${a.wins}\u2013${a.losses} \u00b7 as attacker ${a.att.wins}\u2013${a.att.losses} `
-      + `(\u03b8=1 ${a.att.exploit_wins}\u2013${a.att.exploit_losses}, \u03b8=0 ${a.att.clean_wins}\u2013${a.att.clean_losses}) `
-      + `\u00b7 as defender ${a.def.wins}\u2013${a.def.losses} `
-      + `(\u03b8=1 ${a.def.patch_wins}\u2013${a.def.patch_losses}, \u03b8=0 ${a.def.clean_wins}\u2013${a.def.clean_losses})`;
+    const wlTitle = [
+      "played record",
+      `${a.wins}\u2013${a.losses} over ${a.rounds} rounds`,
+      `as attacker ${a.att.wins}\u2013${a.att.losses} (\u03b8=1 ${a.att.exploit_wins}\u2013${a.att.exploit_losses}, `
+        + `\u03b8=0 ${a.att.clean_wins}\u2013${a.att.clean_losses})`,
+      `as defender ${a.def.wins}\u2013${a.def.losses} (\u03b8=1 ${a.def.patch_wins}\u2013${a.def.patch_losses}, `
+        + `\u03b8=0 ${a.def.clean_wins}\u2013${a.def.clean_losses})`,
+    ].join(" \u00b7 ");
 
     return `<tr class="${rank && rank <= 3 ? "podium-row" : ""} ${rank == null ? "prov" : ""}">
       <td>${rankHtml}</td>
@@ -1043,7 +1048,7 @@
       </div></td>
       <td><span class="tier ${cls}">${tier}</span></td>
       <td class="rating">${a.rating.toFixed(1)}</td>
-      <td class="dim ci" title="95% confidence interval \u00b1${a.rating_ci.toFixed(1)}">\u00b1${a.rating_ci.toFixed(0)}</td>
+      <td class="dim ci" title="95% confidence \u00b7 \u00b1${a.rating_ci.toFixed(1)} from the fit \u00b7 a gap smaller than two intervals is noise, not a ranking">\u00b1${a.rating_ci.toFixed(0)}</td>
       ${roleCell(a, "att")}
       ${roleCell(a, "def")}
       <td>${a.rounds}</td>
@@ -1110,7 +1115,7 @@
         ${a.model_name ? `<span class="agent-model">${a.model_name}</span>` : ""}
       </div></td>
       <td class="rating">${a.rating_contest.toFixed(1)}</td>
-      <td class="dim ci" title="95% confidence interval \u00b1${a.rating_contest_ci.toFixed(1)}">\u00b1${a.rating_contest_ci.toFixed(0)}</td>
+      <td class="dim ci" title="95% confidence \u00b7 \u00b1${a.rating_contest_ci.toFixed(1)} from the fit">\u00b1${a.rating_contest_ci.toFixed(0)}</td>
       <td>${a.scheduled}</td>
       <td>${a.rounds}</td>
       <td class="dim">${a.no_shows}</td>
@@ -1118,7 +1123,7 @@
       <td class="dim">${a.opp_forfeits}</td>
       <td>${a.wins_all}\u2013${a.losses_all}${a.draws_all ? `\u2013${a.draws_all}` : ""}</td>
       <td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>
-      <td class="dim" title="real spend ${usd(a.forfeit_spend)} + priced fee ${usd(a.forfeit_fee)}">${usd(a.forfeit_cost)}</td>
+      <td class="dim" title="forfeit cost \u00b7 real spend ${usd(a.forfeit_spend)} \u00b7 priced fee ${usd(a.forfeit_fee)}">${usd(a.forfeit_cost)}</td>
       <td class="${d >= 0 ? "pos" : "neg"}">${delta(d)}</td>
     </tr>`;
   }

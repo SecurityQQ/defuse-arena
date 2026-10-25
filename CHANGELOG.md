@@ -50,6 +50,11 @@ plain markdown — no HTML, no links to local files.
   it stayed visible on Draft, Roster, Compare, Founder Brief and Match log —
   those tabs opened under a standings table, which read as broken. They now
   show their own section and nothing else.
+- **Every hover card is the same card.** Column headers already used the
+  themed tooltip; everything else still opened the browser's grey OS tooltip.
+  Any `title` on the page is now adopted into that card — the first `·`
+  segment becomes its gold heading, the rest its lines — and the native
+  tooltip is suppressed while the pointer is on the element.
 - The match log badge names the pool the round fed: `ATK`/`DEF` on θ=1,
   `CLEAN` on θ=0, `ALL-IN` on a forfeit.
 - The champion account shows all four pools plus the retired margin-weighted
