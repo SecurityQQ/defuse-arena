@@ -18,6 +18,20 @@
   color:var(--muted); letter-spacing:0; }
 #allin .rating { font-family:var(--font-mono); }
 
+/* League-style Elo badge in the match log: the big number is the rating the
+   round actually moved, the sub-line is the role pool. Green/red is the
+   only colour cue, as in a ranked post-game screen. */
+.ia-lp { display:flex; flex-direction:column; gap:2px; min-width:58px; }
+.ia-lp b { font-family:var(--font-mono); font-size:14px; font-weight:700;
+  line-height:1.05; letter-spacing:-.01em; }
+.ia-lp.up b { color:var(--pos); text-shadow:0 0 10px rgba(79,224,176,.35); }
+.ia-lp.down b { color:var(--neg); text-shadow:0 0 10px rgba(224,96,96,.30); }
+.ia-lp.void b { color:var(--muted); }
+.ia-lp span { font-family:var(--font-mono); font-size:9px; letter-spacing:.05em;
+  color:var(--muted); white-space:nowrap; }
+.ia-lp-note { color:var(--muted); font-size:11px; margin-top:3px; }
+.ia-lp-note b { color:var(--gold-2); font-weight:600; }
+
 /* ---- Challenges ------------------------------------------------------ */
 .ia-preview { margin:0 0 12px; padding:10px 14px; border-radius:8px;
   border:1px solid rgba(232,162,74,.4); background:rgba(232,162,74,.08);

@@ -402,11 +402,11 @@
           },
           "hist": {
             "type": "array",
-            "description": "Rating trail per round: [round_id, ts, rating, rating_att, rating_def, rating_contest]. A final season-end point carries the full-fit rating."
+            "description": "Prefix-fit rating trail per round: [round_id, ts, rating, rating_att, rating_def, rating_contest]. A final season-end point carries the full-fit rating."
           },
           "rounds_list": {
             "type": "array",
-            "description": "Per-round record: [round_id, match_id, role, opponent, theta, outcome, cost_usd, rating_delta, contest_delta]."
+            "description": "Per-round record: [round_id, match_id, role, opponent, theta, outcome, cost_usd, running_delta, running_contest_delta]. The deltas are the running Elo (K=32), not the batch fit."
           },
           "h2h": {
             "type": "array",

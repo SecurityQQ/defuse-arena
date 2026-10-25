@@ -591,6 +591,52 @@ for r in raw:
     }
     ledger.append(r)
 
+# The match log wants a bounded, legible "LP change" per round, so the trail
+# carries a second, sequential Elo. It is deliberately not the headline: the
+# batch fit above is order-independent, while a running rating has to be
+# sequential to give one round a bounded effect. The standings use the batch
+# fit; the match log and the champion's every-round table use this run.
+RUN_K = 32.0
+run = defaultdict(lambda: {"gen": 1500.0, "att": 1500.0, "def": 1500.0, "contest": 1500.0})
+for r in ledger:
+    a, d, o = r["attacker"], r["defender"], r["outcome"]
+    played = o in PLAYED
+    contest = o != "VOID"
+    s_b = r["scores"]["defender"]
+    w = margin_weight(r)
+
+    run_gen = {"attacker": 0.0, "defender": 0.0}
+    run_role = {"attacker": 0.0, "defender": 0.0}
+    run_contest = {"attacker": 0.0, "defender": 0.0}
+
+    if contest:
+        e = 1.0 / (1.0 + 10 ** ((run[d]["contest"] - run[a]["contest"]) / 400.0))
+        delta = RUN_K * (s_b - e) * (w if played else 1.0)
+        run[d]["contest"] += delta
+        run[a]["contest"] -= delta
+        run_contest = {"attacker": round(-delta, 4), "defender": round(delta, 4)}
+
+    if played:
+        e = 1.0 / (1.0 + 10 ** ((run[d]["gen"] - run[a]["gen"]) / 400.0))
+        delta = RUN_K * (s_b - e) * w
+        run[d]["gen"] += delta
+        run[a]["gen"] -= delta
+        run_gen = {"attacker": round(-delta, 4), "defender": round(delta, 4)}
+
+        e = 1.0 / (1.0 + 10 ** ((run[d]["def"] - run[a]["att"]) / 400.0))
+        delta = RUN_K * (s_b - e) * w
+        run[d]["def"] += delta
+        run[a]["att"] -= delta
+        run_role = {"attacker": round(-delta, 4), "defender": round(delta, 4)}
+
+    r["run_delta"] = run_gen
+    r["run_contest_delta"] = run_contest
+    r["run_role_delta"] = run_role
+    r["run_after"] = {
+        "attacker": {k: round(v, 4) for k, v in run[a].items()},
+        "defender": {k: round(v, 4) for k, v in run[d].items()},
+    }
+
 ledger_jsonl = "".join(json.dumps(r, separators=(",", ":"), sort_keys=True) + "\n" for r in ledger)
 ledger_sha = hashlib.sha256(ledger_jsonl.encode()).hexdigest()
 
@@ -647,9 +693,9 @@ for r in ledger:
                       round(rd["def"], 2), round(rd["contest"], 2)])
 
     A["rounds_list"].append([r["round_id"], r["match_id"], "attacker", d, r["theta"], o,
-                             ac, r["rating_delta"]["attacker"], r["contest_delta"]["attacker"]])
+                             ac, r["run_delta"]["attacker"], r["run_contest_delta"]["attacker"]])
     D["rounds_list"].append([r["round_id"], r["match_id"], "defender", a, r["theta"], o,
-                             dc, r["rating_delta"]["defender"], r["contest_delta"]["defender"]])
+                             dc, r["run_delta"]["defender"], r["run_contest_delta"]["defender"]])
 
     if void:
         A["voids"] += 1; D["voids"] += 1
@@ -1022,12 +1068,15 @@ assert TYPE_HEAD_OLD in rendered, "ledger head not found"
 rendered = rendered.replace(TYPE_HEAD_OLD, TYPE_HEAD_NEW, 1)
 
 TYPE_BODY_OLD = r'''      <td class="mono">${r.round_id}</td>
-      <td class="mono dim">${r.match_id}</td>'''
-TYPE_BODY_NEW = r'''      <td class="mono">${r.round_id}</td>
-      <td>${r.task_title || r.task_id || "\u2014"}</td>
-      <td class="mono dim">${r.match_id}</td>'''
-assert TYPE_BODY_OLD in rendered, "ledger row not found"
-rendered = rendered.replace(TYPE_BODY_OLD, TYPE_BODY_NEW, 1)
+      <td class="mono dim"'''
+rendered, _n = re.subn(
+    re.escape(TYPE_BODY_OLD) + r'([^>]*)>\$\{r\.match_id\}</td>',
+    lambda m: ('      <td class="mono">${r.round_id}</td>\n'
+               '      <td>${r.task_title || r.task_id || "\u2014"}</td>\n'
+               '      <td class="mono dim"' + m.group(1) + '>${r.match_id}</td>'),
+    rendered, count=1,
+)
+assert _n == 1, "ledger row not found"
 
 rendered = rendered.replace(
     '<td colspan="12" class="dim">No rounds recorded.</td>',

@@ -47,8 +47,11 @@ plain markdown — no HTML, no links to local files.
   the delta against the played-only rating.
 - The champion account shows played, pure and all-in ratings with CIs, both
   records, and the role pools with their own records.
-- The match log shows the played-only Δ for a played round and the all-in Δ
-  for a forfeit, so the column never reads 0 for a round that moved a rating.
+- The match log shows a League-style Elo badge per side: the big number is the
+  running Elo (K=32) the round moved, the sub-line is the role pool, and the
+  tooltip carries the before → after. A forfeit shows the running all-in
+  change. The standings remain the batch fit; the running trail is a separate,
+  bounded narrative.
 - The Compare tab gains an **Attack vs defence** scatter.
 - The summary strip now reports played rounds, all-in rounds, no-shows and
   forfeits, and stops double-counting each round in the season totals.

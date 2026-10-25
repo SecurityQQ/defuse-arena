@@ -927,10 +927,22 @@ happened in game N, what did it cost, how much Elo":
  "cost": {"attacker": 0.0912, "defender": 0.4205},
  "score": 0.92,
  "chips": {"attacker": -0.0912, "defender": 0.0912},
- "rating_delta": {"attacker": -6.2, "defender": 6.2}}
+ "rating_delta": {"attacker": -6.2, "defender": 6.2},
+ "contest_delta": {"attacker": -6.2, "defender": 6.2},
+ "run_delta": {"attacker": -16.0, "defender": 16.0},
+ "run_contest_delta": {"attacker": -16.0, "defender": 16.0},
+ "run_role_delta": {"attacker": -16.0, "defender": 16.0},
+ "run_after": {"attacker": {"gen": 1484.0, "att": 1484.0, "def": 1500.0, "contest": 1484.0},
+               "defender": {"gen": 1516.0, "att": 1500.0, "def": 1516.0, "contest": 1516.0}}}
 ```
 
-`ledger.jsonl` is the concatenation of these rows sorted by `(ts, round_id)`.
+`rating_delta` and `contest_delta` are the prefix-fit deltas used by the
+fitted trail. `run_delta`, `run_contest_delta` and `run_role_delta` are the
+running Elo (K=32) used by the match log, and `run_after` is the running
+rating after the round. The standings rating is the batch fit; the running
+trail is the League-style per-round change.
+
+`ledger.jsonl` is the concatenation of these rows sorted by `(round_id, ts)`.
 It is the only input to the standings.
 
 ### 10.3 Standings
@@ -1016,10 +1028,14 @@ The all-in table is the second reading of the same season:
 
 The per-round ledger view answers "what happened in game N":
 
-| Round | Match | Attacker | Defender | θ | Outcome | Tok A | Tok D | ΔR A | ΔR D |
+| Round | Match | Attacker | Defender | θ | Outcome | Tok A | Tok D | Elo A | Elo D |
 |---|---|---|---|---|---|---|---|---|---|
-| r-0001 | m-0001 | model-a | model-b | 1 | TP | $0.091 | $0.421 | −6.2 | +6.2 |
-| r-0002 | m-0001 | model-b | model-a | 0 | TN | $0.058 | $0.037 | −9.1 | +9.1 |
+| r-0001 | m-0001 | model-a | model-b | 1 | TP | $0.091 | $0.421 | −16.0 | +16.0 |
+| r-0002 | m-0001 | model-b | model-a | 0 | TN | $0.058 | $0.037 | −12.4 | +12.4 |
+
+The Elo columns are the **running Elo** (K=32): the League-style per-round
+change. The standings table is the batch fit; the running trail is bounded and
+sequential by design, so one round reads as a legible LP change.
 
 A self-contained HTML render ships in `web/leaderboard.html`: same data, a
 dark hextech-style theme, sortable columns, role tabs, and a click-to-filter

@@ -125,10 +125,14 @@ Picking is client-side only; it changes nothing in the season.
 carry rating, role splits, rounds, W–L, tokens and chips; the rest are dimmed and
 read `unplayed`. Every row has a `Profile` button.
 
-**Match log** — one row per round, typed by challenge. Click a row to open that
-match; the challenge selector filters by task pack, never by individual match.
-The log deliberately carries no challenge briefing: the selector is a filter, and
-the briefing lives on its own tab.
+**Match log** — one row per round, typed by challenge. Each side carries a
+League-style Elo badge: the big number is the running Elo (K=32) the round
+moved, the sub-line is the role pool, and the tooltip gives the before → after.
+A forfeit shows the running all-in change. The standings are the batch fit; the
+log is the bounded running trail. Click a row to open that match; the challenge
+selector filters by task pack, never by individual match. The log deliberately
+carries no challenge briefing: the selector is a filter, and the briefing lives
+on its own tab.
 
 **Explore Challenges** — the task packs as cards, described below.
 

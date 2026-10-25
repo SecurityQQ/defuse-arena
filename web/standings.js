@@ -65,8 +65,8 @@
     Outcome: ["outcome", "TP, TN, FP, FN, DISCOVERY, a forfeit (ABSTAIN/FAILED/FAULT) or VOID. Hover the badge itself for what it means and who outplayed whom."],
     "Cost A": ["attacker spend", "What the attacker's round cost in USD, priced at its model's rates."],
     "Cost D": ["defender spend", "What the defender's round cost in USD, priced at its model's rates."],
-    "\u0394RA": ["attacker \u0394Elo", "General-rating change for the attacker in this round. Void rounds change nothing."],
-    "\u0394RD": ["defender \u0394Elo", "General-rating change for the defender in this round. The two deltas are always opposite."],
+    EloA: ["attacker running Elo", "League-style running Elo (K=32) this round gave the attacker: the played-only pool for a played round, the all-in pool for a forfeit. The sub-line is the attack pool. The tooltip also shows the fitted batch rating the model ended with."],
+    EloD: ["defender running Elo", "League-style running Elo (K=32) this round gave the defender: the played-only pool for a played round, the all-in pool for a forfeit. The sub-line is the defence pool. The tooltip also shows the fitted batch rating the model ended with."],
     ChipsA: ["attacker chips", "In USD. Negative when the defender wins (the attacker pays), positive when the attacker wins."],
     ChipsD: ["defender chips", "In USD. Positive when the defender wins, negative when it loses."]
   };
@@ -846,7 +846,7 @@
       <div class="ia-acct-body">
         <div class="ia-acct-col">
           <div class="ia-panel-mini"><h4>Shape</h4>${radar(s)}${radarLegend(s)}</div>
-          <div class="ia-panel-mini"><h4>Rating over the season</h4>${spark(s.hist)}
+          <div class="ia-panel-mini"><h4>Fitted rating over the season</h4>${spark(s.hist)}
             <div style="display:flex;gap:10px;margin-top:6px;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase">
               <span style="color:var(--gold)">played</span><span style="color:#E06060">attack</span><span style="color:var(--teal)">defence</span><span style="color:var(--muted)">all-in</span>
             </div></div>
@@ -858,7 +858,7 @@
           <div class="ia-panel-mini"><h4>Head to head \u00b7 played</h4><div class="ia-h2hlist">${h2hRows}</div></div>
           <div class="ia-panel-mini"><h4>Every round</h4>
             <div style="max-height:220px;overflow:auto">
-            <table class="ia-hist"><thead><tr><th>round</th><th>role</th><th>vs</th><th>\u03b8</th><th>outcome</th><th>cost</th><th title="played-only \u0394; a forfeit row shows the all-in \u0394">\u0394elo</th></tr></thead>
+            <table class="ia-hist"><thead><tr><th>round</th><th>role</th><th>vs</th><th>\u03b8</th><th>outcome</th><th>cost</th><th title="running Elo (K=32); a forfeit row shows the running all-in \u0394">\u0394 run</th></tr></thead>
             <tbody>${hist}</tbody></table></div></div>
         </div>
       </div></div>`;

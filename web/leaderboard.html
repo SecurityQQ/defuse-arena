@@ -781,6 +781,9 @@
       <div>
         <h2>Match log</h2>
         <p class="sub" id="ledger-sub">Every round, every token, every rating point.</p>
+        <p class="ia-lp-note">League-style <b>running Elo</b> (K=32): the big number is the played-only
+        change, the small line is the role pool. A forfeit shows the running all-in change. The
+        standings above are the fitted batch rating, not this trail.</p>
       </div>
       <button class="clear" id="clear-filter" hidden>Clear filter ✕</button>
     </div>
@@ -1095,31 +1098,75 @@
     // untouched and moves the all-in contest rating, so the log shows the
     // delta that actually applies to the row.
     const isForfeit = o => FORFEIT_A.has(o) || FORFEIT_D.has(o);
+    // The match log follows the running Elo (bounded, League-style), not the
+    // batch fit: the batch fit's per-round attribution is a prefix refit and
+    // moves ±90 on the first round. The headline stays the batch fit.
     const deltaFor = (r, side) => r.outcome === "VOID" ? 0
-      : isForfeit(r.outcome) ? (r.contest_delta || r.rating_delta)[side] : r.rating_delta[side];
+      : isForfeit(r.outcome) ? (r.run_contest_delta || r.contest_delta || r.rating_delta)[side]
+      : (r.run_delta || r.rating_delta)[side];
+
+    // League-style Elo badge: the big number is the rating the round actually
+    // moved (played-only for a played round, all-in for a forfeit); the
+    // sub-line is the role pool (attack for the attacker, defence for the
+    // defender). The tooltip carries the before -> after.
+    const eloBadge = (r, side) => {
+      if (r.outcome === "VOID") {
+        return `<div class="ia-lp void"><b>\u2014</b><span>VOID</span></div>`;
+      }
+      const forfeit = isForfeit(r.outcome);
+      const d = deltaFor(r, side);
+      const ra = (r.run_after || r.rating_after)[side];
+      const rd = ((r.run_role_delta || r.role_delta || {})[side]) || 0;
+      const roleName = side === "attacker" ? "ATK" : "DEF";
+      const roleAfter = side === "attacker" ? ra.att : ra.def;
+      const roleBefore = roleAfter - rd;
+      const genAfter = ra.gen;
+      const genBefore = forfeit ? genAfter : genAfter - d;
+      const allInBefore = ra.contest - ((r.run_contest_delta || r.contest_delta || {})[side] || 0);
+      const fitted = DATA.rows.find(x => x.agent === (side === "attacker" ? r.attacker : r.defender));
+      const fitNote = fitted
+        ? (forfeit ? ` \u00b7 fitted all-in ${fitted.rating_contest.toFixed(1)}`
+                   : ` \u00b7 fitted ${fitted.rating.toFixed(1)}`)
+        : "";
+      const title = (forfeit
+        ? `running Elo \u00b7 played-only ${genAfter.toFixed(1)} (no change) \u00b7 all-in ${allInBefore.toFixed(1)} \u2192 ${ra.contest.toFixed(1)}`
+        : `running Elo ${genBefore.toFixed(1)} \u2192 ${genAfter.toFixed(1)} \u00b7 ${roleName} ${roleBefore.toFixed(1)} \u2192 ${roleAfter.toFixed(1)}`) + fitNote;
+      return `<div class="ia-lp ${d >= 0 ? "up" : "down"}" title="${title}">
+        <b>${delta(d)}</b>
+        <span>${forfeit ? "ALL-IN" : `${roleName} ${delta(rd)}`}</span>
+      </div>`;
+    };
+
+    // A match is one round in this season, but the log can hold several
+    // rounds per match; the tooltip gives the sum the match gave each side in
+    // both pools.
+    const matchSum = (r, side, key) => DATA.ledger
+      .filter(x => x.match_id === r.match_id && x.outcome !== "VOID")
+      .reduce((s, x) => s + ((x[key] || {})[side] || 0), 0);
 
     const head = `<thead><tr>
       <th>Round</th><th>Match</th><th>Attacker</th><th>Defender</th><th>\u03b8</th>
       <th>Outcome</th><th>Cost A</th><th>Cost D</th>
-      <th title="played-only \u0394; a forfeit row shows the all-in \u0394">\u0394R A</th>
-      <th title="played-only \u0394; a forfeit row shows the all-in \u0394">\u0394R D</th>
+      <th title="League-style Elo: played-only for a played round, all-in for a forfeit. The sub-line is the role pool.">Elo A</th>
+      <th title="League-style Elo: played-only for a played round, all-in for a forfeit. The sub-line is the role pool.">Elo D</th>
       <th>Chips A</th><th>Chips D</th>
     </tr></thead>`;
 
     const body = rows.length
       ? rows.map(r => {
-        const dA = deltaFor(r, "attacker"), dD = deltaFor(r, "defender");
+        const mA = matchSum(r, "attacker", "run_delta"), mD = matchSum(r, "defender", "run_delta");
+        const cA = matchSum(r, "attacker", "run_contest_delta"), cD = matchSum(r, "defender", "run_contest_delta");
         return `<tr>
       <td class="mono">${r.round_id}</td>
-      <td class="mono dim">${r.match_id}</td>
+      <td class="mono dim" title="match total \u00b7 played A ${delta(mA)} / D ${delta(mD)} \u00b7 all-in A ${delta(cA)} / D ${delta(cD)}">${r.match_id}</td>
       <td><button class="agent-name small" data-agent="${r.attacker}">${r.attacker}</button>${modelName(r.attacker) ? `<span class="log-model">${modelName(r.attacker)}</span>` : ""}</td>
       <td><button class="agent-name small" data-agent="${r.defender}">${r.defender}</button>${modelName(r.defender) ? `<span class="log-model">${modelName(r.defender)}</span>` : ""}</td>
       <td><span class="coin ${r.theta ? "h" : "t"}" title="${r.theta ? "Heads \u2014 exploit required" : "Tails \u2014 clean service"}">${r.theta ? "H" : "T"}</span></td>
       <td><span class="outcome ${r.outcome.toLowerCase()}">${r.outcome}</span></td>
       <td>${usd(r.cost.attacker)}</td>
       <td>${usd(r.cost.defender)}</td>
-      <td class="${dA >= 0 ? "pos" : "neg"}">${delta(dA)}</td>
-      <td class="${dD >= 0 ? "pos" : "neg"}">${delta(dD)}</td>
+      <td>${eloBadge(r, "attacker")}</td>
+      <td>${eloBadge(r, "defender")}</td>
       <td class="${r.chips.attacker >= 0 ? "pos" : "neg"}">${usdSigned(r.chips.attacker)}</td>
       <td class="${r.chips.defender >= 0 ? "pos" : "neg"}">${usdSigned(r.chips.defender)}</td>
     </tr>`;
