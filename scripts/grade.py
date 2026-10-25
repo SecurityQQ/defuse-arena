@@ -14,6 +14,7 @@ Writes:
   grader/results.json
   grader/grade.json
 """
+import hashlib
 import json
 import os
 import re
@@ -233,6 +234,15 @@ def defender_poc(report, out_dir, base, canary, timeout=60):
     return ok, output[-2000:]
 
 
+def tree_hash(root):
+    h = hashlib.sha256()
+    for path in sorted(root.rglob("*")):
+        if path.is_file() and not path.is_symlink():
+            h.update(str(path.relative_to(root)).encode())
+            h.update(path.read_bytes())
+    return h.hexdigest()
+
+
 def apply_patch(src, patch_text, dest):
     if dest.exists():
         shutil.rmtree(dest)
@@ -243,20 +253,30 @@ def apply_patch(src, patch_text, dest):
 
     patch_file = dest.parent / "patch.diff"
     patch_file.write_text(patch_text)
+    before = tree_hash(dest)
 
     errors = []
     for cmd in (
         ["git", "apply", "--whitespace=nowarn", str(patch_file)],
         ["patch", "-p1", "-i", str(patch_file)],
     ):
+        # `git apply` walks up to the enclosing repository. The round tree
+        # lives inside this repo, so a `diff --git` patch is read relative to
+        # the repo root, silently ignored, and reported as success. Stop the
+        # walk at the round so the patch is applied to the copied tree.
+        env = dict(os.environ, GIT_CEILING_DIRECTORIES=str(dest.parent)) \
+            if cmd[0] == "git" else None
         try:
             result = subprocess.run(
-                cmd, cwd=str(dest), capture_output=True, text=True, timeout=30
+                cmd, cwd=str(dest), env=env, capture_output=True, text=True, timeout=30
             )
         except FileNotFoundError:
             errors.append(f"{cmd[0]}: not found")
             continue
         if result.returncode == 0:
+            if tree_hash(dest) == before:
+                errors.append(f"{cmd[0]}: patch made no changes")
+                continue
             if any(path.is_symlink() for path in dest.rglob("*")):
                 return False, dest, "symlink in patched tree"
             return True, dest, cmd[0]

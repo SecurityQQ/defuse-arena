@@ -4,6 +4,25 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.4.7 — 2026-10-25 — every patch is applied before it is judged
+
+### Scoring
+
+- `git apply` was run inside this repository, so a patch with a `diff --git`
+  header was resolved against the repo root, silently ignored, and returned 0.
+  `apply_patch` reported `patch_applied: True` and the grader ran the PoC on
+  the unpatched tree, recording a real patch as `FN`. `GIT_CEILING_DIRECTORIES`
+  now stops the repo walk at the round, and a no-op patch is rejected instead
+  of accepted.
+- Re-graded the 43 affected rounds in s-2026-02: 26 `FN` became `TP`, one
+  became `FAULT_A`, and the season now reads `TP 39 / FN 4` instead of
+  `TP 12 / FN 32`. Every rating, chip and patch-validity number was
+  regenerated. The correction moves Opus 5.5 to #1, GPT-6.1 to #2 and
+  GLM-5.3 Flash to #3; GLM-5.3 Max rises to #9 with 100% patch validity,
+  not 25%.
+- `standings.py` stamps the payload `scoring_version` 0.4.7. Per-round grades
+  keep their 0.4.0 taxonomy.
+
 ## 0.4.6 — 2026-10-23 — the GLM twins join the field
 
 ### Scoring
