@@ -627,6 +627,59 @@ for t in (1, 0):
     roles = fit_roles(coin_role_games[t], N)
     COINS[t] = {"x": x, "se": se, "roles": roles}
 
+
+def field_ranks(vals, seen):
+    """Competition rank among the models already priced in a pool: equal
+    ratings share a place, and a model with no game yet has no place."""
+    key = {k: round(vals[k], 4) for k in seen}
+    return {k: 1 + sum(1 for m in seen if key[m] > key[k]) for k in seen}
+
+
+# Rank trail per benchmark (v0.10.5): the place in the field after every round
+# of that coin, from the coin's own prefix refit — the same games and the same
+# pricing as COINS, so the last step is the coin's final standing. A model has
+# no place in a pool until its first game there; the board says "not yet
+# ranked" instead of placing it at the prior. This is what the champion account
+# draws as "place over the season".
+RANK_TRAIL = {}
+for t in (1, 0):
+    games, rgames = [], []
+    x = [0.0] * N
+    rx = [0.0] * (2 * N + 1)
+    seen = {"overall": set(), "att": set(), "def": set()}
+    steps = []
+    trail = {p: {a: [] for a in AGENTS} for p in seen}
+    for r in raw:
+        if r["theta"] != t or r["outcome"] == "VOID":
+            continue
+        i, j = AIDX[r["attacker"]], AIDX[r["defender"]]
+        o = r["outcome"]
+        s_b = r["scores"]["defender"]
+        if o in PLAYED:
+            games.append((i, j, s_b, 1.0))
+            rgames.append((i, j, 1.0 - s_b, 1.0, 1, 1))
+            seen["att"].add(i)
+            seen["def"].add(j)
+        elif o in FORFEIT_A:
+            games.append((i, j, 1.0, 1.0))
+            rgames.append((i, j, 0.0, 1.0, 1, 0))
+            seen["att"].add(i)
+        elif o in FORFEIT_D:
+            games.append((i, j, 0.0, 1.0))
+            rgames.append((i, j, 1.0, 1.0, 0, 1))
+            seen["def"].add(j)
+        else:
+            continue
+        seen["overall"].update((i, j))
+        x, _ = fit_overall(games, N, x)
+        rx = fit_roles(rgames, N, rx)["x"]
+        steps.append([r["round_id"], len(seen["overall"]), len(seen["att"]), len(seen["def"])])
+        for pool, vals in (("overall", x), ("att", rx[:N]), ("def", rx[N:2 * N])):
+            rk = field_ranks(vals, seen[pool])
+            for k, a in enumerate(AGENTS):
+                trail[pool][a].append(rk.get(k))
+    RANK_TRAIL[str(t)] = {"steps": steps, **trail}
+
 # Per-round trail: refit the pools on the prefix of rounds in scheduled order,
 # so the final point of the trail is the headline rating. The trail is a
 # narrative device; the standings use the full fit above.
@@ -1194,6 +1247,7 @@ payload = {
     "challenges": challenge_list,
     "battles": battles,
     "champions": rows,
+    "rank_trail": RANK_TRAIL,
     "roster": roster,
     "changelog": changelog_md,
 }

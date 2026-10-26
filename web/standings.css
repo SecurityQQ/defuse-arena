@@ -345,6 +345,18 @@
 .ia-h2h-grid dd { margin:2px 0 0; font-family:var(--font-mono); font-size:13px;
   color:var(--gold-2); }
 .ia-h2h-empty { color:var(--muted); font-size:12px; font-style:italic; }
+/* Round tables (the challenge match record). */
+.ia-hist { width:100%; border-collapse:collapse; font-size:11.5px; }
+.ia-hist th { text-align:left; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); font-weight:500; padding:4px 8px 5px 0;
+  border-bottom:1px solid rgba(200,170,110,.16); }
+.ia-hist td { padding:4px 8px 4px 0; border-bottom:1px solid rgba(200,170,110,.06);
+  font-family:var(--font-mono); font-size:11px; color:var(--text); }
+.ia-hist tr { cursor:pointer; }
+.ia-hist tr:hover td { color:var(--gold-2); background:rgba(200,170,110,.05); }
+.ia-hist .win { color:var(--pos); }
+.ia-hist .loss { color:var(--neg); }
+.ia-hist .void { color:var(--muted); }
 
 /* ====================== Champion account =========================== */
 .ia-acct { position:fixed; inset:0; z-index:9000; display:flex; align-items:flex-start;
@@ -404,69 +416,173 @@
   color:var(--gold-2); line-height:1; }
 .ia-acct-rating span { font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
   color:var(--muted); }
-.ia-acct-body { display:grid; grid-template-columns:minmax(240px,300px) 1fr; gap:22px;
-  margin-top:18px; }
-@media (max-width:860px) { .ia-acct-body { grid-template-columns:1fr; } }
-.ia-acct-col { display:flex; flex-direction:column; gap:14px; }
 .ia-panel-mini { border:1px solid rgba(200,170,110,.18); border-radius:8px;
   padding:11px 12px; background:rgba(1,10,19,.45); }
 .ia-panel-mini h4 { margin:0 0 8px; font-family:var(--font-display); font-size:10.5px;
   letter-spacing:.14em; text-transform:uppercase; color:var(--gold); font-weight:500; }
-.ia-radar { display:block; width:100%; height:auto; }
-.ia-radar .axis { stroke:rgba(200,170,110,.18); stroke-width:1; }
-.ia-radar .ring { fill:none; stroke:rgba(200,170,110,.13); stroke-width:1; }
-.ia-radar .shape { fill:rgba(10,200,185,.16); stroke:var(--teal); stroke-width:1.6; }
-.ia-radar .lbl { fill:var(--muted); font-size:8.5px; font-family:var(--font-ui);
-  letter-spacing:.06em; text-transform:uppercase; }
-.ia-spark { display:block; width:100%; height:64px; }
-.ia-spark .line { fill:none; stroke-width:1.8; }
-.ia-spark .base { stroke:rgba(200,170,110,.16); stroke-width:1; stroke-dasharray:3 3; }
-.ia-spark .zero { fill:var(--muted); font-size:8px; }
+
+/* ---- Champion account v0.10.5: four skills, two benchmarks ------------- */
+.ia-acct-card { --vuln:#E06060; --vuln-2:#FF9E9E; --ctl:#0AC8B9; --ctl-2:#8FE9FF; }
+.ia-acct-rating b { font-size:40px; text-shadow:0 0 18px rgba(200,170,110,.35); }
+.ia-acct-rating span { display:block; margin-top:4px; }
+
+/* The 2x2: a header row (the seat), a header column (the benchmark). */
+.ia-ac-quad { display:grid; grid-template-columns:54px 1fr 1fr; gap:10px;
+  margin:18px 0 0; align-items:stretch; }
+.ia-ac-colhead { font-family:var(--font-display); font-size:10.5px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--muted); text-align:center; padding:0 0 2px; }
+.ia-ac-colhead b { color:var(--gold-2); font-weight:600; }
+.ia-ac-rowhead { display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; font-family:var(--font-display); font-size:9.5px; letter-spacing:.14em;
+  text-transform:uppercase; text-align:center; line-height:1.25; color:var(--muted);
+  border-radius:8px; border:1px solid var(--line); background:rgba(1,10,19,.5); }
+.ia-ac-rowhead b { font-size:22px; font-family:var(--font-ui); line-height:1; }
+.ia-ac-rowhead.vuln b { color:var(--vuln); text-shadow:0 0 12px rgba(224,96,96,.5); }
+.ia-ac-rowhead.ctl b { color:var(--ctl); text-shadow:0 0 12px rgba(10,200,185,.5); }
+
+.ia-ac-skill { --c:var(--gold); --c2:var(--gold-2);
+  position:relative; display:flex; flex-direction:column; gap:8px; text-align:left;
+  padding:12px 14px 10px; cursor:pointer; color:var(--text); font:inherit;
+  border:1px solid color-mix(in srgb, var(--c) 30%, transparent);
+  background:linear-gradient(160deg, color-mix(in srgb, var(--c) 9%, #0B1B33), #06101F 70%);
+  clip-path:polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  transition:border-color .15s, box-shadow .15s, transform .15s; }
+.ia-ac-skill.vuln { --c:var(--vuln); --c2:var(--vuln-2); }
+.ia-ac-skill.ctl { --c:var(--ctl); --c2:var(--ctl-2); }
+.ia-ac-skill:hover { border-color:color-mix(in srgb, var(--c) 65%, transparent); transform:translateY(-1px); }
+.ia-ac-skill.on { border-color:var(--gold);
+  box-shadow:inset 0 0 0 1px rgba(200,170,110,.35), inset 0 0 28px color-mix(in srgb, var(--c) 18%, transparent); }
+.ia-ac-skill:focus-visible { outline:2px solid var(--gold); outline-offset:2px; }
+.ia-ac-tag { font-family:var(--font-display); font-size:9.5px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--c2); opacity:.9; }
+.ia-ac-q { font-family:var(--font-display); font-size:15.5px; letter-spacing:.02em;
+  color:var(--gold-2); line-height:1.2; }
+.ia-ac-row { display:flex; align-items:center; gap:14px; }
+.ia-ac-facts { display:flex; flex-direction:column; gap:3px; min-width:0; }
+.ia-ac-rank { display:flex; align-items:baseline; gap:6px; }
+.ia-ac-rank b { font-family:var(--font-display); font-size:26px; color:var(--gold-2); line-height:1; }
+.ia-ac-rank i { font-style:normal; font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--muted); }
+.ia-ac-rank.thin b { color:var(--muted); }
+.ia-ac-note { font-size:12px; color:var(--text); }
+.ia-ac-warn { font-size:10.5px; letter-spacing:.06em; color:var(--orange, #E8A24A); }
+
+.ia-ac-gauge { width:72px; height:72px; flex:0 0 72px; overflow:visible; }
+.ia-ac-gauge .frame { fill:rgba(1,10,19,.7); stroke:rgba(200,170,110,.45); stroke-width:1; }
+.ia-ac-gauge .track { fill:none; stroke:rgba(200,170,110,.10); stroke-width:6; }
+.ia-ac-gauge .arc { fill:none; stroke:var(--c); stroke-width:6; stroke-linecap:butt;
+  filter:drop-shadow(0 0 4px var(--c)); }
+.ia-ac-gauge .gem { fill:var(--gold); }
+.ia-ac-gauge text { font-family:var(--font-display); font-size:17px; fill:var(--gold-2); }
+.ia-ac-gauge tspan { font-size:9px; fill:var(--muted); }
+
+.ia-ac-field { display:flex; align-items:center; gap:8px; }
+.ia-ac-field > i { font-style:normal; font-size:8.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); }
+.ia-ac-strip { flex:1; height:16px; overflow:visible; }
+.ia-ac-strip .base { stroke:rgba(200,170,110,.18); stroke-width:1; }
+.ia-ac-strip .med { stroke:rgba(200,170,110,.5); stroke-width:1; }
+.ia-ac-strip .o { fill:rgba(122,140,163,.55); }
+.ia-ac-strip .me { fill:var(--gold); stroke:#010A13; stroke-width:1;
+  filter:drop-shadow(0 0 3px rgba(200,170,110,.8)); }
+
+/* Benchmark switch: two tall tabs, client-style. */
+.ia-ac-tabs { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:20px 0 12px;
+  scroll-margin-top:16px; }
+.ia-ac-tab { --c:var(--gold); display:flex; align-items:center; gap:12px; padding:10px 16px;
+  cursor:pointer; text-align:left; color:var(--muted); font:inherit;
+  background:rgba(1,10,19,.55); border:1px solid var(--line);
+  border-bottom:2px solid transparent; transition:color .15s, border-color .15s, background .15s; }
+.ia-ac-tab.vuln { --c:var(--vuln); }
+.ia-ac-tab.ctl { --c:var(--ctl); }
+.ia-ac-tab b { font-size:22px; font-family:var(--font-ui); color:var(--c); opacity:.6; }
+.ia-ac-tab span { display:flex; flex-direction:column; gap:2px; font-family:var(--font-display);
+  font-size:14px; letter-spacing:.14em; text-transform:uppercase; }
+.ia-ac-tab span i { font-family:var(--font-ui); font-style:normal; font-size:11px;
+  letter-spacing:.02em; text-transform:none; color:var(--muted); }
+.ia-ac-tab:hover { color:var(--gold-2); }
+.ia-ac-tab.on { color:var(--gold-2); border-color:rgba(200,170,110,.45); border-bottom-color:var(--c);
+  background:linear-gradient(0deg, color-mix(in srgb, var(--c) 14%, transparent), rgba(1,10,19,.55)); }
+.ia-ac-tab.on b { opacity:1; text-shadow:0 0 12px var(--c); }
+
+/* Standing: three badges that double as the seat picker for the chart. */
+.ia-ac-mode { --c:var(--gold); }
+.ia-ac-mode.vuln { --c:var(--vuln); }
+.ia-ac-mode.ctl { --c:var(--ctl); }
+.ia-ac-badges { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:0 0 12px; }
+.ia-ac-badge { display:grid; grid-template-columns:auto 1fr; grid-template-areas:"k k" "n v" "r r";
+  align-items:baseline; gap:2px 12px; padding:10px 14px; cursor:pointer; text-align:left;
+  font:inherit; color:var(--text); background:rgba(1,10,19,.5);
+  border:1px solid var(--line); border-left:3px solid rgba(200,170,110,.25);
+  transition:border-color .15s, background .15s; }
+.ia-ac-badge:hover { border-color:rgba(200,170,110,.4); }
+.ia-ac-badge.on { border-color:rgba(200,170,110,.5); border-left-color:var(--c);
+  background:linear-gradient(90deg, color-mix(in srgb, var(--c) 12%, transparent), rgba(1,10,19,.5)); }
+.ia-ac-badge-k { grid-area:k; font-family:var(--font-display); font-size:10px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--gold); }
+.ia-ac-badge b { grid-area:n; font-family:var(--font-display); font-size:30px; line-height:1;
+  color:var(--gold-2); }
+.ia-ac-badge-v { grid-area:v; font-family:var(--font-mono); font-size:12px; color:var(--muted); }
+.ia-ac-badge-r { grid-area:r; font-size:10.5px; color:var(--muted); }
+
+.ia-ac-split { display:grid; grid-template-columns:1fr 250px; gap:12px; }
+.ia-ac-sum { display:flex; flex-wrap:wrap; gap:6px 22px; margin:0 0 8px; }
+.ia-ac-sum dt { font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.ia-ac-sum dd { margin:1px 0 0; font-family:var(--font-display); font-size:18px; color:var(--gold-2); }
+.ia-ac-sum dd em { font-family:var(--font-ui); font-style:normal; font-size:10.5px;
+  color:var(--muted); margin-left:6px; }
+
+.ia-ac-place { display:block; width:100%; height:auto; }
+.ia-ac-place .podium { fill:rgba(200,170,110,.07); }
+.ia-ac-place .podium-l { fill:rgba(200,170,110,.6); font-family:var(--font-display);
+  font-size:9px; letter-spacing:.16em; text-transform:uppercase; }
+.ia-ac-place .grid { stroke:rgba(200,170,110,.10); stroke-dasharray:2 4; }
+.ia-ac-place .ylab, .ia-ac-place .xlab { fill:var(--muted); font-size:9.5px; font-family:var(--font-mono); }
+.ia-ac-place .ghost { fill:none; stroke:rgba(122,140,163,.16); stroke-width:1.2; }
+.ia-ac-place .ghost:hover { stroke:rgba(240,230,210,.55); }
+.ia-ac-place .mine { fill:none; stroke:var(--c); stroke-width:2.6; stroke-linejoin:round;
+  filter:drop-shadow(0 0 5px var(--c)); }
+.ia-ac-place .dot { stroke:#010A13; stroke-width:1.5; cursor:pointer; }
+.ia-ac-place .dot.win { fill:var(--pos); }
+.ia-ac-place .dot.loss { fill:var(--neg); }
+.ia-ac-place .dot.ref { fill:#010A13; stroke:var(--muted); }
+.ia-ac-place .dot:hover, .ia-ac-place .dot:focus { r:6; outline:none; stroke:var(--gold-2); }
+.ia-ac-place .endlab { fill:var(--gold-2); font-family:var(--font-display); font-size:13px; }
+.ia-ac-legend { display:flex; flex-wrap:wrap; gap:14px; margin-top:4px; font-size:10.5px; color:var(--muted); }
+.ia-ac-legend span::before { content:""; display:inline-block; width:8px; height:8px; border-radius:50%;
+  margin-right:5px; vertical-align:-1px; }
+.ia-ac-legend .win::before { background:var(--pos); }
+.ia-ac-legend .loss::before { background:var(--neg); }
+.ia-ac-legend .ref::before { border:1.5px solid var(--muted); width:5px; height:5px; }
+.ia-ac-legend span:last-child::before { display:none; }
+.ia-ac-legend span:last-child { margin-left:auto; font-style:italic; }
+.ia-ac-kv { grid-template-columns:1fr; gap:9px; }
+.ia-ac-kv dd em { font-style:normal; color:var(--orange, #E8A24A); font-size:11px; }
+
+@media (max-width:760px) {
+  .ia-ac-quad { grid-template-columns:1fr 1fr; }
+  .ia-ac-corner, .ia-ac-rowhead { display:none; }
+  .ia-ac-colhead { font-size:9px; }
+  .ia-ac-split { grid-template-columns:1fr; }
+}
+@media (max-width:520px) {
+  .ia-acct-card { padding:16px; }
+  .ia-ac-quad { grid-template-columns:1fr; }
+  .ia-ac-colhead { display:none; }
+  .ia-ac-badges { grid-template-columns:1fr; }
+  .ia-ac-tabs { grid-template-columns:1fr; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .ia-ac-skill, .ia-ac-tab, .ia-ac-badge { transition:none; }
+}
 .ia-kv { display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr));
   gap:8px 14px; }
 .ia-kv div { font-size:11px; }
 .ia-kv dt { font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
 .ia-kv dd { margin:2px 0 0; font-family:var(--font-mono); font-size:12.5px;
   color:var(--gold-2); }
-.ia-role-block { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.ia-role-block > div { border-radius:8px; padding:10px 12px;
-  border:1px solid rgba(200,170,110,.16); background:rgba(1,10,19,.4); }
-.ia-role-block h5 { margin:0 0 7px; font-family:var(--font-display); font-size:10px;
-  letter-spacing:.14em; text-transform:uppercase; font-weight:500; }
-.ia-role-block .att h5 { color:#FF9E9E; }
-.ia-role-block .def h5 { color:#8FE9FF; }
 /* One ratings group per question: vulnerability, control, pooled. Same card
    look as the role block, one per benchmark. */
-.ia-rate-group { border-radius:8px; padding:9px 12px; margin:0 0 8px;
-  border:1px solid rgba(200,170,110,.16); background:rgba(1,10,19,.4); }
-.ia-rate-group h5 { margin:0 0 7px; font-family:var(--font-display); font-size:10px;
-  letter-spacing:.14em; text-transform:uppercase; font-weight:500; color:var(--gold); }
-.ia-rate-group.vuln h5 { color:#FF9E9E; }
-.ia-rate-group.ctl h5 { color:#8FE9FF; }
-.ia-h2hlist { display:flex; flex-direction:column; gap:5px; max-height:210px; overflow:auto; }
-.ia-h2hrow { display:grid; grid-template-columns:1fr auto auto; gap:10px;
-  align-items:center; font-size:11.5px; padding:4px 0;
-  border-bottom:1px solid rgba(200,170,110,.07); }
-.ia-h2hrow b { font-family:var(--font-display); font-size:11.5px; color:var(--gold-2);
-  font-weight:500; }
-.ia-h2hrow span { font-family:var(--font-mono); font-size:11px; color:var(--muted); }
-.ia-hist { width:100%; border-collapse:collapse; font-size:11.5px; }
-.ia-hist th { text-align:left; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
-  color:var(--muted); font-weight:500; padding:4px 8px 5px 0;
-  border-bottom:1px solid rgba(200,170,110,.16); }
-.ia-hist td { padding:4px 8px 4px 0; border-bottom:1px solid rgba(200,170,110,.06);
-  font-family:var(--font-mono); font-size:11px; color:var(--text); }
-.ia-hist tr { cursor:pointer; }
-.ia-hist tr:hover td { color:var(--gold-2); background:rgba(200,170,110,.05); }
-.ia-hist .win { color:var(--pos); }
-.ia-hist .loss { color:var(--neg); }
-.ia-hist .void { color:var(--muted); }
-.ia-hist-tools { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 0 8px; }
-.ia-hist-tools .ia-seg { display:flex; gap:4px; }
-.ia-hist-tools .ia-btn { padding:4px 9px; font-size:10.5px; }
-.ia-hist-count { margin-left:auto; font-family:var(--font-mono); font-size:10.5px;
-  color:var(--muted); }
-.ia-hist-empty td { text-align:center; color:var(--muted); }
 
 /* ===================== Roster comparison =========================== */
 .ia-roster { margin:0 0 14px; padding:16px 18px; border-radius:10px;
@@ -498,11 +614,6 @@
 .ia-roster code { font-family:var(--font-mono); font-size:11.5px; color:var(--teal);
   background:rgba(10,200,185,.08); padding:1px 5px; border-radius:3px; }
 
-.ia-radar-legend { display:grid; grid-template-columns:1fr 1fr; gap:3px 10px; margin:2px 0 0; }
-.ia-radar-legend div { display:flex; justify-content:space-between; gap:8px; align-items:baseline; }
-.ia-radar-legend dt { font-size:9.5px; letter-spacing:.06em; text-transform:uppercase;
-  color:var(--muted); }
-.ia-radar-legend dd { margin:0; font-family:var(--font-mono); font-size:10.5px; color:var(--teal); }
 
 /* ========================= Tabs ==================================== */
 .ia-tabs { display:flex; gap:2px; margin:0 0 18px; padding:4px; border-radius:8px;

@@ -926,104 +926,281 @@
   });
 
   // -------------------------------------------------------------- account
-  const RADAR_AXES = [
-    ["survival", "attack survives", s => s.attack_survival],
-    ["patch", "patch holds", s => s.patch_validity],
-    ["precision", "no false alarms", s => (s.fpr == null ? null : 1 - s.fpr)],
-    ["winrate", "win rate", s => (s.wins + s.losses ? s.wins / (s.wins + s.losses) : null)],
-    ["calibration", "calibration", s => (s.brier == null ? null : Math.max(0, 1 - s.brier * 2))],
-    ["efficiency", "tokens saved", s => {
-      const per = s.tokens_per_round;
-      if (!per) return null;
-      return Math.max(0, Math.min(1, 1 - (per - 15000) / 45000));
-    }]
+  // The champion account answers plain questions with one picture each
+  // (v0.10.5). On top, four skills in a 2×2: the rows are the two benchmarks
+  // (⚔ a planted bug, ○ a clean service), the columns are the two seats (the
+  // model writes the service, or it reviews one). Below, a benchmark switch
+  // opens that benchmark's standing: the place in the field per seat, the
+  // place over the season from the coin's prefix refit (`rank_trail`), with
+  // the model's own rounds as clickable dots on that line, and the record.
+  const RANK_TRAIL = DATA.rank_trail || {};
+  const FORF_A = ["ABSTAIN_A", "FAILED_A", "FAULT_A"];
+  const FORF_D = ["ABSTAIN_D", "FAILED_D"];
+  const ACCT_PLAYED = ["TP", "TN", "FP", "FN", "DISCOVERY"];
+  const MODES = {
+    "1": { icon: "⚔︎", name: "Vulnerability", sub: "the writer plants a working bug", cls: "vuln",
+      seats: { overall: "Overall", att: "Red team", def: "Audit" } },
+    "0": { icon: "○", name: "Control", sub: "the writer ships a clean service", cls: "ctl",
+      seats: { overall: "Overall", att: "Clean build", def: "Audit" } }
+  };
+  const SEAT_ROLE = { att: "writes the service", def: "reviews the service", overall: "both seats" };
+  const ratingKey = (t, seat) => (seat === "overall" ? `rating_theta${t}` : `rating_${seat}_theta${t}`);
+  // Equal ratings share a place, as on the board.
+  const fieldRank = (s, key) =>
+    1 + CHAMPS.filter(o => Math.round(o[key] * 1e4) > Math.round(s[key] * 1e4)).length;
+
+  const SKILLS = [
+    { t: "1", seat: "att", q: "Hides a working bug",
+      hint: "Of the services where it planted a bug, the share whose bug got past the reviewer.",
+      metric: s => s.attack_survival, unit: "slipped past review" },
+    { t: "1", seat: "def", q: "Catches a planted bug",
+      hint: "Of the planted bugs it reviewed, the share it found and patched with a working fix.",
+      metric: s => s.patch_validity, unit: "bugs caught" },
+    { t: "0", seat: "att", q: "Clean code looks like an attack",
+      hint: "Of the clean services it wrote, the share a reviewer flagged as malicious. Higher means its normal code reads as hostile.",
+      metric: s => s.clean_win_rate, unit: "flagged as malicious" },
+    { t: "0", seat: "def", q: "Tells clean code from malicious",
+      hint: "Of the clean services it reviewed, the share it cleared without a false alarm (1 − FPR).",
+      metric: s => (s.fpr == null ? null : 1 - s.fpr), unit: "cleared correctly" }
   ];
 
-  function radar(s) {
-    const R = 44, cx = 62, cy = 58;
-    const pt = (i, v) => {
-      const a = (Math.PI * 2 * i) / RADAR_AXES.length - Math.PI / 2;
-      return [cx + Math.cos(a) * R * v, cy + Math.sin(a) * R * v];
+  // One model's record on one benchmark, from its own round list.
+  function modeRecord(s, t) {
+    const r = { played: 0, wins: 0, losses: 0, refused: 0, oppRefused: 0, cost: 0, n: 0,
+      att: { played: 0, wins: 0, losses: 0, refused: 0 },
+      def: { played: 0, wins: 0, losses: 0, refused: 0 } };
+    (s.rounds_list || []).forEach(([, , role, , theta, o, cost]) => {
+      if (String(theta ? 1 : 0) !== t || o === "VOID") return;
+      const seat = role === "attacker" ? r.att : r.def;
+      r.n += 1;
+      r.cost += cost || 0;
+      if (ACCT_PLAYED.includes(o)) {
+        const win = role === "attacker" ? (o === "FN" || o === "FP") : !(o === "FN" || o === "FP");
+        seat.played += 1; r.played += 1;
+        if (win) { seat.wins += 1; r.wins += 1; } else { seat.losses += 1; r.losses += 1; }
+      } else if ((role === "attacker" && FORF_A.includes(o)) || (role === "defender" && FORF_D.includes(o))) {
+        seat.refused += 1; r.refused += 1;
+      } else {
+        r.oppRefused += 1;
+      }
+    });
+    return r;
+  }
+
+  function gauge(v, cls) {
+    const R = 27, C = 2 * Math.PI * R;
+    const on = v == null ? 0 : Math.max(0, Math.min(1, v));
+    return `<svg class="ia-ac-gauge ${cls}" viewBox="0 0 72 72" aria-hidden="true">
+      <circle class="frame" cx="36" cy="36" r="33"/>
+      <circle class="track" cx="36" cy="36" r="${R}"/>
+      <circle class="arc" cx="36" cy="36" r="${R}" stroke-dasharray="${(C * on).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 36 36)"/>
+      <path class="gem" d="M36 0l3.5 3.5L36 7l-3.5-3.5z"/>
+      <text x="36" y="${v == null ? 41 : 40}" text-anchor="middle">${v == null ? "—" : Math.round(on * 100) + "<tspan>%</tspan>"}</text>
+    </svg>`;
+  }
+
+  // Where this model sits among the field on one metric: every other model a
+  // dim tick, the field median a notch, this model the gold gem.
+  function fieldStrip(s, metric) {
+    const vals = CHAMPS.map(o => [o.agent, metric(o)]).filter(([, v]) => v != null);
+    if (!vals.length) return "";
+    const sorted = vals.map(([, v]) => v).sort((a, b) => a - b);
+    const med = sorted[Math.floor((sorted.length - 1) / 2)];
+    const X = v => (4 + Math.max(0, Math.min(1, v)) * 192).toFixed(1);
+    const others = vals.filter(([a]) => a !== s.agent)
+      .map(([a, v]) => `<circle class="o" cx="${X(v)}" cy="9" r="2.6"><title>${champOf(a).name} · ${pct(v)}</title></circle>`).join("");
+    const mine = metric(s);
+    const me = mine == null ? "" : `<path class="me" d="M${X(mine)} 2.5l5 6.5-5 6.5-5-6.5z"/>`;
+    return `<svg class="ia-ac-strip" viewBox="0 0 200 18" preserveAspectRatio="none" aria-hidden="true">
+      <line class="base" x1="4" y1="9" x2="196" y2="9"/>
+      <line class="med" x1="${X(med)}" y1="3" x2="${X(med)}" y2="15"><title>field median · ${pct(med)}</title></line>
+      ${others}${me}</svg>`;
+  }
+
+  function skillCell(s, k, sel) {
+    const v = k.metric(s);
+    const rec = modeRecord(s, k.t)[k.seat];
+    const key = ratingKey(k.t, k.seat);
+    const rank = fieldRank(s, key);
+    const mode = MODES[k.t];
+    const note = v != null
+      ? `${rec.wins} of ${rec.played} ${k.unit}`
+      : rec.refused ? `never delivered · refused ${rec.refused}×` : "no rounds yet";
+    return `<button type="button" class="ia-ac-skill ${mode.cls}${sel ? " on" : ""}" data-acct-pick="${k.t}:${k.seat}"
+        title="${k.hint}">
+      <span class="ia-ac-tag">${mode.icon} ${mode.seats[k.seat]}</span>
+      <span class="ia-ac-q">${k.q}</span>
+      <span class="ia-ac-row">
+        ${gauge(v, mode.cls)}
+        <span class="ia-ac-facts">
+          <span class="ia-ac-rank${rec.played ? "" : " thin"}"${rec.played ? "" : ` title="placed by forfeits alone \u2014 no played round in this seat"`}><b>#${rank}</b><i>of ${CHAMPS.length}</i></span>
+          <span class="ia-ac-note">${note}</span>
+          ${v != null && rec.refused ? `<span class="ia-ac-warn">refused ${rec.refused}× more</span>` : ""}
+        </span>
+      </span>
+      <span class="ia-ac-field"><i>field</i>${fieldStrip(s, k.metric)}</span>
+    </button>`;
+  }
+
+  function quadrant(s) {
+    const cell = (t, seat) => skillCell(s, SKILLS.find(k => k.t === t && k.seat === seat),
+      acct.mode === t && acct.seat === seat);
+    return `<section class="ia-ac-quad" aria-label="Four skills">
+      <span class="ia-ac-corner"></span>
+      <span class="ia-ac-colhead">✎ when it <b>writes</b> the service</span>
+      <span class="ia-ac-colhead">☉ when it <b>reviews</b> the service</span>
+      <span class="ia-ac-rowhead vuln"><b>⚔︎</b>bug<br>planted</span>
+      ${cell("1", "att")}${cell("1", "def")}
+      <span class="ia-ac-rowhead ctl"><b>○</b>clean<br>code</span>
+      ${cell("0", "att")}${cell("0", "def")}
+    </section>`;
+  }
+
+  // Place in the field after every round of one benchmark, one seat. The
+  // other models are faint lines behind; the model's own rounds are dots on
+  // its line (green won, red lost, hollow refused) that open the round.
+  function placeChart(s, t, seat) {
+    const tr = RANK_TRAIL[t];
+    const mine = tr && tr[seat] && tr[seat][s.agent];
+    if (!mine || !mine.some(v => v != null)) {
+      return `<div class="ia-h2h-empty">No ${MODES[t].seats[seat].toLowerCase()} rounds on this benchmark yet, so there is no place to draw.</div>`;
+    }
+    const steps = tr.steps;
+    const N = CHAMPS.length;
+    const W = 640, H = 206, L = 34, R = 10, T = 10, B = 22;
+    const x = i => L + (steps.length < 2 ? 0 : (i * (W - L - R)) / (steps.length - 1));
+    const y = r => T + ((r - 1) * (H - T - B)) / Math.max(1, N - 1);
+    const path = arr => {
+      let d = "", pen = false;
+      arr.forEach((r, i) => {
+        if (r == null) { pen = false; return; }
+        d += `${pen ? "L" : "M"}${x(i).toFixed(1)} ${y(r).toFixed(1)}`;
+        pen = true;
+      });
+      return d;
     };
-    const rings = [0.33, 0.66, 1].map(v =>
-      `<polygon class="ring" points="${RADAR_AXES.map((_, i) => pt(i, v).join(",")).join(" ")}"/>`).join("");
-    const axes = RADAR_AXES.map((_, i) => {
-      const [x, y] = pt(i, 1);
-      return `<line class="axis" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`;
-    }).join("");
-    const vals = RADAR_AXES.map(([, , f]) => {
-      const v = f(s);
-      return v == null ? 0.06 : Math.max(0.06, Math.min(1, v));
-    });
-    const shape = `<polygon class="shape" points="${vals.map((v, i) => pt(i, v).join(",")).join(" ")}"/>`;
-    const dots = vals.map((v, i) => {
-      const [x, y] = pt(i, v);
-      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.6" fill="var(--teal)"/>`;
-    }).join("");
-    return `<svg class="ia-radar" viewBox="0 0 124 116">${rings}${axes}${shape}${dots}</svg>`;
+    const ghosts = Object.entries(tr[seat]).filter(([a]) => a !== s.agent)
+      .map(([a, arr]) => `<path class="ghost" d="${path(arr)}"><title>${champOf(a).name}</title></path>`).join("");
+    const podium = `<rect class="podium" x="${L}" y="${T - 6}" width="${W - L - R}" height="${(y(3) - T + 12).toFixed(1)}"/>
+      <text class="podium-l" x="${W - R - 4}" y="${T + 4}" text-anchor="end">top 3</text>`;
+    const grid = [1, Math.ceil(N / 2), N].map(r =>
+      `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(r)}" y2="${y(r)}"/>
+       <text class="ylab" x="${L - 6}" y="${y(r) + 3.5}" text-anchor="end">#${r}</text>`).join("");
+    const stepOf = Object.fromEntries(steps.map((st, i) => [st[0], i]));
+    const wantRole = seat === "att" ? "attacker" : seat === "def" ? "defender" : null;
+    const dots = (s.rounds_list || []).filter(([rid, , role, , theta, o]) =>
+      stepOf[rid] != null && String(theta ? 1 : 0) === t && o !== "VOID" && (!wantRole || role === wantRole))
+      .map(([rid, , role, opp, , o]) => {
+        const i = stepOf[rid];
+        const r = mine[i];
+        if (r == null) return "";
+        const refused = (role === "attacker" && FORF_A.includes(o)) || (role === "defender" && FORF_D.includes(o));
+        const win = ACCT_PLAYED.includes(o)
+          ? (role === "attacker" ? (o === "FN" || o === "FP") : !(o === "FN" || o === "FP"))
+          : !refused;
+        const cls = refused ? "ref" : win ? "win" : "loss";
+        const what = refused ? "refused" : win ? "won" : "lost";
+        return `<circle class="dot ${cls}" cx="${x(i).toFixed(1)}" cy="${y(r).toFixed(1)}" r="4" data-open-round="${rid}" tabindex="0">
+          <title>${rid} · ${role === "attacker" ? "wrote" : "reviewed"} vs ${champOf(opp).name} · ${outcomeLabel(o)} · ${what} · now #${r}</title></circle>`;
+      }).join("");
+    const last = mine.length - 1;
+    const end = mine[last] == null ? "" :
+      `<text class="endlab" x="${x(last) - 7}" y="${y(mine[last]) - 8}" text-anchor="end">#${mine[last]}</text>`;
+    return `<svg class="ia-ac-place ${MODES[t].cls}" viewBox="0 0 ${W} ${H}" role="img"
+        aria-label="Place in the field over the season">
+      ${podium}${grid}${ghosts}
+      <path class="mine" d="${path(mine)}"/>${dots}${end}
+      <text class="xlab" x="${L}" y="${H - 5}">first round</text>
+      <text class="xlab" x="${W - R}" y="${H - 5}" text-anchor="end">round ${steps.length} of the benchmark</text>
+    </svg>`;
   }
 
-  const radarLegend = s => `<dl class="ia-radar-legend">${RADAR_AXES.map(([, label, f]) => {
-    const v = f(s);
-    return `<div><dt>${label}</dt><dd>${v == null ? "\u2014" : Math.round(Math.max(0, Math.min(1, v)) * 100) + "%"}</dd></div>`;
-  }).join("")}</dl>`;
-
-  function spark(hist) {
-    if (!hist || hist.length < 2) return `<div class="ia-h2h-empty" style="font-size:11px">not enough rounds to draw a curve</div>`;
-    const W = 260, H = 64, pad = 6;
-    const series = [["rating", "var(--gold)"], ["att", "#E06060"], ["def", "#0AC8B9"]];
-    const all = hist.flatMap(h => [h[2], h[3], h[4]]);
-    const lo = Math.min(...all) - 6, hi = Math.max(...all) + 6;
-    const x = i => pad + (i * (W - pad * 2)) / (hist.length - 1);
-    const y = v => H - pad - ((v - lo) / (hi - lo || 1)) * (H - pad * 2);
-    const lines = series.map(([k, color], idx) => {
-      const pts = hist.map((h, i) => `${x(i).toFixed(1)},${y(h[2 + idx] ?? h[2]).toFixed(1)}`).join(" ");
-      return `<polyline class="line" stroke="${color}" points="${pts}"/>`;
-    }).join("");
-    return `<svg class="ia-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-      <line class="base" x1="${pad}" y1="${y(1500)}" x2="${W - pad}" y2="${y(1500)}"/>${lines}</svg>`;
+  function placeSummary(s, t, seat) {
+    const arr = ((RANK_TRAIL[t] || {})[seat] || {})[s.agent] || [];
+    const ranked = arr.filter(v => v != null);
+    if (!ranked.length) return "";
+    const now = ranked[ranked.length - 1];
+    const best = Math.min(...ranked);
+    const worst = Math.max(...ranked);
+    const top3 = ranked.filter(v => v <= 3).length / ranked.length;
+    const half = ranked[Math.floor(ranked.length / 2)];
+    const move = half - now;
+    const stat = (k, v, sub) => `<div><dt>${k}</dt><dd>${v}${sub ? `<em>${sub}</em>` : ""}</dd></div>`;
+    return `<dl class="ia-ac-sum">
+      ${stat("now", `#${now}`, `of ${CHAMPS.length}`)}
+      ${stat("peak", `#${best}`, worst !== best ? `low #${worst}` : "")}
+      ${stat("in top 3", pct(top3), "of the season")}
+      ${stat("since mid-season", move > 0 ? `▲ ${move}` : move < 0 ? `▼ ${-move}` : "=", move ? (move > 0 ? "places up" : "places down") : "held")}
+    </dl>`;
   }
 
-  let acctRole = "";
-  let acctTheta = "";
+  function modeBody(s) {
+    const t = acct.mode, seat = acct.seat, m = MODES[t];
+    const badge = k => {
+      const key = ratingKey(t, k);
+      const ci = s[key + "_ci"];
+      return `<button type="button" class="ia-ac-badge ${k}${seat === k ? " on" : ""}" data-acct-seat="${k}" aria-pressed="${seat === k}">
+        <span class="ia-ac-badge-k">${m.seats[k]}</span>
+        <b>#${fieldRank(s, key)}</b>
+        <span class="ia-ac-badge-v">${s[key].toFixed(0)} <em class="ia-ci">±${ci.toFixed(0)}</em></span>
+        <span class="ia-ac-badge-r">${SEAT_ROLE[k]}</span>
+      </button>`;
+    };
+    const rec = modeRecord(s, t);
+    const wl = o => `${o.wins}–${o.losses}`;
+    const kv = [
+      ["played", rec.played],
+      ["won–lost", wl(rec)],
+      [m.seats.att, `${wl(rec.att)}${rec.att.refused ? ` <em>· ${rec.att.refused} refused</em>` : ""}`],
+      [m.seats.def, `${wl(rec.def)}${rec.def.refused ? ` <em>· ${rec.def.refused} refused</em>` : ""}`],
+      ["opponent refused", rec.oppRefused],
+      ["spend", usd(rec.cost)],
+      ["$ / round", rec.n ? usd(rec.cost / rec.n) : "—"]
+    ].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+    return `<div class="ia-ac-badges">${["overall", "att", "def"].map(badge).join("")}</div>
+      <div class="ia-ac-split">
+        <div class="ia-panel-mini">
+          <h4>Place in the field · ${m.seats[seat]}</h4>
+          ${placeSummary(s, t, seat)}
+          ${placeChart(s, t, seat)}
+          <div class="ia-ac-legend"><span class="win">won</span><span class="loss">lost</span><span class="ref">refused</span><span>click a dot to open the round</span></div>
+        </div>
+        <div class="ia-panel-mini"><h4>Record · ${m.name}</h4><dl class="ia-kv ia-ac-kv">${kv}</dl></div>
+      </div>`;
+  }
 
-  function updateAcctButtons() {
+  const acct = { agent: "", mode: "1", seat: "overall" };
+
+  function paintAccount() {
     const host = document.getElementById("ia-acct");
-    if (!host) return;
-    host.querySelectorAll("[data-acct-role]").forEach(b => {
-      const on = (b.dataset.acctRole || "") === acctRole;
+    const s = statsOf(acct.agent);
+    if (!host || !s) return;
+    const quad = host.querySelector("[data-acct-quad]");
+    if (quad) quad.innerHTML = quadrant(s);
+    host.querySelectorAll("[data-acct-mode]").forEach(b => {
+      const on = b.dataset.acctMode === acct.mode;
       b.classList.toggle("on", on);
-      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.setAttribute("aria-selected", on ? "true" : "false");
     });
-    host.querySelectorAll("[data-acct-theta]").forEach(b => {
-      const on = (b.dataset.acctTheta || "") === acctTheta;
-      b.classList.toggle("on", on);
-      b.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-  }
-
-  function applyAcctRoleFilter() {
-    const host = document.getElementById("ia-acct");
-    if (!host) return;
-    const rows = Array.from(host.querySelectorAll(".ia-hist tbody tr[data-hist-role]"));
-    rows.forEach(tr => {
-      const roleOk = !acctRole || tr.dataset.histRole === acctRole;
-      const coinOk = !acctTheta || (tr.dataset.histTheta || "") === acctTheta;
-      tr.hidden = !(roleOk && coinOk);
-    });
-    const visible = rows.filter(tr => !tr.hidden).length;
-    const empty = host.querySelector(".ia-hist-empty");
-    if (empty) empty.hidden = visible > 0;
-    const count = host.querySelector("[data-acct-count]");
-    if (count) count.textContent = `${visible} round${visible === 1 ? "" : "s"}`;
+    const body = host.querySelector("[data-acct-body]");
+    if (body) {
+      body.className = `ia-ac-mode ${MODES[acct.mode].cls}`;
+      body.innerHTML = modeBody(s);
+    }
+    const r = s[ratingKey(acct.mode, "overall")];
+    const tier = tierOf(r);
+    const big = host.querySelector("[data-acct-big]");
+    if (big) big.innerHTML = `<b>#${fieldRank(s, ratingKey(acct.mode, "overall"))}</b>
+      <span>${MODES[acct.mode].icon} ${MODES[acct.mode].name} · ${r.toFixed(0)} · ${tier[1]}</span>`;
   }
 
   function openAccount(agent) {
     if (logPopupOpen) closeLogPopup();
     const c = champOf(agent);
     const s = statsOf(agent);
-    acctRole = "";
-    acctTheta = "";
+    acct.agent = agent;
+    acct.mode = "1";
+    acct.seat = "overall";
     let host = document.getElementById("ia-acct");
     if (!host) {
       host = el("div", "ia-acct");
@@ -1032,19 +1209,17 @@
       document.body.appendChild(host);
     }
 
-    const tier = s ? tierOf(s.rating) : null;
     const head = `<div class="ia-acct-head">
       <div class="ia-emblem" style="--accent:${c.accent}">${c.glyph}</div>
       <div class="ia-acct-id">
-        <h3 class="agent-line">${c.name}${s ? tierIcon(s.rating) : ""}</h3>
-        <span class="ia-acct-title">${c.title || ""}${c.house ? ` \u00b7 ${c.house}` : ""}</span>
-        <span class="ia-acct-model">${c.model_name ? `${c.model_name} \u00b7 ${c.model}` : (c.model || agent)}</span>
+        <h3 class="agent-line">${c.name}${s ? tierIcon(s.rating_theta1) : ""}</h3>
+        <span class="ia-acct-title">${c.title || ""}${c.house ? ` · ${c.house}` : ""}</span>
+        <span class="ia-acct-model">${c.model_name ? `${c.model_name} · ${c.model}` : (c.model || agent)}</span>
       </div>
-      <div class="ia-acct-rating">
-        <b>${s ? s.rating.toFixed(1) : "\u2014"}</b>
-        <span>${tier ? `${tier[1]} tier` : "unplayed"}</span>
+      <div class="ia-acct-rating" data-acct-big>
+        <b>—</b><span>unplayed</span>
       </div>
-      <button class="ia-acct-close" data-acct-close aria-label="Close">\u2715</button>
+      <button class="ia-acct-close" data-acct-close aria-label="Close">✕</button>
     </div>`;
 
     if (!s) {
@@ -1059,119 +1234,15 @@
       return;
     }
 
-    const kv = [
-      ["Played", s.rounds], ["W\u2013L", `${s.wins}\u2013${s.losses}`],
-      ["as attacker", `${s.att.wins}\u2013${s.att.losses}`],
-      ["as defender", `${s.def.wins}\u2013${s.def.losses}`],
-      ["with forfeits", `${s.wins_all}\u2013${s.losses_all}`],
-      ["No-show", s.no_shows], ["Forfeit", s.forfeits], ["Voids", s.voids],
-      ["Spend", usd(s.cost_total)], ["$/round", usd(s.cost_per_round)],
-      ["Chips", usdSigned(s.net_chips)], ["Brier", s.brier.toFixed(3)],
-      ["Patch", s.patch_validity == null ? "\u2014" : pct(s.patch_validity)],
-      ["FPR", s.fpr == null ? "\u2014" : pct(s.fpr)]
-    ].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
-
-    // Ratings, one group per question (v0.10.3): the two benchmarks are the
-    // headline, each with its own overall fit and its own role fits; the
-    // pooled group is both coins together, with the retired margin-weighted
-    // fit kept visible for continuity. It never ranks.
-    const ci = (val, c) => `${val.toFixed(1)} <em class="ia-ci">\u00b1${c.toFixed(0)}</em>`;
-    const rateGroup = (title, cls, rows) =>
-      `<div class="ia-rate-group ${cls}"><h5>${title}</h5><dl class="ia-kv">${rows}</dl></div>`;
-    const ratings = `<div class="ia-panel-mini"><h4>Ratings</h4>
-      ${rateGroup("\u2694 vulnerability \u00b7 \u03b8=1", "vuln", `
-        <div><dt>overall</dt><dd>${ci(s.rating_theta1, s.rating_theta1_ci)}</dd></div>
-        <div><dt>as attacker</dt><dd>${ci(s.rating_att_theta1, s.rating_att_theta1_ci)}</dd></div>
-        <div><dt>as defender</dt><dd>${ci(s.rating_def_theta1, s.rating_def_theta1_ci)}</dd></div>`)}
-      ${rateGroup("\u25cb control \u00b7 \u03b8=0", "ctl", `
-        <div><dt>overall</dt><dd>${ci(s.rating_theta0, s.rating_theta0_ci)}</dd></div>
-        <div><dt>as attacker</dt><dd>${ci(s.rating_att_theta0, s.rating_att_theta0_ci)}</dd></div>
-        <div><dt>as defender</dt><dd>${ci(s.rating_def_theta0, s.rating_def_theta0_ci)}</dd></div>`)}
-      ${rateGroup("pooled \u00b7 both coins", "pool", `
-        <div><dt>overall</dt><dd>${ci(s.rating, s.rating_ci)}</dd></div>
-        <div><dt>attacker</dt><dd>${ci(s.rating_att, s.rating_att_ci)}</dd></div>
-        <div><dt>audit</dt><dd>${ci(s.rating_def, s.rating_def_ci)}</dd></div>
-        <div><dt class="dim">margin-weighted</dt><dd class="dim">${ci(s.rating_efficiency, s.rating_efficiency_ci)}</dd></div>`)}
-      <p class="ia-brief-note">each benchmark is its own fit over its own rounds. margin-weighted is the retired 0.5.0 headline; it never ranks.</p></div>`;
-
-    const role = `<div class="ia-role-block">
-      <div class="att"><h5>as attacker \u00b7 red team on \u2694, clean build on \u25cb</h5><dl class="ia-kv">
-        <div><dt>rating</dt><dd>${s.rating_att.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_att_ci.toFixed(0)}</em></dd></div>
-        <div><dt>\u2694 real</dt><dd>${s.att.exploit_wins}\u2013${s.att.exploit_losses} \u00b7 ${s.att.exploit_rounds}r</dd></div>
-        <div><dt>forfeits</dt><dd>${s.att.exploit_forfeits ? `${s.att.exploit_forfeits} (a plain loss)` : "0"}</dd></div>
-        <div><dt>\u25cb clean</dt><dd>${s.att.clean_wins}\u2013${s.att.clean_losses} \u00b7 ${s.att.clean_rounds}r</dd></div>
-        <div><dt>played</dt><dd>${s.att.wins}\u2013${s.att.losses} \u00b7 ${s.att.rounds}</dd></div>
-        <div><dt>exploit survives</dt><dd>${s.attack_survival == null ? "\u2014" : pct(s.attack_survival)}</dd></div>
-        <div><dt>clean win rate</dt><dd>${s.clean_win_rate == null ? "\u2014" : pct(s.clean_win_rate)}</dd></div>
-        <div><dt>spend</dt><dd>${usd(s.att.cost)}</dd></div>
-      </dl></div>
-      <div class="def"><h5>as defender \u00b7 audit \u00b7 both coins</h5><dl class="ia-kv">
-        <div><dt>rating</dt><dd>${s.rating_def.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_def_ci.toFixed(0)}</em></dd></div>
-        <div><dt>\u2694 real</dt><dd>${s.def.patch_wins}\u2013${s.def.patch_losses} \u00b7 ${s.def.patch_rounds}r</dd></div>
-        <div><dt>forfeits</dt><dd>${s.def.patch_forfeits ? `${s.def.patch_forfeits} (a plain loss)` : "0"}</dd></div>
-        <div><dt>\u25cb clean</dt><dd>${s.def.clean_wins}\u2013${s.def.clean_losses} \u00b7 ${s.def.clean_rounds}r</dd></div>
-        <div><dt>played</dt><dd>${s.def.wins}\u2013${s.def.losses} \u00b7 ${s.def.rounds}</dd></div>
-        <div><dt>TP/FN</dt><dd>${s.def.tp}/${s.def.fn}</dd></div>
-        <div><dt>FP/TN</dt><dd>${s.def.fp}/${s.def.tn}</dd></div>
-        <div><dt>spend</dt><dd>${usd(s.def.cost)}</dd></div>
-      </dl></div></div>`;
-
-    const h2hAll = Object.fromEntries((s.h2h_all || []).map(([opp, n, w, l]) => [opp, [n, w, l]]));
-    const h2hRows = (s.h2h || []).map(([opp, n, w, l]) => {
-      const oc = champOf(opp);
-      const a = h2hAll[opp] || [0, 0, 0];
-      return `<div class="ia-h2hrow" title="head to head \u00b7 with forfeits ${a[1]}\u2013${a[2]}"><b>${oc.name}</b><span>${w}\u2013${l}</span><span>${n} played</span></div>`;
-    }).join("") || `<div class="ia-h2h-empty">No meetings recorded.</div>`;
-
-    const hist = (s.rounds_list || []).map(([rid, mid, roleName, opp, theta, outcome, tok, d]) => {
-      const forfeit = outcome.startsWith("ABSTAIN") || outcome.startsWith("FAILED") || outcome.startsWith("FAULT");
-      const dd = d;
-      const cls = outcome === "VOID" ? "void" : forfeit ? "loss"
-        : (roleName === "attacker" ? (outcome === "FN" || outcome === "FP") : (outcome === "TP" || outcome === "TN" || outcome === "DISCOVERY")) ? "win" : "loss";
-      return `<tr data-open-round="${rid}" data-hist-role="${roleName}" data-hist-theta="${theta ? "1" : "0"}">
-        <td>${rid}</td><td>${roleName === "attacker" ? "atk" : "def"}</td>
-        <td>${champOf(opp).name}</td><td>${theta ? "\u2694\uFE0E" : "\u25cb"}</td>
-        <td class="${cls}">${outcomeLabel(outcome)}</td><td>${usd(tok)}</td>
-        <td class="${dd >= 0 ? "win" : "loss"}">${delta(dd)}</td></tr>`;
-    }).join("");
-
+    const tab = t => `<button type="button" role="tab" class="ia-ac-tab ${MODES[t].cls}" data-acct-mode="${t}">
+      <b>${MODES[t].icon}</b><span>${MODES[t].name}<i>${MODES[t].sub}</i></span></button>`;
     host.innerHTML = `<div class="ia-acct-card">${head}
-      <div class="ia-acct-body">
-        <div class="ia-acct-col">
-          <div class="ia-panel-mini"><h4>Shape</h4>${radar(s)}${radarLegend(s)}</div>
-          <div class="ia-panel-mini"><h4>Fitted rating over the season</h4>${spark(s.hist)}
-            <div style="display:flex;gap:10px;margin-top:6px;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase">
-              <span style="color:var(--gold)">overall</span><span style="color:#E06060">attack</span><span style="color:var(--teal)">defence</span>
-            </div></div>
-          <div class="ia-panel-mini"><h4>Record</h4><dl class="ia-kv">${kv}</dl></div>
-        </div>
-        <div class="ia-acct-col">
-          ${ratings}
-          ${role}
-          <div class="ia-panel-mini"><h4>Head to head \u00b7 played</h4><div class="ia-h2hlist">${h2hRows}</div></div>
-          <div class="ia-panel-mini"><h4>Every round</h4>
-            <div class="ia-hist-tools">
-              <div class="ia-seg" role="group" aria-label="History role filter">
-                <button class="ia-btn" type="button" data-acct-role="" aria-pressed="true">Any</button>
-                <button class="ia-btn" type="button" data-acct-role="attacker" aria-pressed="false">Attacker</button>
-                <button class="ia-btn" type="button" data-acct-role="defender" aria-pressed="false">Defender</button>
-              </div>
-              <div class="ia-seg" role="group" aria-label="History benchmark filter">
-                <button class="ia-btn" type="button" data-acct-theta="" aria-pressed="true">Any</button>
-                <button class="ia-btn" type="button" data-acct-theta="1" aria-pressed="false">\u2694 \u03b8=1</button>
-                <button class="ia-btn" type="button" data-acct-theta="0" aria-pressed="false">\u25cb \u03b8=0</button>
-              </div>
-              <span class="ia-hist-count" data-acct-count>${(s.rounds_list || []).length} rounds</span>
-            </div>
-            <div style="max-height:220px;overflow:auto">
-            <table class="ia-hist"><thead><tr><th>round</th><th>role</th><th>vs</th><th>\u03b8</th><th>outcome</th><th>cost</th><th title="\u0394 rating \u00b7 change in the fitted overall rating for this round (prefix refit before vs after)">\u0394 rating</th></tr></thead>
-            <tbody>${hist}<tr class="ia-hist-empty" hidden><td colspan="7">No rounds in this filter.</td></tr></tbody></table></div></div>
-        </div>
-      </div>
+      <div data-acct-quad></div>
+      <div class="ia-ac-tabs" role="tablist" aria-label="Benchmark">${tab("1")}${tab("0")}</div>
+      <div data-acct-body></div>
     </div>`;
     host.hidden = false;
-    updateAcctButtons();
-    applyAcctRoleFilter();
+    paintAccount();
   }
 
   function openLogPopup(id) {
@@ -1218,19 +1289,25 @@
   window.iaAccount = { open: openAccount };
 
   document.addEventListener("click", ev => {
-    const roleBtn = ev.target.closest("[data-acct-role]");
-    if (roleBtn) {
-      acctRole = roleBtn.dataset.acctRole || "";
-      updateAcctButtons();
-      applyAcctRoleFilter();
-      return;
+    if (!ev.target.closest || !ev.target.closest("#ia-acct")) return;
+    const mode = ev.target.closest("[data-acct-mode]");
+    const seat = ev.target.closest("[data-acct-seat]");
+    const pick = ev.target.closest("[data-acct-pick]");
+    if (!mode && !seat && !pick) return;
+    if (mode) acct.mode = mode.dataset.acctMode;
+    if (seat) acct.seat = seat.dataset.acctSeat;
+    if (pick) [acct.mode, acct.seat] = pick.dataset.acctPick.split(":");
+    paintAccount();
+    if (pick) {
+      const body = document.querySelector("#ia-acct .ia-ac-tabs");
+      if (body) body.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-    const thetaBtn = ev.target.closest("[data-acct-theta]");
-    if (thetaBtn) {
-      acctTheta = thetaBtn.dataset.acctTheta || "";
-      updateAcctButtons();
-      applyAcctRoleFilter();
-    }
+  });
+
+  document.addEventListener("keydown", ev => {
+    if (ev.key !== "Enter" && ev.key !== " ") return;
+    const dot = ev.target.closest && ev.target.closest("#ia-acct circle[data-open-round]");
+    if (dot) { ev.preventDefault(); openLogPopup(dot.dataset.openRound); }
   });
 
   document.addEventListener("click", ev => {

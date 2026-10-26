@@ -37,6 +37,7 @@ The payload in `<script type="application/json" id="arena-data">` is:
 | `challenges` | one per task pack | `tasks/<scaffold>/task.json` + `ledger` (games, outcomes) |
 | `battles` | one per round id | round manifest, grader results, agent exports |
 | `champions` | one per played agent | derived from `ledger` |
+| `rank_trail` | per coin (`"1"`, `"0"`): `steps` (round id + field size per pool) and, per pool (`overall`, `att`, `def`), each agent's place after every step, `null` before its first game | prefix refit of `ledger` per coin |
 | `roster` | one per champion | `web/roster.json` |
 
 `ledger` stays the only source of truth for money, rating and outcome. Money is
@@ -232,16 +233,33 @@ An agent with no usable export (every round void or refused) falls back to the
 roster's `model` id, and an unplayed champion shows that id as well.
 
 **Champion account** — the overlay behind `Profile`, `acct`, a Board row, a
-podium card, or a model name in the standings/match log: six-axis shape, rating curve for the
-overall/attack/defence pools, record with the role split, the pools
-with CIs plus the non-ranking margin-weighted number, the ⚔ real and ○ clean
-records and forfeits per role, head-to-head, and
-every round that champion played. The "Every round" panel has an `Any` /
-`Attacker` / `Defender` filter, so the history can be narrowed to the rounds
-the model attacked or defended. Clicking a round opens the complete Match log —
-filters, dossier and the full ledger table — in a modal over the account; `✕`
-in the popup header closes it and returns to the account, without switching
-tabs.
+podium card, or a model name in the standings/match log. It answers plain
+questions with one picture each:
+
+- *Four skills* — a 2×2: rows are the benchmarks (⚔ a planted bug, ○ a clean
+  service), columns the seats (writes the service / reviews it). Each cell is
+  a ring with the plain rate — bugs that slipped past review
+  (`attack_survival`), bugs caught (`patch_validity`), clean services flagged
+  as malicious (`clean_win_rate`), clean services cleared (`1 − fpr`) — the
+  place in the field on that seat's coin rating (`rating_att/def_theta{1,0}`),
+  the record behind the rate, refusals, and a strip with every other model
+  and the field median. A rate with no played round reads `—` and says why;
+  a place earned by forfeits alone is dimmed. Clicking a cell selects its
+  benchmark and seat below.
+- *Benchmark switch* — ⚔ Vulnerability / ○ Control. The header shows the
+  place on the selected benchmark. Three badges — Overall, the writer seat
+  (Red team on ⚔, Clean build on ○) and Audit — give the place with the
+  rating and interval, and pick the seat for the chart.
+- *Place in the field* — the model's place after every round of the
+  benchmark, from `rank_trail` (the coin's own prefix refit, so the last step
+  is the final standing), with the top 3 shaded and every other model as a
+  faint line. The model's own rounds are dots (won / lost / refused); a dot
+  opens that round in the Match log modal over the account, and `✕` in the
+  popup header returns to the account without switching tabs. Above the
+  chart: now, peak and low, share of the season in the top 3, and the move
+  since mid-season.
+- *Record* — that benchmark only, from `rounds_list`: played, W–L, the
+  writer and audit W–L with refusals, opponent refusals, spend and $/round.
 
 ## Match schematic
 

@@ -4,6 +4,42 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.10.5 — 2026-10-26 — the champion account answers four questions
+
+### Board
+
+- **The champion account opens on a 2×2 of skills.** Rows are the two
+  benchmarks (⚔ a planted bug, ○ a clean service), columns are the two seats
+  (the model writes the service, or reviews one). The four cells answer
+  "does it hide a working bug", "does it catch a planted bug", "does its clean
+  code look like an attack" and "does it tell clean code from malicious" —
+  each with a ring for the plain rate (survival, patch validity, clean-flag
+  rate, 1 − FPR), its place in the field on that seat's rating, the record
+  behind the rate, refusals, and a strip placing it among every other model
+  with the field median. A place earned by forfeits alone is printed dimmed.
+  The six-axis Shape radar is gone: the quadrant asks the same things per
+  benchmark.
+- **One benchmark switch replaces the ratings list and the history tables.**
+  ⚔ Vulnerability / ○ Control opens that benchmark's standing: three badges —
+  Overall, the writer seat (Red team or Clean build) and Audit — each a place
+  in the field with the rating and interval underneath, and the record on
+  that benchmark only (writer and audit W–L, refusals, opponent refusals,
+  spend). The "as attacker / as defender" blocks, the three-group Ratings
+  panel, Head to head and Every round are removed; a round is still one
+  click away on the chart.
+- **"Fitted rating over the season" becomes "Place in the field".** The chart
+  draws the model's place (#1 at the top, the top 3 shaded) after every round
+  of the benchmark, for the seat picked by the badges, with every other model
+  as a faint line behind. The model's own rounds are dots on its line — won,
+  lost or refused — and a dot opens that round's dossier. Above it: the place
+  now, the peak and the low, the share of the season spent in the top 3 and
+  the move since mid-season. Clicking a quadrant cell jumps to its benchmark
+  and seat. The header shows the place on the selected benchmark.
+- **New payload field `rank_trail`.** Per coin, the place of every model after
+  every round, from that coin's own prefix refit (same games and pricing as
+  `rating_theta{1,0}` and the role fits), so the last step is the final
+  standing. A model has no place in a pool before its first game there.
+
 ## 0.10.4 — 2026-10-26 — the attacker role is named after the benchmark
 
 ### Board
