@@ -22,7 +22,7 @@ Everything else the page needs lives beside it:
 | `standings.js` | behaviour, inlined at the end of the document |
 | `roster.json` | the season's champion pool — identity, not results |
 | `pricing.json` | USD per 1M tokens per model, copied from `devin models list` |
-| `onboarding.html` | the Defuse Arena onboarding — a cinematic 3D tour of one round (attacker, coin, defender, patch, grader); the agent cards and the leaderboard drawer carry one season's standings in a generated block — refresh it with `python3 scripts/onboarding.py <season>` after `standings.py`, never edit it by hand; self-contained except Three.js and Google Fonts from CDN |
+| `onboarding.html` | the Defuse Arena onboarding — a cinematic 3D replay of one real round as a story (brief, duel, coin, build, audit, proof, epilogue), ending in a hand-off to `index.html`; the round, the agent cards and the standings live in a generated block — refresh it with `python3 scripts/onboarding.py <season>` after `standings.py`, never edit it by hand; self-contained except Three.js and Google Fonts from CDN |
 | `index.html` | published copy of the current season, served by the static host at `/` |
 
 ## Data

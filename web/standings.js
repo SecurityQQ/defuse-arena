@@ -1925,7 +1925,7 @@ and useful answer. Silence is not.`
   const CMP_CHARTS = [
     {
       id: "value", label: "Skill vs price",
-      sub: "What each champion costs per round against how well it plays. The dashed gold line is the Pareto frontier \u2014 nothing above it is beaten on both axes \u2014 and the shaded corner is the most attractive quadrant: cheaper than the median and rated above it.",
+      sub: "What each champion costs per round against how well it plays. The gold line is the Pareto frontier \u2014 nothing above it is beaten on both axes \u2014 and the shaded corner is the most attractive quadrant: cheaper than the median and rated above it.",
       x: { name: "spend per round", get: r => r.cost_per_round, fmt: usd, money: true, title: "$ per round, both roles" },
       y: { name: "overall rating", get: r => r.rating, fmt: v => v.toFixed(0), title: "overall played rating" },
       frontier: "nw", shade: "nw",
@@ -1991,22 +1991,86 @@ and useful answer. Silence is not.`
     : ax.money ? moneyTicks(lo, hi, cmpState.log)
     : linearTicks(lo, hi, 5);
 
-  // Non-dominated points for a given best-corner: "nw" = min x, max y;
-  // "se" = max x, min y. Returns a staircase to draw left to right.
+  // Non-dominated points for a given best corner, left to right.
+  // "nw": lower x and higher y are better; "se": higher x and lower y are better.
   const cmpFrontier = (pts, dir) => {
-    const k = dir === "se" ? -1 : 1;
-    let best = -Infinity;
+    const order = pts.slice().sort((a, b) => dir === "se" ? b.x - a.x || a.y - b.y : a.x - b.x || b.y - a.y);
     const out = [];
-    for (const p of pts) {
-      const v = k * p.y;
-      if (v > best) { out.push(p); best = v; }
+    let best = dir === "se" ? Infinity : -Infinity;
+    for (const p of order) {
+      if (dir === "se" ? p.y < best : p.y > best) { out.push(p); best = p.y; }
     }
-    return out;
+    return out.sort((a, b) => a.x - b.x);
   };
 
   const median = vals => {
     const s = vals.slice().sort((a, b) => a - b);
     return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
+  };
+
+  // Label widths in viewBox units, measured in the label font once it has loaded.
+  const cmpMeasure = (() => {
+    let ctx = null;
+    return (text, size, font) => {
+      try {
+        ctx = ctx || document.createElement("canvas").getContext("2d");
+        ctx.font = `${size}px ${font}`;
+        return ctx.measureText(text).width * 1.06 + text.length * size * 0.05;
+      } catch (e) { return text.length * size * 0.72; }
+    };
+  })();
+  const CMP_FONT = (getComputedStyle(document.documentElement).getPropertyValue("--font-display") || "serif").trim();
+  const boxHit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+
+  // Dots that land on (nearly) the same spot are spread into a small swarm
+  // so none hides another; each keeps a hairline to its exact value.
+  const cmpSpread = (dots, box) => {
+    for (let it = 0; it < 120; it++) {
+      let moved = false;
+      for (let i = 0; i < dots.length; i++) for (let j = i + 1; j < dots.length; j++) {
+        const a = dots[i], b = dots[j];
+        let dx = b.cx - a.cx, dy = b.cy - a.cy, d = Math.hypot(dx, dy);
+        const need = a.r + b.r + 2.5;
+        if (d >= need) continue;
+        if (d < 0.01) { const ang = (j * 2.399963) % (2 * Math.PI); dx = Math.cos(ang); dy = Math.sin(ang); d = 1; }
+        const push = (need - d) / 2;
+        a.cx -= dx / d * push; a.cy -= dy / d * push; b.cx += dx / d * push; b.cy += dy / d * push;
+        moved = true;
+      }
+      for (const p of dots) {
+        p.cx += (p.px - p.cx) * 0.02; p.cy += (p.py - p.cy) * 0.02;   // stay near the truth
+        p.cx = Math.min(box.x1 - p.r, Math.max(box.x0 + p.r, p.cx));
+        p.cy = Math.min(box.y1 - p.r, Math.max(box.y0 + p.r, p.cy));
+      }
+      if (!moved && it > 10) break;
+    }
+  };
+
+  // Greedy label placement: strongest champions first, eight spots around
+  // the dot, then a second ring with a leader line, never over another
+  // label, a dot, a corner caption or the plot edge.
+  const cmpLabels = (dots, obstacles, box, size) => {
+    const placed = [];
+    const order = dots.slice().sort((a, b) => (b.row.rating || 0) - (a.row.rating || 0));
+    for (const d of order) {
+      const w = cmpMeasure(d.name, size, CMP_FONT), h = size + 2;
+      let pick = null;
+      for (const ring of [0, 12, 26, 42, 62, 86]) {
+        const g = d.r + 4 + ring;
+        const cands = [
+          [g, -h / 2], [-g - w, -h / 2], [-w / 2, -g - h], [-w / 2, g],
+          [g * .75, -g * .75 - h * .6], [g * .75, g * .75 - h * .4], [-g * .75 - w, -g * .75 - h * .6], [-g * .75 - w, g * .75 - h * .4]
+        ];
+        for (const [ox, oy] of cands) {
+          const bb = { x: d.cx + ox, y: d.cy + oy, w, h };
+          if (bb.x < box.x0 + 2 || bb.x + w > box.x1 - 2 || bb.y < box.y0 + 2 || bb.y + h > box.y1 - 2) continue;
+          if (placed.some(o => boxHit(bb, o)) || obstacles.some(o => boxHit(bb, o))) continue;
+          pick = { bb, leader: ring > 0 }; break;
+        }
+        if (pick) break;
+      }
+      if (pick) { placed.push(pick.bb); d.label = pick; }
+    }
   };
 
   function renderCompare() {
@@ -2026,7 +2090,7 @@ and useful answer. Silence is not.`
     const pts = cmpPts(def);
     if (!pts.length) {
       cmpHost.innerHTML = `<div class="ia-cmp-head"><div>
-          <div class="ia-vault-title">Compare \u00b7 ${def.label}</div>
+          <div class="ia-vault-title">Compare · ${def.label}</div>
           <div class="ia-vault-sub">${def.sub}</div>
         </div></div>
         <div class="ia-cmp-bar">${chips}</div>
@@ -2034,74 +2098,122 @@ and useful answer. Silence is not.`
       return;
     }
 
-    const W = 780, H = 470, M = { l: 60, r: 20, t: 14, b: 48 };
+    const W = 780, H = 480, M = { l: 62, r: 22, t: 18, b: 52 }, IN = 18;
     const pw = W - M.l - M.r, ph = H - M.t - M.b;
     const [xlo, xhi] = cmpDomain(pts.map(p => p.x), def.x);
     const [ylo, yhi] = cmpDomain(pts.map(p => p.y), def.y);
     const sx = cmpScaleFn(xlo, xhi, def.x.money && cmpState.log);
     const sy = cmpScaleFn(ylo, yhi, false);
-    const X = v => M.l + sx(v) * pw;
-    const Y = v => M.t + (1 - sy(v)) * ph;
+    // an inner inset keeps a dot at 0% or 100% whole instead of cut by the frame
+    const X = v => M.l + IN + sx(v) * (pw - 2 * IN);
+    const Y = v => M.t + IN + (1 - sy(v)) * (ph - 2 * IN);
+    const box = { x0: M.l, x1: M.l + pw, y0: M.t, y1: M.t + ph };
+    const f1 = v => v.toFixed(1);
 
-    const grid = cmpTicks(xlo, xhi, def.x).map(v =>
-      `<line class="ia-cmp-grid" x1="${X(v).toFixed(1)}" y1="${M.t}" x2="${X(v).toFixed(1)}" y2="${M.t + ph}"/>`).join("") +
-      cmpTicks(ylo, yhi, def.y).map(v =>
-        `<line class="ia-cmp-grid" x1="${M.l}" y1="${Y(v).toFixed(1)}" x2="${M.l + pw}" y2="${Y(v).toFixed(1)}"/>`).join("");
-    const ticksX = cmpTicks(xlo, xhi, def.x).map(v =>
-      `<text class="ia-cmp-tick" x="${X(v).toFixed(1)}" y="${M.t + ph + 17}" text-anchor="middle">${def.x.fmt(v)}</text>`).join("");
-    const ticksY = cmpTicks(ylo, yhi, def.y).map(v =>
-      `<text class="ia-cmp-tick" x="${M.l - 9}" y="${(Y(v) + 3).toFixed(1)}" text-anchor="end">${def.y.fmt(v)}</text>`).join("");
-    const axisTitles = `<text class="ia-cmp-axis" x="${M.l + pw / 2}" y="${H - 8}" text-anchor="middle">${def.x.title}</text>
-      <text class="ia-cmp-axis" transform="rotate(-90)" x="${-(M.t + ph / 2)}" y="12" text-anchor="middle">${def.y.title}</text>`;
+    const xt = cmpTicks(xlo, xhi, def.x), yt = cmpTicks(ylo, yhi, def.y);
+    const grid = xt.map(v => `<line class="ia-cmp-grid" x1="${f1(X(v))}" y1="${M.t}" x2="${f1(X(v))}" y2="${M.t + ph}"/>`).join("") +
+      yt.map(v => `<line class="ia-cmp-grid" x1="${M.l}" y1="${f1(Y(v))}" x2="${M.l + pw}" y2="${f1(Y(v))}"/>`).join("");
+    const ticksX = xt.map(v => `<text class="ia-cmp-tick" x="${f1(X(v))}" y="${M.t + ph + 17}" text-anchor="middle">${def.x.fmt(v)}</text>`).join("");
+    const ticksY = yt.map(v => `<text class="ia-cmp-tick" x="${M.l - 9}" y="${f1(Y(v) + 3)}" text-anchor="end">${def.y.fmt(v)}</text>`).join("");
+    const axisTitles = `<text class="ia-cmp-axis" x="${M.l + pw / 2}" y="${H - 10}" text-anchor="middle">${def.x.title} →</text>
+      <text class="ia-cmp-axis" transform="rotate(-90)" x="${-(M.t + ph / 2)}" y="14" text-anchor="middle">${def.y.title} →</text>`;
 
     const xMed = median(pts.map(p => p.x)), yMed = median(pts.map(p => p.y));
+    const xm = X(xMed), ym = Y(yMed);
     let shade = "";
     if (def.shade) {
-      const xm = X(xMed).toFixed(1), ym = Y(yMed).toFixed(1);
       shade = def.shade === "nw"
-        ? `<rect class="ia-cmp-shade" x="${M.l}" y="${M.t}" width="${xm - M.l}" height="${ym - M.t}"/>`
-        : `<rect class="ia-cmp-shade" x="${xm}" y="${ym}" width="${M.l + pw - xm}" height="${M.t + ph - ym}"/>`;
+        ? `<rect class="ia-cmp-shade" x="${M.l}" y="${M.t}" width="${f1(xm - M.l)}" height="${f1(ym - M.t)}"/>`
+        : `<rect class="ia-cmp-shade" x="${f1(xm)}" y="${f1(ym)}" width="${f1(M.l + pw - xm)}" height="${f1(M.t + ph - ym)}"/>`;
     }
-    const cross = `<line class="ia-cmp-cross" x1="${X(xMed).toFixed(1)}" y1="${M.t}" x2="${X(xMed).toFixed(1)}" y2="${M.t + ph}"/>
-      <line class="ia-cmp-cross" x1="${M.l}" y1="${Y(yMed).toFixed(1)}" x2="${M.l + pw}" y2="${Y(yMed).toFixed(1)}"/>`;
+    const cross = `<line class="ia-cmp-cross" x1="${f1(xm)}" y1="${M.t}" x2="${f1(xm)}" y2="${M.t + ph}"/>
+      <line class="ia-cmp-cross" x1="${M.l}" y1="${f1(ym)}" x2="${M.l + pw}" y2="${f1(ym)}"/>`;
 
-    const corner = (pos, txt) => {
-      const cx = pos.includes("w") ? M.l + 10 : M.l + pw - 10;
-      const cy = pos[0] === "n" ? M.t + 15 : M.t + ph - 8;
-      return `<text class="ia-cmp-corner" x="${cx}" y="${cy}" text-anchor="${pos.includes("w") ? "start" : "end"}">${txt}</text>`;
-    };
-    const corners = Object.entries(def.corners || {}).map(([p, t]) => corner(p, t)).join("");
+    // corner captions sit in the frame corners and are obstacles for labels
+    const CS = 8.5, obstacles = [];
+    const cornerBoxes = Object.entries(def.corners || {}).map(([pos, txt]) => {
+      const w = cmpMeasure(txt.toUpperCase(), CS, CMP_FONT) + txt.length * CS * 0.1;
+      const west = pos.includes("w"), north = pos[0] === "n";
+      const cx = west ? M.l + 8 : M.l + pw - 8, cy = north ? M.t + 13 : M.t + ph - 7;
+      return { pos, txt, cx, cy, west, bb: { x: west ? cx : cx - w, y: cy - CS, w, h: CS + 3 } };
+    });
+    const medW = cmpMeasure("median", 8, "monospace") + 4;
+    const medBox = { x: xm + 4, y: M.t + ph - 13, w: medW, h: 10 };
+
+    const dots = pts.map(p => {
+      const c = champOf(p.agent), px = X(p.x), py = Y(p.y);
+      return { ...p, c, name: c.name, px, py, cx: px, cy: py, r: Math.min(10, 4.5 + Math.sqrt(p.row.rounds || 1) * 1.15) };
+    });
+    cmpSpread(dots, box);
+    dots.forEach(d => obstacles.push({ x: d.cx - d.r - 1, y: d.cy - d.r - 1, w: 2 * d.r + 2, h: 2 * d.r + 2 }));
+    const LS = 9.5;
+    cmpLabels(dots, obstacles, box, LS);
+    // a caption a dot or a label sits on is dropped rather than drawn under it
+    const taken = [...obstacles, ...dots.filter(d => d.label).map(d => d.label.bb)];
+    const corners = cornerBoxes.filter(c => !taken.some(o => boxHit(c.bb, o))).map(c =>
+      `<text class="ia-cmp-corner${def.shade === c.pos ? " best" : ""}" x="${c.cx}" y="${c.cy}" text-anchor="${c.west ? "start" : "end"}">${c.txt}</text>`).join("") +
+      (![...taken, ...cornerBoxes.map(c => c.bb)].some(o => boxHit(medBox, o)) && medBox.x + medW < M.l + pw
+        ? `<text class="ia-cmp-med" x="${f1(medBox.x)}" y="${M.t + ph - 5}">median</text>` : "");
 
     let frontier = "";
     if (def.frontier && pts.length > 1) {
-      const f = cmpFrontier(pts, def.frontier);
-      if (f.length > 1) frontier = `<polyline class="ia-cmp-frontier" points="${f.map(p => `${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join(" ")}"/>`;
+      const fr = cmpFrontier(dots, def.frontier);
+      if (fr.length > 1) {
+        const d = fr.map((p, i) => `${i ? "L" : "M"}${f1(p.px)},${f1(p.py)}`).join(" ");
+        frontier = `<path class="ia-cmp-frontier-glow" d="${d}"/><path class="ia-cmp-frontier" d="${d}" pathLength="100"/>`;
+      }
     }
 
-    const dots = pts.map((p, i) => {
-      const c = champOf(p.agent);
-      const rad = Math.min(13, 5 + Math.sqrt(p.row.rounds || 1) * 1.5);
-      const px = X(p.x), py = Y(p.y);
-      const lx = px + rad + 5;
-      const flip = lx > W - M.r - 84;
-      const ly = py + (i % 2 ? -(rad + 4) : rad + 10);
-      return `<g class="ia-cmp-dot" data-cmp-agent="${p.agent}" style="--accent:${c.accent}" tabindex="0" role="button" aria-label="${c.name}">
-        <circle class="halo" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${(rad + 5).toFixed(1)}"/>
-        <circle class="core" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${rad.toFixed(1)}"/>
-        <text class="ia-cmp-lbl" x="${flip ? (px - rad - 5).toFixed(1) : lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${flip ? "end" : "start"}">${c.name}</text>
+    const order = dots.slice().sort((a, b) => a.px - b.px);
+    const dotSvg = order.map((d, i) => {
+      const moved = Math.hypot(d.cx - d.px, d.cy - d.py) > 1.5;
+      const lab = d.label;
+      const leader = lab && lab.leader
+        ? `<line class="ia-cmp-leader" x1="${f1(d.cx)}" y1="${f1(d.cy)}" x2="${f1(Math.min(Math.max(d.cx, lab.bb.x), lab.bb.x + lab.bb.w))}" y2="${f1(Math.min(Math.max(d.cy, lab.bb.y), lab.bb.y + lab.bb.h))}"/>` : "";
+      return `<g class="ia-cmp-dot" data-cmp-agent="${d.agent}" data-px="${f1(d.px)}" data-py="${f1(d.py)}" style="--accent:${d.c.accent};--i:${i}" tabindex="0" role="button" aria-label="${d.name}: ${def.x.name} ${def.x.fmt(d.x)}, ${def.y.name} ${def.y.fmt(d.y)}">
+        ${moved ? `<line class="ia-cmp-pin" x1="${f1(d.px)}" y1="${f1(d.py)}" x2="${f1(d.cx)}" y2="${f1(d.cy)}"/><circle class="ia-cmp-true" cx="${f1(d.px)}" cy="${f1(d.py)}" r="1.6"/>` : ""}
+        <g class="ia-cmp-mark" style="transform-origin:${f1(d.cx)}px ${f1(d.cy)}px">
+          <circle class="halo" cx="${f1(d.cx)}" cy="${f1(d.cy)}" r="${f1(d.r + 4.5)}"/>
+          <circle class="core" cx="${f1(d.cx)}" cy="${f1(d.cy)}" r="${f1(d.r)}"/>
+        </g>
+        ${leader}${lab ? `<text class="ia-cmp-lbl" x="${f1(lab.bb.x)}" y="${f1(lab.bb.y + LS - 0.5)}">${d.name}</text>` : ""}
       </g>`;
     }).join("");
+    const unlabelled = dots.filter(d => !d.label).length;
 
     cmpHost.innerHTML = `<div class="ia-cmp-head"><div>
-        <div class="ia-vault-title">Compare \u00b7 ${def.label}</div>
+        <div class="ia-vault-title">Compare · ${def.label}</div>
         <div class="ia-vault-sub">${def.sub}</div>
       </div></div>
       <div class="ia-cmp-bar">${chips}</div>
       <div class="ia-cmp-plot"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${def.label}: one dot per champion">
-        ${shade}${grid}${cross}${frontier}${corners}${ticksX}${ticksY}${axisTitles}${dots}
+        <defs><clipPath id="ia-cmp-clip"><rect x="${M.l}" y="${M.t}" width="${pw}" height="${ph}"/></clipPath>
+          <radialGradient id="ia-cmp-bg" cx="${def.shade === "se" ? "85%" : "15%"}" cy="${def.shade === "se" ? "85%" : "15%"}" r="80%">
+            <stop offset="0" stop-color="rgba(10,200,185,.07)"/><stop offset="1" stop-color="rgba(10,200,185,0)"/></radialGradient></defs>
+        <rect class="ia-cmp-frame" x="${M.l}" y="${M.t}" width="${pw}" height="${ph}" fill="${def.shade ? "url(#ia-cmp-bg)" : "none"}"/>
+        <g clip-path="url(#ia-cmp-clip)">${shade}${grid}${cross}${frontier}</g>
+        ${corners}${ticksX}${ticksY}${axisTitles}
+        <g class="ia-cmp-guide" aria-hidden="true"></g>
+        ${dotSvg}
       </svg></div>
-      <p class="ia-brief-note">${pts.length} of ${CHAMPS.length} played champions plotted \u2014 the rest lack a ${def.x.name} or a ${def.y.name} this season. Dot size is rounds played, colour is the house, dashed lines are the field median. Hover a dot for its numbers; click it to open the champion account.</p>`;
+      <p class="ia-brief-note">${pts.length} of ${CHAMPS.length} played champions plotted${pts.length < CHAMPS.length ? ` — the rest lack a ${def.x.name} or a ${def.y.name} this season` : ""}. Dot size is rounds played, colour is the house, dashed lines are the field median${def.frontier ? ", the gold line is the Pareto frontier" : ""}. Dots that share a value are spread apart, with a hairline to the exact spot${unlabelled ? `; ${unlabelled} label${unlabelled > 1 ? "s" : ""} had no free space — hover the dot` : ""}. Click a dot to open the champion account.</p>`;
   }
+
+  // Guide lines from the hovered dot to both axes, with the exact values.
+  const cmpGuide = (dotEl, on) => {
+    const g = cmpHost && cmpHost.querySelector(".ia-cmp-guide");
+    if (!g) return;
+    if (!on) { g.innerHTML = ""; return; }
+    const r = CHAMPS.find(x => x.agent === dotEl.dataset.cmpAgent);
+    const def = CMP_CHARTS.find(c => c.id === cmpState.chart) || CMP_CHARTS[0];
+    if (!r) return;
+    const px = +dotEl.dataset.px, py = +dotEl.dataset.py, l = 62, b = 480 - 52;
+    const xs = def.x.fmt(def.x.get(r)), ys = def.y.fmt(def.y.get(r));
+    const wx = cmpMeasure(xs, 9.5, "monospace") + 10, wy = cmpMeasure(ys, 9.5, "monospace") + 10;
+    g.innerHTML = `<line x1="${px}" y1="${py}" x2="${px}" y2="${b}"/><line x1="${px}" y1="${py}" x2="${l}" y2="${py}"/>
+      <rect x="${(px - wx / 2).toFixed(1)}" y="${b - 15}" width="${wx.toFixed(1)}" height="14" rx="3"/><text x="${px}" y="${b - 5}" text-anchor="middle">${xs}</text>
+      <rect x="${l + 2}" y="${py - 7}" width="${wy.toFixed(1)}" height="14" rx="3"/><text x="${l + 7}" y="${py + 3}">${ys}</text>`;
+  };
 
   if (cmpHost) {
     cmpHost.addEventListener("click", ev => {
@@ -2128,13 +2240,19 @@ and useful answer. Silence is not.`
         <p class="ia-who">${r.rounds} rounds \u00b7 ${r.wins}\u2013${r.losses} \u00b7 rating ${r.rating.toFixed(1)}</p>`;
       tip.hidden = false;
       move(ev);
+      cmpGuide(dot, true);
     });
     cmpHost.addEventListener("mouseout", ev => {
-      if (ev.target.closest("[data-cmp-agent]")) tip.hidden = true;
+      const dot = ev.target.closest("[data-cmp-agent]");
+      if (dot && !dot.contains(ev.relatedTarget)) { tip.hidden = true; cmpGuide(dot, false); }
     });
+    cmpHost.addEventListener("focusin", ev => { const dot = ev.target.closest("[data-cmp-agent]"); if (dot) cmpGuide(dot, true); });
+    cmpHost.addEventListener("focusout", ev => { const dot = ev.target.closest("[data-cmp-agent]"); if (dot) cmpGuide(dot, false); });
   }
 
   renderCompare();
+  // label boxes are measured in the display font: lay out again once it has loaded
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderCompare());
 
   // ---------------------------------------------------------------- tabs
   const TAB_DEFS = [

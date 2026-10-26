@@ -900,19 +900,43 @@
 .ia-cmp-corner { fill:rgba(200,170,110,.5); font-family:var(--font-display);
   font-size:8.5px; letter-spacing:.14em; text-transform:uppercase; }
 .ia-cmp-cross { stroke:rgba(200,170,110,.22); stroke-width:1; stroke-dasharray:4 4; }
-.ia-cmp-shade { fill:rgba(10,200,185,.05); stroke:rgba(10,200,185,.18);
-  stroke-width:1; stroke-dasharray:3 3; }
-.ia-cmp-frontier { fill:none; stroke:var(--gold); stroke-width:1.6; stroke-dasharray:7 5;
-  filter:drop-shadow(0 0 6px rgba(200,170,110,.55)); }
-.ia-cmp-dot { cursor:pointer; transform-box:fill-box; transform-origin:center;
-  transition:transform .15s; }
-.ia-cmp-dot:hover, .ia-cmp-dot:focus-visible { transform:scale(1.28); }
-.ia-cmp-dot .halo { fill:color-mix(in srgb, var(--accent,#C8AA6E) 22%, transparent); }
-.ia-cmp-dot .core { fill:color-mix(in srgb, var(--accent,#C8AA6E) 78%, #050D1A);
-  stroke:rgba(240,230,210,.85); stroke-width:1.2; }
+.ia-cmp-med { fill:rgba(200,170,110,.4); font-family:var(--font-mono); font-size:8px; letter-spacing:.06em; }
+.ia-cmp-frame { stroke:rgba(200,170,110,.14); stroke-width:1; }
+.ia-cmp-corner.best { fill:rgba(10,200,185,.75); }
+.ia-cmp-shade { fill:rgba(10,200,185,.06); stroke:rgba(10,200,185,.22);
+  stroke-width:1; stroke-dasharray:3 3; animation:iaCmpFade .8s ease both; }
+.ia-cmp-frontier { fill:none; stroke:var(--gold); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;
+  stroke-dasharray:100; stroke-dashoffset:100; animation:iaCmpDraw 1.1s cubic-bezier(.4,0,.2,1) .45s forwards; }
+.ia-cmp-frontier-glow { fill:none; stroke:rgba(200,170,110,.18); stroke-width:7; stroke-linecap:round; stroke-linejoin:round;
+  animation:iaCmpFade 1s ease .9s both; }
+.ia-cmp-dot { cursor:pointer; outline:none; transition:opacity .2s; }
+.ia-cmp-mark { transition:transform .18s cubic-bezier(.2,.9,.25,1); animation:iaCmpPop .55s cubic-bezier(.2,1.4,.4,1) both;
+  animation-delay:calc(var(--i,0) * 35ms); }
+.ia-cmp-dot:hover .ia-cmp-mark, .ia-cmp-dot:focus-visible .ia-cmp-mark { transform:scale(1.3); }
+.ia-cmp-plot svg:has(.ia-cmp-dot:hover) .ia-cmp-dot:not(:hover),
+.ia-cmp-plot svg:has(.ia-cmp-dot:focus-visible) .ia-cmp-dot:not(:focus-visible) { opacity:.32; }
+.ia-cmp-dot .halo { fill:color-mix(in srgb, var(--accent,#C8AA6E) 20%, transparent); }
+.ia-cmp-dot .core { fill:color-mix(in srgb, var(--accent,#C8AA6E) 80%, #050D1A);
+  stroke:rgba(240,230,210,.9); stroke-width:1.2; }
+.ia-cmp-dot:focus-visible .core { stroke:var(--teal); stroke-width:2; }
+.ia-cmp-pin { stroke:rgba(240,230,210,.35); stroke-width:.8; }
+.ia-cmp-true { fill:rgba(240,230,210,.7); }
+.ia-cmp-leader { stroke:rgba(240,230,210,.3); stroke-width:.7; }
 .ia-cmp-lbl { fill:var(--gold-2); font-family:var(--font-display); font-size:9.5px;
-  letter-spacing:.04em; paint-order:stroke; stroke:rgba(1,8,16,.85); stroke-width:2.5px; }
-.ia-cmp-dot:hover .ia-cmp-lbl, .ia-cmp-dot:focus-visible .ia-cmp-lbl { fill:#F0E6D2; }
+  letter-spacing:.04em; paint-order:stroke; stroke:rgba(1,8,16,.9); stroke-width:3px; stroke-linejoin:round;
+  pointer-events:none; animation:iaCmpFade .5s ease both; animation-delay:calc(var(--i,0) * 35ms + .25s); }
+.ia-cmp-dot:hover .ia-cmp-lbl, .ia-cmp-dot:focus-visible .ia-cmp-lbl { fill:#fff; }
+.ia-cmp-guide line { stroke:rgba(10,200,185,.6); stroke-width:1; stroke-dasharray:3 3; }
+.ia-cmp-guide rect { fill:rgba(1,10,19,.95); stroke:rgba(10,200,185,.6); stroke-width:1; }
+.ia-cmp-guide text { fill:var(--teal); font-family:var(--font-mono); font-size:9.5px; }
+.ia-cmp-guide { pointer-events:none; }
+@keyframes iaCmpPop { from { transform:scale(0); opacity:0; } to { transform:scale(1); opacity:1; } }
+@keyframes iaCmpDraw { to { stroke-dashoffset:0; } }
+@keyframes iaCmpFade { from { opacity:0; } to { opacity:1; } }
+@media (prefers-reduced-motion: reduce) {
+  .ia-cmp-mark, .ia-cmp-lbl, .ia-cmp-shade, .ia-cmp-frontier-glow { animation:none; }
+  .ia-cmp-frontier { animation:none; stroke-dashoffset:0; }
+}
 #ia-tip .ia-cmp-num { color:var(--gold); font-family:var(--font-mono); font-size:11.5px; }
 @media (max-width:700px) { .ia-compare { padding:14px; } }
 
