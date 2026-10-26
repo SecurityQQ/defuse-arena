@@ -574,6 +574,10 @@ overall_prev = [0.0] * N
 att_prev = [0.0] * N
 def_prev = [0.0] * N
 prefix_overall, prefix_role = [], []
+# Which model has already been priced in which pool: the first game in a pool
+# is the one round where the estimate has nothing else to go on, and the board
+# says so instead of letting a 140-point swing look like a bug.
+seen_overall, seen_attack, seen_defence = set(), set(), set()
 ledger = []
 
 
@@ -597,6 +601,22 @@ for r in raw:
 
     overall_before = overall_prev[i]
     att_before, def_before = att_prev[i], def_prev[j]
+
+    att_priced = played or o in FORFEIT_A
+    def_priced = played or o in FORFEIT_D
+    first_game = {
+        "attacker": {"overall": contest and a not in seen_overall,
+                     "attack": att_priced and a not in seen_attack},
+        "defender": {"overall": contest and d not in seen_overall,
+                     "defense": def_priced and d not in seen_defence},
+    }
+    if contest:
+        seen_overall.add(a)
+        seen_overall.add(d)
+    if att_priced:
+        seen_attack.add(a)
+    if def_priced:
+        seen_defence.add(d)
 
     if contest:
         prefix_overall.append((i, j, s_b, 1.0))
@@ -635,6 +655,7 @@ for r in raw:
     # The fitted change this round caused in the published batch trail: the
     # prefix refit before the round vs after it. This is what the match log
     # prints; the running Elo below is only the tooltip's reference line.
+    r["first_game"] = first_game
     r["fit_delta"] = {
         "attacker": {"overall": overall_delta["attacker"],
                      "attack": role_delta["attacker"],

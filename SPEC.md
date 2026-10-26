@@ -937,6 +937,8 @@ happened in game N, what did it cost, how much Elo":
  "role_pool": "att",
  "fit_delta": {"attacker": {"overall": -6.2, "attack": -16.0, "defense": 0.0},
                "defender": {"overall": 6.2, "attack": 0.0, "defense": 16.0}},
+ "first_game": {"attacker": {"overall": false, "attack": false},
+                "defender": {"overall": false, "defense": false}},
  "run_delta": {"attacker": -16.0, "defender": 16.0},
  "run_role_delta": {"attacker": -16.0, "defender": 16.0},
  "elo_delta": {"attacker": {"overall": -16.0, "attack": -16.0, "defense": 0.0},
@@ -959,6 +961,12 @@ add up to the final rating, up to the drift of the field mean.
 log, and `run_after` is the running rating after the round in every pool. The
 standings rating is the batch fit; the running trail is the League-style
 per-round change.
+
+`first_game` marks the model's first priced game in each pool — overall for
+every non-void round, attack or defence only when that side was actually priced
+(a defender forfeit does not price the attacker's attack). The board prints it
+because a first game is the one round where the estimate has nothing else to go
+on: a single loss can move the fitted rating 140 points.
 
 `elo_delta` is the same running trail cut by the three headline pools:
 `overall` (every non-void round — a forfeit is a loss), `attack` (the attack

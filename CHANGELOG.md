@@ -4,6 +4,23 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.9.1 — 2026-10-25 — the match log stops explaining itself twice
+
+### Board
+
+- The match-log chip tooltip drops the `running Elo` line. It was a reference
+  left over from the switch to the fitted delta, and it invited the wrong
+  comparison: on a model's first round the fitted rating can swing 140 points
+  while a K=32 step moves 8.
+- A chip now says `first game in this pool — the estimate had nothing else to
+  go on` when the round is the model's first priced game in that pool.
+
+### Ledger
+
+- `ledger.jsonl` rows gain `first_game` (`overall` / `attack` / `defense` per
+  side), so the board can tell a first game from a normal one without replaying
+  the season.
+
 ## 0.9.0 — 2026-10-25 — the role is the role, not the coin
 
 ### Scoring

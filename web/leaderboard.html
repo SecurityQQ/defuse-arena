@@ -1217,7 +1217,7 @@
     // must not be mixed into the fitted before -> after.
     const ra = (r.rating_after || {})[side] || (r.run_after || {})[side];
     const now = { overall: ra.overall, attack: ra.att, defense: ra.def };
-    const run = ((r.elo_delta || {})[side]) || {};
+    const firstGame = (r.first_game || {})[side] || {};
     const own = side === "attacker" ? "attack" : "defense";
     const offender = side === "attacker" ? FORFEIT_A.has(r.outcome) : FORFEIT_D.has(r.outcome);
     const ownNote = offender
@@ -1232,10 +1232,16 @@
       const v = e[key];
       const moved = Math.abs(v) >= 0.05;
       const cls = moved ? (v > 0 ? "up" : "down") : "flat";
-      const rv = run[key] ?? 0;
+      const first = key === "overall" ? firstGame.overall
+        : key === "attack" ? firstGame.attack : firstGame.defense;
+      // The first game in a pool is the one round where the estimate has
+      // nothing else to go on, so a 140-point swing is honest, not a bug.
+      const tail = first
+        ? `${note} \u00b7 first game in this pool \u2014 the estimate had nothing else to go on`
+        : note;
       const title = moved
-        ? `${name} ${(now[key] - v).toFixed(1)} \u2192 ${now[key].toFixed(1)} \u00b7 fitted, prefix refit \u00b7 running Elo ${delta(rv)} \u00b7 ${note}`
-        : `${name} did not move this round \u00b7 running Elo ${delta(rv)} \u00b7 ${note}`;
+        ? `${name} ${(now[key] - v).toFixed(1)} \u2192 ${now[key].toFixed(1)} \u00b7 fitted, prefix refit \u00b7 ${tail}`
+        : `${name} did not move this round \u00b7 ${tail}`;
       return `<span class="ia-elo-chip ${cls}" title="${title}"><i>${label}</i>${moved ? delta(v) : "\u2014"}</span>`;
     };
     const chips = [
