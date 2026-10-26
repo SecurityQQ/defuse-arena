@@ -922,9 +922,9 @@
 .ia-arrive i{position:absolute;width:40vmax;height:40vmax;transform:rotate(45deg) scale(4.2);border:2px solid var(--gold);
   background:radial-gradient(circle,rgba(10,200,185,.18),rgba(1,10,19,.98) 60%);box-shadow:0 0 60px rgba(200,170,110,.5),inset 0 0 60px rgba(10,200,185,.35)}
 .ia-arrive b{position:relative;font:700 clamp(22px,3vw,36px)/1 var(--font-display, serif);letter-spacing:.2em;text-transform:uppercase;color:var(--gold-2);text-shadow:0 0 24px rgba(200,170,110,.6)}
-.ia-arrive.go{animation:iaVeil 1.3s ease forwards}
-.ia-arrive.go i{animation:iaIris 1.1s cubic-bezier(.6,0,.2,1) forwards}
-.ia-arrive.go b{animation:iaWord .9s ease forwards}
+.ia-arrive{animation:iaVeil 1.3s ease forwards}
+.ia-arrive i{animation:iaIris 1.1s cubic-bezier(.6,0,.2,1) forwards}
+.ia-arrive b{animation:iaWord .9s ease forwards}
 @keyframes iaIris{0%{transform:rotate(45deg) scale(4.2)}55%{transform:rotate(45deg) scale(1)}100%{transform:rotate(45deg) scale(0);opacity:0}}
 @keyframes iaWord{0%{opacity:1;letter-spacing:.2em}100%{opacity:0;letter-spacing:.6em}}
 @keyframes iaVeil{0%,45%{opacity:1}100%{opacity:0}}

@@ -4,6 +4,18 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.9.5 — 2026-10-26 — the tour hands off to the board
+
+### Board
+
+- `onboarding.html` closes the tour into `index.html?tour=<round>&att=&def=`.
+  The board opens the tour's round back out of the masthead, brings the
+  standings rows in top to bottom, and lights the two models that played; the
+  query is stripped from the URL after the handoff.
+- The arrival veil starts its animation on insertion instead of waiting for a
+  `.go` class, and removes itself on `animationend` (with a 1.6s fallback).
+  `prefers-reduced-motion` skips the veil and the row animation.
+
 ## 0.9.4 — 2026-10-26 — the founder brief says what the game is
 
 ### Board

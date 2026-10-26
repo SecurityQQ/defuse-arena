@@ -2230,9 +2230,9 @@ and useful answer. Silence is not.`
       const veil = document.createElement("div");
       veil.className = "ia-arrive";
       veil.innerHTML = "<i></i><b>Season standings</b>";
-      document.body.appendChild(veil);
-      requestAnimationFrame(() => requestAnimationFrame(() => veil.classList.add("go")));
-      setTimeout(() => veil.remove(), 1500);
+      document.body.appendChild(veil);       // the animation starts on insertion
+      veil.addEventListener("animationend", e => { if (e.target === veil) veil.remove(); });
+      setTimeout(() => veil.remove(), 1600);
     }
 
     const table = document.getElementById("standings");
