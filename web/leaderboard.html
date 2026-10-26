@@ -1206,6 +1206,12 @@
     const v = coinView(a);
     const total = v.wins + v.losses || 1;
     const wr = (v.wins / total) * 100;
+    // A win rate over a defence-only record reads as dominance it does not
+    // have: in this game the defender is expected to win, so a model with no
+    // attack rounds shows NA instead of a flattering percentage.
+    const wrCell = v.att.rounds
+      ? `<td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>`
+      : `<td class="dim" title="no attack rounds in this view \u00b7 the record is defence-only and defence wins are the expected outcome, so a win rate would overstate it">\u2014</td>`;
     const rankHtml = rank == null
       ? `<span class="rank">\u2014</span>`
       : `<span class="rank ${rank <= 3 ? "top" + rank : ""}" title="${tied ? "equal rating: this rank is shared" : ""}">${tied ? "=" : ""}${rank}</span>`;
@@ -1243,7 +1249,7 @@
       ${roleCell(v, "att")}
       ${roleCell(v, "def")}
       <td title="${wlTitle}">${v.wins}\u2013${v.losses}<em class="rec">atk ${v.att.wins}\u2013${v.att.losses} \u00b7 def ${v.def.wins}\u2013${v.def.losses}</em></td>
-      <td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>
+      ${wrCell}
       <td>${usd(a.cost_total)}</td>
       <td class="dim">${usd(a.cost_per_round)}</td>
       <td>${a.brier.toFixed(3)}</td>

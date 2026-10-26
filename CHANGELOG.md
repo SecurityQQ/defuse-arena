@@ -4,6 +4,24 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.10.3 — 2026-10-26 — honest win rates and a benchmark-shaped account
+
+### Board
+
+- **Winrate is NA when the model has no attack rounds in the view.** Four
+  models (opus-5.5, sonnet-5.5, gpt-6.1, gpt-6-astra) showed 100% in the
+  vulnerability table on records built entirely from defence wins — but the
+  defender is *expected* to win that benchmark, so the percentage read as a
+  dominance the sample does not have. Those cells now show "—" with the
+  reason in the hover card; models that actually attacked keep their rate.
+- **The champion account is rebuilt around the two benchmarks.** Ratings now
+  come in three groups — ⚔ vulnerability (overall / as attacker / as
+  defender, each with its interval), ○ control, and pooled both-coins with
+  the retired margin-weighted fit — replacing the old flat list whose labels
+  lied (it said "audit (θ=1 def)" about a both-coins rating). The Every-round
+  history gains a benchmark filter (Any / ⚔ θ=1 / ○ θ=0) next to the role
+  filter, and the round counter follows whichever filter is active.
+
 ## 0.10.2 — 2026-10-26 — the attack task is now the vulnerability benchmark
 
 ### Board

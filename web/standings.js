@@ -43,7 +43,7 @@
     "No-show": ["no-shows", "ABSTAIN_A + ABSTAIN_D: a clean exit with no deliverable, barely any work. Counted separately from a forfeit so the two never double-count."],
     Forfeit: ["forfeits", "FAILED_A/D and FAULT_A: real work with no runnable deliverable, or an artifact that broke the round. Each is priced as a loss and a fee."],
     "W\u2013L": ["played record", "Wins\u2013losses over played rounds only, then atk / def: the record as attacker and as defender. The two add up to the overall record, and each splits again into \u2694 real and \u25cb clean in the Att and Def hover cards. The rating also prices no-shows and forfeits as losses; the champion account is that record."],
-    Winrate: ["win rate", "wins / (wins + losses) over played rounds only."],
+    Winrate: ["win rate", "wins / (wins + losses) over played rounds only. NA when the model has no attack rounds in the active benchmark: the record is defence-only, the defence is expected to win, so a percentage would overstate it."],
     Scheduled: ["scheduled rounds", "Non-void participations: played + own no-shows + own forfeits + rounds the opponent forfeited."],
     Played: ["played rounds", "Rounds both sides played to a verdict. The difference from Scheduled is the forfeits."],
     OppF: ["opponent forfeits", "Rounds the opponent forfeited: a win for this model in the rating and in Scheduled. They are why the with-forfeits W\u2013L can be better than the played one."],
@@ -982,12 +982,18 @@
   }
 
   let acctRole = "";
+  let acctTheta = "";
 
-  function updateAcctRoleButtons() {
+  function updateAcctButtons() {
     const host = document.getElementById("ia-acct");
     if (!host) return;
     host.querySelectorAll("[data-acct-role]").forEach(b => {
       const on = (b.dataset.acctRole || "") === acctRole;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    host.querySelectorAll("[data-acct-theta]").forEach(b => {
+      const on = (b.dataset.acctTheta || "") === acctTheta;
       b.classList.toggle("on", on);
       b.setAttribute("aria-pressed", on ? "true" : "false");
     });
@@ -998,7 +1004,9 @@
     if (!host) return;
     const rows = Array.from(host.querySelectorAll(".ia-hist tbody tr[data-hist-role]"));
     rows.forEach(tr => {
-      tr.hidden = !!acctRole && tr.dataset.histRole !== acctRole;
+      const roleOk = !acctRole || tr.dataset.histRole === acctRole;
+      const coinOk = !acctTheta || (tr.dataset.histTheta || "") === acctTheta;
+      tr.hidden = !(roleOk && coinOk);
     });
     const visible = rows.filter(tr => !tr.hidden).length;
     const empty = host.querySelector(".ia-hist-empty");
@@ -1012,6 +1020,7 @@
     const c = champOf(agent);
     const s = statsOf(agent);
     acctRole = "";
+    acctTheta = "";
     let host = document.getElementById("ia-acct");
     if (!host) {
       host = el("div", "ia-acct");
@@ -1059,16 +1068,28 @@
       ["FPR", s.fpr == null ? "\u2014" : pct(s.fpr)]
     ].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
 
-    // Three ratings for three questions (SPEC §9.4). The margin-weighted fit
-    // is the retired 0.5.0 headline: it is shown so the difference is visible,
-    // and it is never used to rank.
-    const ratings = `<div class="ia-panel-mini"><h4>Ratings</h4><dl class="ia-kv">
-      <div><dt>overall</dt><dd>${s.rating.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_ci.toFixed(0)}</em></dd></div>
-      <div><dt>audit (\u03b8=1 def)</dt><dd>${s.rating_def.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_def_ci.toFixed(0)}</em></dd></div>
-      <div><dt>pentest (\u03b8=1 att)</dt><dd>${s.rating_att.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_att_ci.toFixed(0)}</em></dd></div>
-      <div><dt>margin-weighted</dt><dd class="dim">${s.rating_efficiency.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_efficiency_ci.toFixed(0)}</em></dd></div>
-    </dl><p class="ia-brief-note">margin-weighted is the 0.5.0 headline: it counts a cheap win
-    higher. It is shown for continuity and never ranks.</p></div>`;
+    // Ratings, one group per question (v0.10.3): the two benchmarks are the
+    // headline, each with its own overall fit and its own role fits; the
+    // pooled group is both coins together, with the retired margin-weighted
+    // fit kept visible for continuity. It never ranks.
+    const ci = (val, c) => `${val.toFixed(1)} <em class="ia-ci">\u00b1${c.toFixed(0)}</em>`;
+    const rateGroup = (title, cls, rows) =>
+      `<div class="ia-rate-group ${cls}"><h5>${title}</h5><dl class="ia-kv">${rows}</dl></div>`;
+    const ratings = `<div class="ia-panel-mini"><h4>Ratings</h4>
+      ${rateGroup("\u2694 vulnerability \u00b7 \u03b8=1", "vuln", `
+        <div><dt>overall</dt><dd>${ci(s.rating_theta1, s.rating_theta1_ci)}</dd></div>
+        <div><dt>as attacker</dt><dd>${ci(s.rating_att_theta1, s.rating_att_theta1_ci)}</dd></div>
+        <div><dt>as defender</dt><dd>${ci(s.rating_def_theta1, s.rating_def_theta1_ci)}</dd></div>`)}
+      ${rateGroup("\u25cb control \u00b7 \u03b8=0", "ctl", `
+        <div><dt>overall</dt><dd>${ci(s.rating_theta0, s.rating_theta0_ci)}</dd></div>
+        <div><dt>as attacker</dt><dd>${ci(s.rating_att_theta0, s.rating_att_theta0_ci)}</dd></div>
+        <div><dt>as defender</dt><dd>${ci(s.rating_def_theta0, s.rating_def_theta0_ci)}</dd></div>`)}
+      ${rateGroup("pooled \u00b7 both coins", "pool", `
+        <div><dt>overall</dt><dd>${ci(s.rating, s.rating_ci)}</dd></div>
+        <div><dt>pentest</dt><dd>${ci(s.rating_att, s.rating_att_ci)}</dd></div>
+        <div><dt>audit</dt><dd>${ci(s.rating_def, s.rating_def_ci)}</dd></div>
+        <div><dt class="dim">margin-weighted</dt><dd class="dim">${ci(s.rating_efficiency, s.rating_efficiency_ci)}</dd></div>`)}
+      <p class="ia-brief-note">each benchmark is its own fit over its own rounds. margin-weighted is the retired 0.5.0 headline; it never ranks.</p></div>`;
 
     const role = `<div class="ia-role-block">
       <div class="att"><h5>as attacker \u00b7 pentest \u00b7 both coins</h5><dl class="ia-kv">
@@ -1104,7 +1125,7 @@
       const dd = d;
       const cls = outcome === "VOID" ? "void" : forfeit ? "loss"
         : (roleName === "attacker" ? (outcome === "FN" || outcome === "FP") : (outcome === "TP" || outcome === "TN" || outcome === "DISCOVERY")) ? "win" : "loss";
-      return `<tr data-open-round="${rid}" data-hist-role="${roleName}">
+      return `<tr data-open-round="${rid}" data-hist-role="${roleName}" data-hist-theta="${theta ? "1" : "0"}">
         <td>${rid}</td><td>${roleName === "attacker" ? "atk" : "def"}</td>
         <td>${champOf(opp).name}</td><td>${theta ? "\u2694\uFE0E" : "\u25cb"}</td>
         <td class="${cls}">${outcomeLabel(outcome)}</td><td>${usd(tok)}</td>
@@ -1132,16 +1153,21 @@
                 <button class="ia-btn" type="button" data-acct-role="attacker" aria-pressed="false">Attacker</button>
                 <button class="ia-btn" type="button" data-acct-role="defender" aria-pressed="false">Defender</button>
               </div>
+              <div class="ia-seg" role="group" aria-label="History benchmark filter">
+                <button class="ia-btn" type="button" data-acct-theta="" aria-pressed="true">Any</button>
+                <button class="ia-btn" type="button" data-acct-theta="1" aria-pressed="false">\u2694 \u03b8=1</button>
+                <button class="ia-btn" type="button" data-acct-theta="0" aria-pressed="false">\u25cb \u03b8=0</button>
+              </div>
               <span class="ia-hist-count" data-acct-count>${(s.rounds_list || []).length} rounds</span>
             </div>
             <div style="max-height:220px;overflow:auto">
             <table class="ia-hist"><thead><tr><th>round</th><th>role</th><th>vs</th><th>\u03b8</th><th>outcome</th><th>cost</th><th title="\u0394 rating \u00b7 change in the fitted overall rating for this round (prefix refit before vs after)">\u0394 rating</th></tr></thead>
-            <tbody>${hist}<tr class="ia-hist-empty" hidden><td colspan="7">No rounds in this role.</td></tr></tbody></table></div></div>
+            <tbody>${hist}<tr class="ia-hist-empty" hidden><td colspan="7">No rounds in this filter.</td></tr></tbody></table></div></div>
         </div>
       </div>
     </div>`;
     host.hidden = false;
-    updateAcctRoleButtons();
+    updateAcctButtons();
     applyAcctRoleFilter();
   }
 
@@ -1190,10 +1216,18 @@
 
   document.addEventListener("click", ev => {
     const roleBtn = ev.target.closest("[data-acct-role]");
-    if (!roleBtn) return;
-    acctRole = roleBtn.dataset.acctRole || "";
-    updateAcctRoleButtons();
-    applyAcctRoleFilter();
+    if (roleBtn) {
+      acctRole = roleBtn.dataset.acctRole || "";
+      updateAcctButtons();
+      applyAcctRoleFilter();
+      return;
+    }
+    const thetaBtn = ev.target.closest("[data-acct-theta]");
+    if (thetaBtn) {
+      acctTheta = thetaBtn.dataset.acctTheta || "";
+      updateAcctButtons();
+      applyAcctRoleFilter();
+    }
   });
 
   document.addEventListener("click", ev => {
