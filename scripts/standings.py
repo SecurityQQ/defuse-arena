@@ -42,7 +42,7 @@ nothing and is replayed. A no-show or a forfeit is a surrender: it is a loss
 in the headline rating and a loss in the role pool of the side
 that did not deliver, so abstaining is never safer than playing.
 """
-import hashlib, html, json, math, re, sys
+import hashlib, html, json, math, re, statistics, sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -358,6 +358,8 @@ for gpath, offset in sources:
                    "defender": spend["defender"]["billable"]},
         "cost": {"attacker": round(cost_a or 0.0, 6),
                  "defender": round(cost_b or 0.0, 6)},
+        # Agent wall clock per side, first to last step of the export.
+        "secs": {"attacker": att_b["secs"], "defender": def_b["secs"]},
         "models": {"attacker": a_model, "defender": d_model},
         "unpriced": [m for m, c in ((a_model, cost_a), (d_model, cost_b)) if c is None],
         "score": g["score"],
@@ -876,7 +878,17 @@ acc = defaultdict(lambda: {
     # The θ=0 half of the same role sample.
     "att_clean_wins": 0, "att_clean_losses": 0,
     "def_clean_wins": 0, "def_clean_losses": 0,
+    # Wall clock per round, by role and coin, over rounds the side delivered.
+    "att_secs1": [], "att_secs0": [], "def_secs1": [], "def_secs0": [],
 })
+
+
+def speed(s1, s0):
+    """Median agent wall clock per round, seconds, per coin and pooled."""
+    med = lambda xs: int(statistics.median(xs)) if xs else None
+    return {"secs": med(s1 + s0), "secs_n": len(s1 + s0),
+            "secs_theta1": med(s1), "secs_n_theta1": len(s1),
+            "secs_theta0": med(s0), "secs_n_theta0": len(s0)}
 
 
 def h2h_bump(me, opp, win, tok_for, tok_against, key="h2h"):
@@ -902,6 +914,14 @@ for r in ledger:
     D["cost_total"] += dc
     A["att_cost"] += ac
     D["def_cost"] += dc
+    # Speed counts only rounds the side actually played: a refusal or an empty
+    # delivery ends in seconds and would read as a fast model.
+    sa, sd = (r.get("secs") or {}).get("attacker", 0), (r.get("secs") or {}).get("defender", 0)
+    th = 1 if r["theta"] == 1 else 0
+    if o != "VOID" and o not in FORFEIT_A and sa:
+        A[f"att_secs{th}"].append(sa)
+    if o in PLAYED and sd:
+        D[f"def_secs{th}"].append(sd)
     A["chips"] += r["chips"]["attacker"]
     D["chips"] += r["chips"]["defender"]
 
@@ -1121,7 +1141,8 @@ for agent, v in acc.items():
                 "exploit_forfeits": v["att_exploit_forfeits"],
                 "clean_rounds": v["att_clean_rounds"],
                 "clean_wins": v["att_clean_wins"], "clean_losses": v["att_clean_losses"],
-                "tokens": v["att_tokens"], "cost": round(v["att_cost"], 6)},
+                "tokens": v["att_tokens"], "cost": round(v["att_cost"], 6),
+                **speed(v["att_secs1"], v["att_secs0"])},
         "def": {"rounds": v["def_rounds"], "wins": v["def_wins"], "losses": v["def_losses"],
                 "wins_all": v["def_wins_all"], "losses_all": v["def_losses_all"],
                 "patch_rounds": v["def_patch_rounds"],
@@ -1131,7 +1152,8 @@ for agent, v in acc.items():
                 "clean_wins": v["def_clean_wins"], "clean_losses": v["def_clean_losses"],
                 "tp": v["def_tp"], "fn": v["def_fn"],
                 "fp": v["def_fp"], "tn": v["def_tn"], "tokens": v["def_tokens"],
-                "cost": round(v["def_cost"], 6)},
+                "cost": round(v["def_cost"], 6),
+                **speed(v["def_secs1"], v["def_secs0"])},
         "provisional": rounds < RANKED_AT,
     })
 

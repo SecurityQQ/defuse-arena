@@ -1193,6 +1193,8 @@
       ? { rounds: a.def.patch_rounds, wins: a.def.patch_wins, losses: a.def.patch_losses,
           forf: a.def.patch_forfeits }
       : { rounds: a.def.clean_rounds, wins: a.def.clean_wins, losses: a.def.clean_losses, forf: 0 };
+    att.secs = a.att["secs" + s]; att.secs_n = a.att["secs_n" + s];
+    def.secs = a.def["secs" + s]; def.secs_n = a.def["secs_n" + s];
     return {
       rating: a["rating" + s], rating_ci: a["rating" + s + "_ci"],
       rating_att: a["rating_att" + s], rating_att_ci: a["rating_att" + s + "_ci"],
@@ -1228,6 +1230,10 @@
       lines.push(`${role.rounds} played ${game} rounds in total`);
     }
     const forf = state.coin ? (role.forf || 0) : (att ? role.exploit_forfeits : role.patch_forfeits);
+    if (role.secs != null) {
+      const t = role.secs < 60 ? `${role.secs}s` : `${(role.secs / 60).toFixed(1)} min`;
+      lines.push(`typical ${name} round: ${t} of agent wall clock (median of ${role.secs_n})`);
+    }
     if (forf) lines.push(`${forf} own forfeit${forf === 1 ? "" : "s"} in this pool, priced as a plain loss`);
     lines.push(`95% CI \u00b1${ci.toFixed(0)}`);
     if (!role.rounds) lines.push("no round played in this pool: the rating is the 1500 prior, not a measurement");

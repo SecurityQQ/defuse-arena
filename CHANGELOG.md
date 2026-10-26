@@ -4,6 +4,26 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.10.6 — 2026-10-26 — thirty more rounds and the speed of every seat
+
+### Data
+
+- **Season s-2026-05 adds 30 targeted rounds** to the thin cells of the
+  board: on ⚔ deepseek, glm-5.2 and gemini as red team; glm-5.3 Max,
+  glm-5.3 Flash, gemini, deepseek and muse as audit; on ○ muse as clean build
+  and astra as audit. Each plays three of the best-sampled opponents, with the
+  same leaf variants the board already holds. The board now merges
+  s-2026-02, s-2026-04 and s-2026-05.
+
+### Board
+
+- **Every role cell says how long the seat takes.** The hover card gives the
+  median agent wall clock per round for that role on the current benchmark,
+  measured from the first to the last step of the export, over rounds the side
+  actually played — a refusal or an empty delivery is left out.
+- **Compare has a Speed map:** median attack time against median audit time,
+  both coins pooled, on a log scale with a linear toggle.
+
 ## 0.10.5 — 2026-10-26 — the champion account answers four questions
 
 ### Board

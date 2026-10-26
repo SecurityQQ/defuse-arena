@@ -2038,6 +2038,13 @@ and useful answer. Silence is not.`
   const moneyTicks = (lo, hi, log) => (log
     ? [0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20].filter(v => v >= lo && v <= hi)
     : linearTicks(lo, hi, 5));
+  // time axes are in minutes; a log scale keeps a 30-second model and a
+  // 15-minute one on the same map
+  const timeTicks = (lo, hi, log) => (log
+    ? [0.25, 0.5, 1, 2, 5, 10, 20, 30].filter(v => v >= lo && v <= hi)
+    : linearTicks(lo, hi, 5));
+  const mins = v => (v == null ? "\u2014" : v < 1 ? Math.round(v * 60) + "s" : (v < 10 ? +v.toFixed(1) : v.toFixed(0)) + "m");
+  const logAx = ax => (ax.money || ax.time) && cmpState.log;
 
   const CMP_CHARTS = [
     {
@@ -2077,6 +2084,14 @@ and useful answer. Silence is not.`
       y: { name: "calibration", get: r => r.brier ? Math.max(0, 1 - 2 * r.brier) : null, fmt: pct, share: true, title: "calibration (1 \u2212 2\u00b7Brier)" },
       frontier: "nw", shade: "nw",
       corners: { nw: "cheap and honest", ne: "honest but pricey", sw: "cheap but vague", se: "pricey and vague" }
+    },
+    {
+      id: "speed", label: "Speed",
+      sub: "How long a model works per round: the median agent wall clock as red team or clean build against the median as audit, first step to last, over the rounds it actually played \u2014 a refusal or an empty delivery ends in seconds and is left out. Both coins pooled; the role hover cards split it by benchmark. Bottom left is fast both ways.",
+      x: { name: "attack time", get: r => r.att.secs == null ? null : r.att.secs / 60, fmt: mins, time: true, title: "minutes per attack round, median" },
+      y: { name: "audit time", get: r => r.def.secs == null ? null : r.def.secs / 60, fmt: mins, time: true, title: "minutes per audit round, median" },
+      shade: "sw",
+      corners: { nw: "quick attack, slow audit", ne: "slow both ways", sw: "fast both ways", se: "slow attack, quick audit" }
     }
   ];
 
@@ -2093,7 +2108,7 @@ and useful answer. Silence is not.`
   const cmpDomain = (vals, ax) => {
     const lo = Math.min(...vals), hi = Math.max(...vals);
     if (ax.share) return [0, 1];
-    if (ax.money && cmpState.log) return [lo * 0.6, hi * 1.7];
+    if (logAx(ax)) return [lo * 0.6, hi * 1.7];
     const pad = (hi - lo) * 0.12 || 1;
     return [Math.max(0, lo - pad), hi + pad];
   };
@@ -2106,6 +2121,7 @@ and useful answer. Silence is not.`
 
   const cmpTicks = (lo, hi, ax) => ax.share ? [0, 0.25, 0.5, 0.75, 1]
     : ax.money ? moneyTicks(lo, hi, cmpState.log)
+    : ax.time ? timeTicks(lo, hi, cmpState.log)
     : linearTicks(lo, hi, 5);
 
   // Non-dominated points for a given best corner, left to right.
@@ -2202,7 +2218,7 @@ and useful answer. Silence is not.`
     const def = CMP_CHARTS.find(c => c.id === cmpState.chart) || CMP_CHARTS[0];
     const chips = `<div class="ia-cmp-chips">${CMP_CHARTS.map(c =>
       `<button class="ia-cmp-chip${c.id === def.id ? " on" : ""}" data-cmp-chart="${c.id}">${c.label}</button>`).join("")}</div>
-      ${def.x.money ? `<button class="ia-cmp-chip scale" data-cmp-scale>${cmpState.log ? "log scale" : "linear scale"}</button>` : ""}`;
+      ${def.x.money || def.x.time ? `<button class="ia-cmp-chip scale" data-cmp-scale>${cmpState.log ? "log scale" : "linear scale"}</button>` : ""}`;
 
     const pts = cmpPts(def);
     if (!pts.length) {
@@ -2223,8 +2239,8 @@ and useful answer. Silence is not.`
     const pw = W - M.l - M.r, ph = H - M.t - M.b;
     const [xlo, xhi] = cmpDomain(pts.map(p => p.x), def.x);
     const [ylo, yhi] = cmpDomain(pts.map(p => p.y), def.y);
-    const sx = cmpScaleFn(xlo, xhi, def.x.money && cmpState.log);
-    const sy = cmpScaleFn(ylo, yhi, false);
+    const sx = cmpScaleFn(xlo, xhi, logAx(def.x));
+    const sy = cmpScaleFn(ylo, yhi, logAx(def.y));
     // an inner inset keeps a dot at 0% or 100% whole instead of cut by the frame
     const X = v => M.l + IN + sx(v) * (pw - 2 * IN);
     const Y = v => M.t + IN + (1 - sy(v)) * (ph - 2 * IN);
@@ -2245,6 +2261,8 @@ and useful answer. Silence is not.`
     if (def.shade) {
       shade = def.shade === "nw"
         ? `<rect class="ia-cmp-shade" x="${M.l}" y="${M.t}" width="${f1(xm - M.l)}" height="${f1(ym - M.t)}"/>`
+        : def.shade === "sw"
+        ? `<rect class="ia-cmp-shade" x="${M.l}" y="${f1(ym)}" width="${f1(xm - M.l)}" height="${f1(M.t + ph - ym)}"/>`
         : `<rect class="ia-cmp-shade" x="${f1(xm)}" y="${f1(ym)}" width="${f1(M.l + pw - xm)}" height="${f1(M.t + ph - ym)}"/>`;
     }
     const cross = `<line class="ia-cmp-cross" x1="${f1(xm)}" y1="${M.t}" x2="${f1(xm)}" y2="${M.t + ph}"/>
