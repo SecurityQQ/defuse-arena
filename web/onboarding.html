@@ -474,6 +474,21 @@ body.no-gl .loader{display:none}
   .select,.challenge{justify-content:flex-start}
   .select>:first-child,.challenge>:first-child{margin-top:auto}
   .banner .sub{font-size:12px;letter-spacing:.08em}
+  /* the duel on a phone: a vertical column only, the corner diamonds stay inside it, and
+     each corner shrinks to a one-line head, name chips and a short button */
+  .select{overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;padding:4px 5px 8px;gap:6px}
+  .corner-panel{padding:10px 10px 12px;gap:8px}
+  .corner-panel .hx-panel__head{display:flex;align-items:baseline;gap:10px}
+  .corner-panel .hx-panel__head .role{font-size:14px}
+  .card-grid{gap:5px}
+  .hx-card-model{padding:0 4px;min-height:36px;place-content:center}
+  .portrait{display:none}
+  .cname{margin:0;font-size:10px;line-height:1.15}
+  .corner-panel .hx-button{min-height:38px}
+  .vs{width:34px;height:34px;margin:-2px 0}
+  .vs span{font-size:12px}
+  .select>.corner-panel.chall{margin-top:auto}
+  .select>.corner-panel.guard{margin-bottom:auto}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}

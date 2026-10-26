@@ -4,6 +4,19 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.9.13 — 2026-10-26 — the duel chapter fits a phone
+
+### Onboarding
+
+- **Chapter 2 (the duel) no longer slides sideways on a phone.** The gold corner
+  diamonds of each panel stuck 4px out of the scrolling column, which gave it a
+  horizontal scroll; the column is now vertical-only (`overflow-x:hidden`,
+  `touch-action:pan-y`) with room for the diamonds.
+- **The two corners take about 40% less height.** On screens up to 860px each
+  corner shows a one-line head, name chips without portraits and a short Lock in
+  button, so the chapter fits 360×640 without scrolling and sits centred on
+  taller phones. The desktop layout is unchanged.
+
 ## 0.9.12 — 2026-10-26 — the verification games are folded into the season
 
 ### Board
