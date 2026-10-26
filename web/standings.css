@@ -969,3 +969,41 @@
   .ia-arrive{display:none}
   #standings tbody tr.ia-row-in,#standings tbody tr.ia-row-tour,.ia-arrive-note{animation:none}
 }
+
+/* ===================== Phones ====================================== */
+.table-wrap.is-scrollx, .ia-ch-scroll.is-scrollx {
+  -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);
+  mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent); }
+.ia-champ-name .tier-ico { width:14px; height:14px; margin-left:6px; vertical-align:-2px; }
+.ia-acct-id h3.agent-line .tier-ico { width:20px; height:20px; }
+.ia-cmp-plot.narrow .ia-cmp-tick { font-size:9px; }
+.ia-cmp-plot.narrow .ia-cmp-axis { font-size:8px; letter-spacing:.08em; }
+.ia-cmp-plot.narrow .ia-cmp-corner { font-size:7.5px; letter-spacing:.08em; }
+@media (max-width:700px) {
+  /* every tab in view: they wrap instead of hiding off the right edge */
+  .ia-tabs { flex-wrap:wrap; justify-content:center; overflow:visible; }
+  .ia-tab { padding:8px 11px; }
+  /* match log: round, the two models, the coin and the outcome */
+  #ledger th:nth-child(2), #ledger td:nth-child(2), #ledger th:nth-child(3), #ledger td:nth-child(3),
+  #ledger th:nth-child(n+8), #ledger td:nth-child(n+8) { display:none; }
+  #ledger th, #ledger td { padding-left:7px; padding-right:7px; }
+  /* roster: rank, champion, rating, record, chips and the profile button */
+  #ia-roster th:nth-child(4), #ia-roster td:nth-child(4), #ia-roster th:nth-child(5), #ia-roster td:nth-child(5),
+  #ia-roster th:nth-child(6), #ia-roster td:nth-child(6), #ia-roster th:nth-child(8), #ia-roster td:nth-child(8) { display:none; }
+  #ia-roster .r-glyph { display:none; }
+  /* a tap on the row opens the account, so the Profile button can go */
+  #ia-roster th:nth-child(10), #ia-roster td:nth-child(10) { display:none; }
+  #ia-roster th, #ia-roster td { padding-left:6px; padding-right:6px; font-size:11.5px; }
+  #ia-roster td:nth-child(2) { white-space:normal; }
+  #ia-roster .r-model { word-break:break-word; }
+  #ledger td:nth-child(4), #ledger td:nth-child(5) { white-space:normal; word-break:break-word; }
+  #ledger .log-model { display:none; }
+  /* the outcome already says which coin it was (TP/FN heads, TN/FP tails) */
+  #ledger th:nth-child(6), #ledger td:nth-child(6) { display:none; }
+  #ia-roster .r-name em:not(.r-model) { display:none; }
+  /* pickers take the row instead of a fixed 240-330px */
+  .ia-logtools .ia-picker { width:100%; }
+  .ia-logtools .ia-picker select, .ia-picker select { min-width:0; width:100%; flex:1 1 auto; }
+  #ledger .agent-name.small { font-size:10.5px; letter-spacing:.04em; }
+  .ia-compare .ia-cmp-chip { padding:6px 9px; font-size:9.5px; letter-spacing:.08em; }
+}

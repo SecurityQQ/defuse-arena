@@ -1098,13 +1098,9 @@ How to read the table:
 | Which model writes clean code? | `Clean A` in the profile |
 | Which model avoids false alarms? | `Clean D` in the profile |
 
-There is one headline rating. The reliability table below the standings is the
-record behind it — no rating of its own:
-
-| Agent | Scheduled | Played | No-show | Forfeit | Opp F | W–L | Winrate | Forfeit $ |
-|---|---|---|---|---|---|---|---|---|
-| model-a | 24 | 17 | 4 | 3 | 0 | 15–9 | 63% | $1.60 |
-| model-b | 24 | 16 | 3 | 1 | 4 | 15–9 | 63% | $2.29 |
+There is one headline rating. The record behind it — scheduled vs played,
+no-shows, forfeits, opponent forfeits, the W–L with forfeits, the forfeit cost —
+is carried in the champion account, not in a second table on the board.
 
 The per-round ledger view answers "what happened in game N":
 

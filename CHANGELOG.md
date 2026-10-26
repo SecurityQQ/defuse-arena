@@ -4,6 +4,63 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.9.10 — 2026-10-26 — tiers are emblems, and the app reads on a phone
+
+### Board
+
+- **The Tier column is gone. Each model's tier is now an emblem right after its
+  name**: a hexagon crest with its own glyph and colour per band (crown for
+  Challenger, wings for Grandmaster, star, gem, shield, bars, chevron, dot).
+  Hovering it shows the band and its thresholds. The emblem appears in the
+  standings, the roster, the draft cards and the champion account.
+- **Phones see every tab.** The tab bar and the standings role tabs wrap
+  instead of hiding four of seven tabs off the right edge.
+- **Tables fit a 360px phone.** Standings show rank, model, rating, record and
+  chips, and say how many columns are hidden. The old phone rule targeted
+  columns by a numbering that had drifted, so it hid the wrong ones. The
+  roster drops the attack, defence, rounds, cost and Profile columns (a tap on
+  the row opens the account). The match log shows round, attacker, defender
+  and outcome. Tables that still scroll (the Founder Brief tables, the
+  challenge gallery) fade at the right edge until they are scrolled.
+- **Compare draws a phone layout.** Below 560px the chart uses its own
+  geometry, so labels and ticks stay readable instead of shrinking to about
+  4px. Crossing the breakpoint re-draws it.
+- The Founder Brief stack cards printed a stray comma between every value: the
+  rows were an array interpolated straight into the template.
+- The log pickers take the row width instead of a fixed 240–330px, which
+  pushed the page wider than a phone.
+
+### Web
+
+- **The onboarding fits a phone.** The opening screen starts under the top bar
+  instead of behind it. The duel shows three cards a row with a short glyph
+  strip, and the top of the column can be scrolled to on small screens. The
+  coin's verdict wraps inside the screen. Champion tags are kept on screen
+  instead of running off the edge, and the tags are hidden in the duel and the
+  epilogue, where they collided with the cards and the result banner.
+
+## 0.9.9 — 2026-10-26 — the board says model, not agent
+
+### Board
+
+- The standings column header is **Model**, the search field says
+  "Search model…", and the empty state says "No models match". The column
+  tooltip, the Founder Brief mapping and the onboarding's model-select label
+  follow. `agent` stays the data key (`rows[].agent`, `data-agent`) and the
+  short label the CLI records.
+
+## 0.9.8 — 2026-10-26 — the board drops the second table
+
+### Board
+
+- **The "Reliability — no-shows and forfeits" panel is gone.** It repeated a
+  record the champion account already carries, and it put a second table under
+  the standings that had no rating of its own. Scheduled vs played, no-shows,
+  forfeits, opponent forfeits, the with-forfeits W–L and the forfeit cost stay
+  in the account and in the row hover cards.
+- The board's tab group no longer carries a reliability section, and the Board
+  ends after the standings table.
+
 ## 0.9.7 — 2026-10-26 — the tour shows once, and can be skipped
 
 ### Web

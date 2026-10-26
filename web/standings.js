@@ -33,21 +33,21 @@
 
   const FIELD = {
     "#": ["rank", "Position by overall rating across the whole field."],
-    Agent: ["agent", "Model label. Click the name to open its champion account and filter the match log to it."],
+    Model: ["model", "Model label. Click the name to open its champion account and filter the match log to it."],
     Tier: ["tier", "League-style band derived from the overall rating: Challenger \u2265 1550, Grandmaster \u2265 1500, Master \u2265 1450, Diamond \u2265 1400, Platinum \u2265 1350, Gold \u2265 1300, Silver \u2265 1250, otherwise Bronze."],
     Rating: ["overall rating", "The answer to \u201cwhich model should write and review my code\u201d: a pure win/loss Bradley-Terry fit over every non-void round, \u03b8=1 and \u03b8=0 \u2014 writing a service and auditing one are the same pool. A no-show or a forfeit is a loss for the side that did not deliver, so refusing is never cheaper than playing. 1500 is the field average. The spend margin is not in it."],
     "\u00b1": ["95% confidence", "Half-width of the 95% confidence interval from the fit. With 10\u201322 played rounds per model the top of the field overlaps: a gap smaller than the two intervals is noise, not a ranking."],
     Att: ["pentest rating", "The answer to \u201cwhich model should pentest\u201d: every round the model attacked, \u03b8=1 and \u03b8=0, priced against the defender's defence rating. The coin is the game's condition, not the role, so it does not split the pool. The hover card carries the record split: \u2694 real (\u03b8=1, a planted bug) and \u25cb clean (\u03b8=0, nothing to find), plus the model's own forfeits in that pool."],
     Def: ["audit rating", "The answer to \u201cwhich model should audit my code\u201d: every round the model defended, \u03b8=1 and \u03b8=0, priced against the attacker's attack rating. The coin is the game's condition, not the role, so it does not split the pool. The hover card carries the record split: \u2694 real (\u03b8=1, a planted bug) and \u25cb clean (\u03b8=0, nothing to find), plus the model's own forfeits in that pool."],
-    Rounds: ["played rounds", "Rounds both sides played to a verdict (TP, TN, FP, FN, DISCOVERY), then atk / def: how many of them as attacker and as defender. The two add up to the total. No-shows and forfeits are counted as losses in the rating and broken out in the reliability table."],
+    Rounds: ["played rounds", "Rounds both sides played to a verdict (TP, TN, FP, FN, DISCOVERY), then atk / def: how many of them as attacker and as defender. The two add up to the total. No-shows and forfeits are counted as losses in the rating and broken out in the champion account."],
     "No-show": ["no-shows", "ABSTAIN_A + ABSTAIN_D: a clean exit with no deliverable, barely any work. Counted separately from a forfeit so the two never double-count."],
     Forfeit: ["forfeits", "FAILED_A/D and FAULT_A: real work with no runnable deliverable, or an artifact that broke the round. Each is priced as a loss and a fee."],
-    "W\u2013L": ["played record", "Wins\u2013losses over played rounds only, then atk / def: the record as attacker and as defender. The two add up to the overall record, and each splits again into \u2694 real and \u25cb clean in the Att and Def hover cards. The rating also prices no-shows and forfeits as losses; the reliability table below is that record."],
+    "W\u2013L": ["played record", "Wins\u2013losses over played rounds only, then atk / def: the record as attacker and as defender. The two add up to the overall record, and each splits again into \u2694 real and \u25cb clean in the Att and Def hover cards. The rating also prices no-shows and forfeits as losses; the champion account is that record."],
     Winrate: ["win rate", "wins / (wins + losses) over played rounds only."],
     Scheduled: ["scheduled rounds", "Non-void participations: played + own no-shows + own forfeits + rounds the opponent forfeited."],
     Played: ["played rounds", "Rounds both sides played to a verdict. The difference from Scheduled is the forfeits."],
     OppF: ["opponent forfeits", "Rounds the opponent forfeited: a win for this model in the rating and in Scheduled. They are why the with-forfeits W\u2013L can be better than the played one."],
-    "Forfeit$": ["forfeit cost", "Real spend on the agent's own no-show and forfeit rounds plus the priced chip fee. Hover the cell for the split."],
+    "Forfeit$": ["forfeit cost", "Real spend on the model's own no-show and forfeit rounds plus the priced chip fee. Hover the cell for the split."],
     Cost: ["spend in USD", "What the season actually cost, priced per model from web/pricing.json: uncached input, cached input and output are billed at different rates, so a token count is not comparable across models. Includes forfeits and voids, because that money was really spent."],
     "$/round": ["cost per round", "cost_total / (played + forfeit + void rounds)."],
     Brier: ["Brier score", "Mean Brier over rounds played as defender. Diagnostic only \u2014 it does not drive the rating. Lower is better: 0 is a perfect call, 0.25 is a coin flip."],
@@ -133,8 +133,8 @@
       const s = STAT[el.textContent.trim()];
       if (!s) return false;
       body = `<b>${s[0]}</b><p>${s[1]}</p>`;
-    } else if (el.classList.contains("tier") || el.classList.contains("champ-tier")) {
-      body = `<b>${el.textContent.trim()}</b><p>${TIER}</p>`;
+    } else if (el.classList.contains("tier") || el.classList.contains("champ-tier") || el.classList.contains("tier-ico")) {
+      body = `<b>${el.dataset.tier || el.textContent.trim()}</b><p>${TIER}</p>`;
     } else {
       return false;
     }
@@ -176,7 +176,7 @@
     move(ev);
   };
 
-  const SEL = ".outcome, .coin, th, .stat .k, .tier, .champ-tier";
+  const SEL = ".outcome, .coin, th, .stat .k, .tier, .champ-tier, .tier-ico";
 
   document.addEventListener("mouseover", ev => {
     const el = ev.target.closest(SEL);
@@ -537,7 +537,7 @@
     openMatch(id);
   });
 
-  // The ledger re-renders when the agent filter changes.
+  // The ledger re-renders when the model filter changes.
   const ledger = document.getElementById("ledger");
   if (ledger) {
     if (modelPicker) modelPicker.value = ledger.dataset.agentFilter || "";
@@ -579,6 +579,7 @@
     [1250, "Silver", "silver"], [-Infinity, "Bronze", "bronze"]
   ];
   const tierOf = rating => TIERS.find(([min]) => rating >= min);
+  const tierIcon = rating => (window.IA_TIER_ICON ? window.IA_TIER_ICON(rating) : "");
 
   // =====================================================================
   // Match schematic, draft, roster and champion account.
@@ -782,15 +783,13 @@
       return a ? -1 : b ? 1 : 0;
     }).map(c => {
       const s = statsOf(c.agent);
-      const tier = s ? tierOf(s.rating) : null;
       return `<tr class="${s ? "" : "bench"}" data-agent="${c.agent}">
         <td>${s ? (rankOf(c.agent) || "\u2014") : "\u2014"}</td>
         <td><div class="r-name"><span class="r-glyph" style="--accent:${c.accent}">${c.glyph}</span>
-          <span><b style="font-family:var(--font-display);color:var(--gold-2)">${c.name}</b>
+          <span><span class="agent-line"><b style="font-family:var(--font-display);color:var(--gold-2)">${c.name}</b>${s ? tierIcon(s.rating) : ""}</span>
           <em style="display:block;font-style:normal;font-size:10.5px;color:var(--muted)">${c.house}</em>
           <em class="r-model">${c.model_name || c.model}</em></span></div></td>
-        <td>${tier ? `<span class="tier ${tier[2]}">${tier[1]}</span>` : `<span class="dim">unplayed</span>`}</td>
-        <td class="num">${s ? s.rating.toFixed(1) : "\u2014"}</td>
+        <td class="num">${s ? s.rating.toFixed(1) : `<span class="dim">unplayed</span>`}</td>
         <td class="num dim" title="${s ? `pentest rating \u00b7 \u03b8=1 ${s.att.exploit_wins}\u2013${s.att.exploit_losses} over ${s.att.exploit_rounds} played rounds \u00b7 95% CI \u00b1${s.rating_att_ci.toFixed(0)}` : ""}">${s && s.att.rounds ? s.rating_att.toFixed(1) : "\u2014"}</td>
         <td class="num dim" title="${s ? `audit rating \u00b7 \u03b8=1 ${s.def.patch_wins}\u2013${s.def.patch_losses} over ${s.def.patch_rounds} played rounds \u00b7 95% CI \u00b1${s.rating_def_ci.toFixed(0)}` : ""}">${s && s.def.rounds ? s.rating_def.toFixed(1) : "\u2014"}</td>
         <td class="num">${s ? s.rounds : "\u2014"}</td>
@@ -807,7 +806,7 @@
       </div>
     </div>
     <div class="table-wrap"><table>
-      <thead><tr><th>#</th><th>Champion</th><th>Tier</th><th>Rating</th><th>Att</th><th>Def</th>
+      <thead><tr><th>#</th><th>Champion</th><th>Rating</th><th>Att</th><th>Def</th>
       <th>Rounds</th><th>W\u2013L</th><th>Cost</th><th>Chips</th><th></th></tr></thead>
       <tbody>${rows}</tbody></table></div>`;
   }
@@ -858,11 +857,11 @@
       return `<div class="ia-champ ${s ? "" : "bench"} ${picked}" data-pick="${c.agent}" style="--accent:${c.accent}" role="button" tabindex="0">
         <span class="ia-champ-badge">${c.glyph}</span>
         <span class="ia-champ-prof" data-profile="${c.agent}">acct</span>
-        <span class="ia-champ-name">${c.name}</span>
+        <span class="ia-champ-name">${c.name}${s ? tierIcon(s.rating) : ""}</span>
         <span class="ia-champ-title">${c.title}</span>
         <span class="ia-champ-model">${c.model_name || c.model}</span>
         <span class="ia-champ-stats"><b>${s ? s.rating.toFixed(0) : "\u2014"}</b>
-          <em>${s ? tierOf(s.rating)[1] : "unplayed"}</em></span>
+          ${s ? "" : "<em>unplayed</em>"}</span>
         <span class="ia-champ-roles"><i class="att" style="width:${attW}px"></i><i class="def" style="width:${defW}px"></i></span>
         ${picked ? `<span class="ia-champ-ribbon">${picked === "picked-red" ? "attacker" : "defender"}</span>` : ""}
       </div>`;
@@ -1022,13 +1021,13 @@
     const head = `<div class="ia-acct-head">
       <div class="ia-emblem" style="--accent:${c.accent}">${c.glyph}</div>
       <div class="ia-acct-id">
-        <h3>${c.name}</h3>
+        <h3 class="agent-line">${c.name}${s ? tierIcon(s.rating) : ""}</h3>
         <span class="ia-acct-title">${c.title || ""}${c.house ? ` \u00b7 ${c.house}` : ""}</span>
         <span class="ia-acct-model">${c.model_name ? `${c.model_name} \u00b7 ${c.model}` : (c.model || agent)}</span>
       </div>
       <div class="ia-acct-rating">
         <b>${s ? s.rating.toFixed(1) : "\u2014"}</b>
-        <span>${tier ? tier[1] : "unplayed"}</span>
+        <span>${tier ? `${tier[1]} tier` : "unplayed"}</span>
       </div>
       <button class="ia-acct-close" data-acct-close aria-label="Close">\u2715</button>
     </div>`;
@@ -1481,7 +1480,8 @@
   const stackRow = s => (DATA.rows || []).find(r => s.re.test(r.agent) || s.re.test(r.model_name || "")) ||
     (s.alt ? (DATA.rows || []).find(r => s.alt.test(r.agent) || s.alt.test(r.model_name || "")) : null);
 
-  const face = (side, label, lines) => `<div class="ia-stack-face ${side}"><h5>${label}</h5><dl class="ia-kv">${lines}</dl></div>`;
+  // lines may come as an array: join it, or the template prints its commas between the rows
+  const face = (side, label, lines) => `<div class="ia-stack-face ${side}"><h5>${label}</h5><dl class="ia-kv">${[].concat(lines).join("")}</dl></div>`;
   const kv = (k, v) => `<div><dt>${k}</dt><dd>${v}</dd></div>`;
 
   function stackCard(s) {
@@ -1726,7 +1726,7 @@ and useful answer. Silence is not.`
   ];
 
   const MAP_ROWS = [
-    ["the attacker", "the coding agent - Opus, GPT - that writes your service or PR"],
+    ["the attacker", "the coding model - Opus, GPT - that writes your service or PR"],
     ["the frozen tree and the fair coin", "the PR you are about to merge: maybe clean, maybe not, and nobody says which"],
     ["the defender's stated probability", "your reviewer's \u201clooks good to me\u201d, made into a number you can hold it to - and above 0.5, a claim that gets executed"],
     ["the executable proof-of-concept", "the failing test that proves the bug is real before anyone argues about it"],
@@ -1734,7 +1734,7 @@ and useful answer. Silence is not.`
     ["the patch that must block the PoC", "the fix, verified by re-running the exploit instead of trusting the diff"],
     ["chips priced in USD", "review cost made visible: cents per audit, an incident per miss"],
     ["the three ratings", "three questions: who should write and review code, who should pentest it, who should audit it"],
-    ["a refusal or a forfeit", "your agent's no-show rate - priced as a loss here, measure it before you bet the workflow on it"]
+    ["a refusal or a forfeit", "your model's no-show rate - priced as a loss here, measure it before you bet the workflow on it"]
   ];
 
   function renderBrief() {
@@ -2098,7 +2098,11 @@ and useful answer. Silence is not.`
       return;
     }
 
-    const W = 780, H = 480, M = { l: 62, r: 22, t: 18, b: 52 }, IN = 18;
+    // a phone gets its own geometry: fewer viewBox units, so the type stays readable when scaled
+    const narrow = cmpHost.clientWidth > 0 && cmpHost.clientWidth < 560;
+    const W = narrow ? 380 : 780, H = narrow ? 430 : 480, IN = narrow ? 14 : 18;
+    const M = narrow ? { l: 44, r: 10, t: 12, b: 42 } : { l: 62, r: 22, t: 18, b: 52 };
+    cmpState.geo = { l: M.l, b: H - M.b, narrow };
     const pw = W - M.l - M.r, ph = H - M.t - M.b;
     const [xlo, xhi] = cmpDomain(pts.map(p => p.x), def.x);
     const [ylo, yhi] = cmpDomain(pts.map(p => p.y), def.y);
@@ -2142,11 +2146,13 @@ and useful answer. Silence is not.`
 
     const dots = pts.map(p => {
       const c = champOf(p.agent), px = X(p.x), py = Y(p.y);
-      return { ...p, c, name: c.name, px, py, cx: px, cy: py, r: Math.min(10, 4.5 + Math.sqrt(p.row.rounds || 1) * 1.15) };
+      const name = narrow ? c.name.replace(/^Claude /, "") : c.name;
+      const r = narrow ? Math.min(7.5, 3.5 + Math.sqrt(p.row.rounds || 1) * 0.85) : Math.min(10, 4.5 + Math.sqrt(p.row.rounds || 1) * 1.15);
+      return { ...p, c, name, px, py, cx: px, cy: py, r };
     });
     cmpSpread(dots, box);
     dots.forEach(d => obstacles.push({ x: d.cx - d.r - 1, y: d.cy - d.r - 1, w: 2 * d.r + 2, h: 2 * d.r + 2 }));
-    const LS = 9.5;
+    const LS = narrow ? 10 : 9.5;
     cmpLabels(dots, obstacles, box, LS);
     // a caption a dot or a label sits on is dropped rather than drawn under it
     const taken = [...obstacles, ...dots.filter(d => d.label).map(d => d.label.bb)];
@@ -2186,7 +2192,7 @@ and useful answer. Silence is not.`
         <div class="ia-vault-sub">${def.sub}</div>
       </div></div>
       <div class="ia-cmp-bar">${chips}</div>
-      <div class="ia-cmp-plot"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${def.label}: one dot per champion">
+      <div class="ia-cmp-plot${narrow ? " narrow" : ""}"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${def.label}: one dot per champion">
         <defs><clipPath id="ia-cmp-clip"><rect x="${M.l}" y="${M.t}" width="${pw}" height="${ph}"/></clipPath>
           <radialGradient id="ia-cmp-bg" cx="${def.shade === "se" ? "85%" : "15%"}" cy="${def.shade === "se" ? "85%" : "15%"}" r="80%">
             <stop offset="0" stop-color="rgba(10,200,185,.07)"/><stop offset="1" stop-color="rgba(10,200,185,0)"/></radialGradient></defs>
@@ -2207,7 +2213,8 @@ and useful answer. Silence is not.`
     const r = CHAMPS.find(x => x.agent === dotEl.dataset.cmpAgent);
     const def = CMP_CHARTS.find(c => c.id === cmpState.chart) || CMP_CHARTS[0];
     if (!r) return;
-    const px = +dotEl.dataset.px, py = +dotEl.dataset.py, l = 62, b = 480 - 52;
+    const geo = cmpState.geo || { l: 62, b: 428 };
+    const px = +dotEl.dataset.px, py = +dotEl.dataset.py, l = geo.l, b = geo.b;
     const xs = def.x.fmt(def.x.get(r)), ys = def.y.fmt(def.y.get(r));
     const wx = cmpMeasure(xs, 9.5, "monospace") + 10, wy = cmpMeasure(ys, 9.5, "monospace") + 10;
     g.innerHTML = `<line x1="${px}" y1="${py}" x2="${px}" y2="${b}"/><line x1="${px}" y1="${py}" x2="${l}" y2="${py}"/>
@@ -2253,6 +2260,21 @@ and useful answer. Silence is not.`
   renderCompare();
   // label boxes are measured in the display font: lay out again once it has loaded
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderCompare());
+  // crossing the phone breakpoint swaps the chart geometry
+  let cmpNarrow = null;
+  window.addEventListener("resize", () => {
+    const n = !!cmpHost && cmpHost.clientWidth > 0 && cmpHost.clientWidth < 560;
+    if (n !== cmpNarrow) { cmpNarrow = n; renderCompare(); }
+  });
+
+  // A table wider than its frame fades out on the right until it is scrolled
+  // to the end, so a phone reader can tell there is more to swipe to.
+  const markScroll = w => w.classList.toggle("is-scrollx", w.scrollWidth > w.clientWidth + 2 && w.scrollLeft + w.clientWidth < w.scrollWidth - 2);
+  const markAll = () => document.querySelectorAll(".table-wrap, .ia-ch-scroll").forEach(markScroll);
+  document.addEventListener("scroll", e => { if (e.target.classList && (e.target.classList.contains("table-wrap") || e.target.classList.contains("ia-ch-scroll"))) markScroll(e.target); }, true);
+  window.addEventListener("resize", markAll);
+  document.addEventListener("click", () => setTimeout(markAll, 50));
+  setTimeout(markAll, 300);
 
   // ---------------------------------------------------------------- tabs
   const TAB_DEFS = [
@@ -2266,11 +2288,8 @@ and useful answer. Silence is not.`
   ];
   const standingsTable = document.getElementById("standings");
   const tabGroups = {
-    // The reliability table belongs to the board: without it here it stayed visible
-    // on every other tab, so Draft and Roster opened under a standings table.
     board: [document.getElementById("summary"), document.getElementById("podium"),
-            standingsTable ? standingsTable.closest("section") : null,
-            document.getElementById("reliability-panel")],
+            standingsTable ? standingsTable.closest("section") : null],
     brief: [document.getElementById("ia-brief")],
     compare: [document.getElementById("ia-compare")],
     draft: [document.getElementById("ia-draft")],

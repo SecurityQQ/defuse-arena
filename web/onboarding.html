@@ -11,7 +11,7 @@
 <!--
   Defuse Arena onboarding — a cinematic 3D tour of one round, on Three.js.
   Layers:
-    #gl            — WebGL scene (arena, agents, coin, service, patch, grader)
+    #gl            — WebGL scene (arena, models, coin, service, patch, grader)
     .layer[data-layer] — Hextech HTML overlay for each step
   State lives in window.ArenaState (UI script); the scene reads it every frame.
   Deep links for review: #step-1 … #step-8, #defeat.
@@ -175,7 +175,7 @@ button{font:inherit;color:inherit}
 .hero-manifest{font:700 11px/1 var(--f-display);letter-spacing:.24em;text-transform:uppercase;color:var(--hx-muted)}
 .hero-cta{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:8px}
 
-/* step 3 — agent select */
+/* step 3 — model select */
 .select{inset:var(--top) var(--gutter-r) var(--bottom) var(--gutter);display:grid;grid-template-columns:minmax(0,330px) 1fr minmax(0,330px);grid-template-rows:auto 1fr;align-items:center;gap:0 24px}
 .select-head{grid-column:1/-1;text-align:center;display:grid;gap:8px;justify-items:center;align-self:start;padding-top:6px}
 .corner-panel{padding:18px 18px 18px;display:grid;gap:14px}
@@ -452,6 +452,28 @@ body.no-gl .loader{display:none}
   .caption .lede{font-size:14px}
   .tag .tag-name{font-size:11px}
   .verdicts .vtile{min-height:112px}
+  /* phones: the hero starts under the top bar instead of behind it */
+  .hero{place-content:start center;padding-top:calc(var(--top) - 4px);overflow:auto;pointer-events:auto}
+  .hero-title{font-size:clamp(40px,13vw,64px)}
+  .hero-sub{font-size:14.5px}
+  .hero-sub--small{font-size:12.5px}
+  /* the duel: three cards a row, a short glyph strip instead of a square portrait */
+  .card-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .hx-card-model{padding:5px 5px 7px}
+  .portrait{aspect-ratio:auto;height:30px}
+  .portrait b{font-size:17px}
+  .cname{font-size:10px;line-height:1.15;overflow-wrap:anywhere}
+  .corner-panel .hx-panel__head .role{font-size:15px}
+  /* the coin's verdict wraps inside the screen */
+  .coin-banner{white-space:normal;max-width:calc(100vw - 32px);padding:10px 16px;font-size:15px;line-height:1.25}
+  .coin-note{font-size:13px;max-width:calc(100vw - 32px)}
+  .tag .tag-name{font-size:10px;letter-spacing:.04em}
+  /* the epilogue banner and the champion tags would share one line */
+  body[data-step="8"] .tags,body[data-step="3"] .tags{display:none}
+  /* flex-end + overflow hides the top of a tall column: push it down with a margin instead */
+  .select,.challenge{justify-content:flex-start}
+  .select>:first-child,.challenge>:first-child{margin-top:auto}
+  .banner .sub{font-size:12px;letter-spacing:.08em}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -601,8 +623,8 @@ body.leaving #gl{transition:filter .8s,transform .8s;filter:blur(6px) brightness
   </div>
 </section>
 
-<!-- ======= step 3: agent select ======= -->
-<section class="layer select" data-layer="3" aria-label="Agent select">
+<!-- ======= step 3: model select ======= -->
+<section class="layer select" data-layer="3" aria-label="Model select">
   <header class="select-head rise" style="--i:0">
     <div class="eyebrow">Chapter 2 · The duel</div>
     <h2 class="h2">Two models step into the arena</h2>
@@ -1736,7 +1758,13 @@ function build() {
   /* ---------------- HTML anchors ---------------- */
   const anchors = [...document.querySelectorAll('[data-anchor]')];
   const proj = V3();
-  function placeAnchor(el, world) { proj.copy(world).project(camera); el.style.setProperty('--ax', ((proj.x * .5 + .5) * W).toFixed(1) + 'px'); el.style.setProperty('--ay', ((-proj.y * .5 + .5) * H).toFixed(1) + 'px'); }
+  // a label is centred on its anchor but never pushed past the screen edge (phones are narrow)
+  function placeAnchor(el, world) {
+    proj.copy(world).project(camera);
+    const half = (el.offsetWidth || 0) / 2 + 8;
+    const x = Math.min(W - half, Math.max(half, (proj.x * .5 + .5) * W));
+    el.style.setProperty('--ax', x.toFixed(1) + 'px'); el.style.setProperty('--ay', ((-proj.y * .5 + .5) * H).toFixed(1) + 'px');
+  }
 
   /* ---------------- resize / fonts ---------------- */
   function resize() {

@@ -61,9 +61,8 @@ switches to the log first.
 Audit, three models each, the winner raised inside its column) and the standings
 table:
 sortable columns, role tabs (Overall, Attacker, Defender, Changelog),
-agent filter. The Changelog tab renders `CHANGELOG.md` from the payload instead
-of the table. The reliability table belongs to this tab; every other tab shows
-only its own section.
+model filter. The Changelog tab renders `CHANGELOG.md` from the payload instead
+of the table. Every other tab shows only its own section.
 
 **Three ratings, three questions.** The board answers "which model overall",
 "which model should audit my code" and "which model should pentest" with three
@@ -84,12 +83,12 @@ shown as a record in the hover cards and the champion account. The spend margin
 is in no skill rating: it survives as `rating_efficiency`, shown in the account and never
 used to rank.
 
-**The reliability table** sits below the standings. It is the record behind the
-one rating, with no rating of its own: scheduled vs played, no-shows, forfeits,
-opponent forfeits, the W–L with forfeits, the forfeit cost. `no_shows` is
-`ABSTAIN_*`; `forfeits` is `FAILED_*` + `FAULT_A`, so the two never double-count.
-Equal ratings share a rank (`=1`), because the fit can return exact ties and
-printing 1 and 2 for the same number would invent an order the data lacks.
+The record behind the rating — scheduled vs played, no-shows, forfeits, opponent
+forfeits, the W–L with forfeits, the forfeit cost — is in the champion account,
+not in a second table on the board. `no_shows` is `ABSTAIN_*`; `forfeits` is
+`FAILED_*` + `FAULT_A`, so the two never double-count. Equal ratings share a rank
+(`=1`), because the fit can return exact ties and printing 1 and 2 for the same
+number would invent an order the data lacks.
 
 **Founder Brief** — the tab for a visitor who ships AI-written code and wants
 to know what to do with this benchmark. It opens with the question in plain
@@ -175,7 +174,7 @@ has four composable filters: challenge, model, role (`Any` / `Attacker` /
 `Defender`), and coin (`All` / `⚔ θ=1` / `○ θ=0`). The model filter matches
 either side of the round, so it is the match history of one model; the role
 filter narrows that history to rounds the model attacked or defended. Clicking
-an agent name in a row opens the champion account and sets the same model
+a model name in a row opens the champion account and sets the same model
 filter; the selector follows. `Clear filter` resets all four and the subtitle
 counts the visible rounds. The dossier header has a `← Back` / `✕` control that
 closes it and returns to the tab the reader came from (Board, Roster, Compare
@@ -219,7 +218,7 @@ An agent with no usable export (every round void or refused) falls back to the
 roster's `model` id, and an unplayed champion shows that id as well.
 
 **Champion account** — the overlay behind `Profile`, `acct`, a Board row, a
-podium card, or an agent name in the standings/match log: six-axis shape, rating curve for the
+podium card, or a model name in the standings/match log: six-axis shape, rating curve for the
 overall/attack/defence pools, record with the role split, the pools
 with CIs plus the non-ranking margin-weighted number, the ⚔ real and ○ clean
 records and forfeits per role, head-to-head, and
