@@ -459,6 +459,26 @@ body.no-gl .loader{display:none}
 }
 
 /* ---------- story chapters: the brief, the build, the proof, the epilogue ---------- */
+.hx-chip.skip{text-decoration:none;color:var(--hx-muted)} .hx-chip.skip:hover{color:var(--hx-gold-light)}
+.hero-skip{margin-top:4px;font:600 11.5px/1.3 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--hx-muted);text-decoration:none;border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
+.hero-skip:hover{color:var(--hx-gold-light);border-bottom-color:var(--hx-gold)}
+/* the audit chapter fits the panel without a scroll */
+.view[data-view="6"].is-active{gap:12px}
+.view[data-view="6"] .h2{font-size:clamp(18px,1.55vw,23px);white-space:nowrap;text-wrap:nowrap}
+.view[data-view="6"] .think{gap:7px;padding:10px 12px}
+.view[data-view="6"] .think-log{gap:5px;min-height:0}
+.view[data-view="6"] .think-log li{font-size:12.5px;line-height:1.32}
+.view[data-view="6"] .think-log li::before{margin-top:5px}
+.view[data-view="6"] .vtile{grid-template-columns:auto 1fr;grid-template-rows:auto auto;justify-items:start;align-items:center;column-gap:10px;row-gap:2px;min-height:0;padding:10px 12px}
+.view[data-view="6"] .vtile svg{grid-row:1/3;width:26px;height:26px}
+.view[data-view="6"] .vtile b{font-size:13px}
+.view[data-view="6"] .vtile small{font-size:9px}
+.view[data-view="6"] .conf{gap:6px;padding:10px 12px}
+.view[data-view="6"] .conf output{font-size:19px}
+@media (max-height:760px) and (min-width:861px){
+  .view[data-view="6"] .think-log li{font-size:12px}
+  .view[data-view="6"] .scale{display:none}
+}
 .hero-sub--small{font-size:clamp(14px,1.25vw,16px);color:var(--hx-gold-light)}
 .select-sub{margin:0;max-width:640px;font:500 14px/1.45 var(--f-ui);color:var(--hx-text)}
 .challenge-panel{align-self:start}
@@ -543,6 +563,7 @@ body.leaving #gl{transition:filter .8s,transform .8s;filter:blur(6px) brightness
     <button type="button" class="hx-chip" id="autoplay" aria-pressed="false">
       <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z" fill="currentColor"/></svg><span>Auto tour</span>
     </button>
+    <a class="hx-chip skip" href="index.html" data-skip>Skip tour <span aria-hidden="true">››</span></a>
   </div>
 </header>
 
@@ -565,6 +586,7 @@ body.leaving #gl{transition:filter .8s,transform .8s;filter:blur(6px) brightness
     <button type="button" class="hx-button hx-button--xl" data-go="2"><span>Begin the story</span></button>
     <button type="button" class="hx-button hx-button--secondary hx-button--xl" id="hero-auto"><span>Watch it play</span></button>
   </div>
+  <a class="hero-skip rise" style="--i:6" href="index.html" data-skip>Skip the tour and go straight to the leaderboard</a>
 </section>
 
 <!-- ======= step 2: the brief ======= -->
@@ -1034,17 +1056,25 @@ body.leaving #gl{transition:filter .8s,transform .8s;filter:blur(6px) brightness
     const win = S.result === 'victory';
   }
   /* ---------- hand-off: the arena folds into the board ---------- */
-  function toBoard(e) {
+  function toBoard(e, skip) {
     if (e) e.preventDefault();
     if (document.body.classList.contains('leaving')) return;
     clearTimers(); S.autoplay = false;
-    const url = `index.html?tour=${encodeURIComponent(R.round_id)}&att=${encodeURIComponent(R.attacker)}&def=${encodeURIComponent(R.defender)}`;
+    const url = skip ? 'index.html?tour=skip'
+      : `index.html?tour=${encodeURIComponent(R.round_id)}&att=${encodeURIComponent(R.attacker)}&def=${encodeURIComponent(R.defender)}`;
     if (reduce) { location.href = url; return; }
     document.body.classList.add('leaving');
     $('#warp').classList.add('go');
     setTimeout(() => { location.href = url; }, 1050);
   }
-  document.addEventListener('click', e => { const t = e.target.closest('[data-to-board]'); if (t) toBoard(e); });
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-to-board], [data-skip]');
+    if (t) toBoard(e, t.hasAttribute('data-skip'));
+  });
+
+  /* ---------- the board opens the tour on a first visit only: remember it was seen ---------- */
+  try { document.cookie = 'ia_tour_seen=1; max-age=31536000; path=/; SameSite=Lax'; } catch (e) { /* no cookies */ }
+  try { localStorage.setItem('ia_tour_seen', '1'); } catch (e) { /* file:// or blocked storage */ }
 
   $('#next').addEventListener('click', () => {
     if (S.step === 8) return toBoard();

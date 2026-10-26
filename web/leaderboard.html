@@ -3,6 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+  /* First visit: open the onboarding tour once. It records ia_tour_seen in a
+     cookie (and localStorage for file://); deep links (#tab, ?tour=) and the
+     season copies never redirect, nor does a browser that cannot store the flag. */
+  (function () {
+    try {
+      if (location.search.indexOf("tour=") >= 0 || location.hash) return;
+      if (/\/seasons\//.test(location.pathname)) return;   // season copies ship without the tour
+      if (/(?:^|;\s*)ia_tour_seen=1/.test(document.cookie)) return;
+      if (localStorage.getItem("ia_tour_seen") === "1") return;
+      localStorage.setItem("ia_tour_probe", "1"); localStorage.removeItem("ia_tour_probe");
+      location.replace("onboarding.html");
+    } catch (e) { /* storage blocked: stay on the board */ }
+  })();
+</script>
 <title>Code Audit Benchmark — Leaderboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -4,6 +4,23 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.9.7 — 2026-10-26 — the tour shows once, and can be skipped
+
+### Web
+
+- **The board opens the onboarding tour on a first visit only.** The tour
+  stores `ia_tour_seen` in a cookie, with a `localStorage` copy for `file://`.
+  On a later visit the board stays where it is. Deep links (`#compare`, any
+  tab hash, `?tour=`) and the `seasons/` copies never redirect, and neither
+  does a browser that cannot store the flag, so nobody is looped.
+- **The tour can be skipped.** "Skip tour" in the top bar and a link under the
+  opening buttons fold the arena into the board straight away, without the
+  "you just watched" note.
+- The audit chapter fits its panel without scrolling down to a 1280×720
+  window. The verdict tiles are a single row, the heading holds one line, and
+  the reasoning log is tighter. It needed about 650px before and needs about
+  440px now.
+
 ## 0.9.6 — 2026-10-26 — the onboarding tells a real round, and Compare reads cleanly
 
 ### Web
