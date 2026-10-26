@@ -672,8 +672,9 @@
     letter-spacing: .04em;
   }
 
-  /* A dim suffix inside a cell: the role record next to its rating, the role
-     split next to the overall record. Same line, same row height as before. */
+  /* A dim suffix inside a cell: the role split next to the overall record.
+     Same line, same row height as before; the margin keeps the record and
+     its split from touching. */
   .rec {
     font-style: normal;
     font-family: var(--font-mono);
@@ -681,6 +682,7 @@
     letter-spacing: .01em;
     color: var(--muted);
     white-space: nowrap;
+    margin-left: 7px;
   }
 
   /* A role rating with no played round behind it: forfeits only. */
@@ -780,10 +782,9 @@
     .tabs { flex-wrap: wrap; }
 
     /* phones: rank, model, rating, record and chips; the rest is one tap away in the account.
-       Chips is the last column in every benchmark view (14 in a coin view, 15 pooled), so the
-       phone cut keeps it with :nth-last-child rather than a fixed index. */
-    #standings th:nth-child(n+4):not(:nth-child(8)):not(:nth-last-child(1)),
-    #standings td:nth-child(n+4):not(:nth-child(8)):not(:nth-last-child(1)) { display: none; }
+       W–L is the 7th column and Chips the last in every view, so the phone cut keeps them. */
+    #standings th:nth-child(n+4):not(:nth-child(7)):not(:nth-last-child(1)),
+    #standings td:nth-child(n+4):not(:nth-child(7)):not(:nth-last-child(1)) { display: none; }
     #standings .rec, #standings .hsub { display: none; }
     #standings th, #standings td { padding-left: 6px; padding-right: 6px; }
     #standings .agent-model { white-space: normal; word-break: break-word; }
@@ -832,12 +833,11 @@
     <div class="panel-head">
       <div>
         <h2>Standings</h2>
-        <p class="sub" id="bench-sub">Both coins pooled — attack task and control in one rating.</p>
+        <p class="sub" id="bench-sub">Attack Task — Make Service with Vulnerability · θ=1 rounds only, every pairing tested.</p>
       </div>
       <div class="controls">
         <div class="tabs coin-tabs" role="group" aria-label="Benchmark">
-          <button class="ctab active" data-coin="" aria-pressed="true">Overall</button>
-          <button class="ctab" data-coin="1" aria-pressed="false" title="Attack Task · Make Service with Vulnerability · θ=1 rounds only, both roles">⚔ Attack Task</button>
+          <button class="ctab active" data-coin="1" aria-pressed="true" title="Attack Task · Make Service with Vulnerability · θ=1 rounds only, both roles">⚔ Attack Task</button>
           <button class="ctab" data-coin="0" aria-pressed="false" title="Control · make a clean service · θ=0 rounds only, both roles">○ Control</button>
         </div>
         <div class="tabs" role="tablist" aria-label="Rating mode">
@@ -902,13 +902,15 @@
   // variant, and the generator records the resolved name from the ATIF export.
   const MODEL_NAME = Object.fromEntries((DATA.rows || []).map(r => [r.agent, r.model_name || ""]));
   const modelName = a => MODEL_NAME[a] || "";
-  const state = { role: "overall", key: "rating", dir: -1, query: "", agent: null, coin: "" };
+  // The board opens on the attack task; the toggle is the two benchmarks.
+  const state = { role: "overall", key: "rating_theta1", dir: -1, query: "", agent: null, coin: "1" };
 
-  // The benchmark toggle: "" is the pooled view (both coins), "1" is the
-  // attack task (make a service with a vulnerability), "0" the control (make
-  // a clean service). Only coin-specific columns re-map to their per-coin
-  // fields; money, Brier, Patch and FPR stay what they are, and Patch is only
-  // shown in the attack view, FPR only in the control view.
+  // The benchmark toggle: "1" is the attack task (make a service with a
+  // vulnerability), "0" the control (make a clean service). Only
+  // coin-specific columns re-map to their per-coin fields; money, Brier,
+  // Patch and FPR stay what they are, and Patch is only shown in the attack
+  // view, FPR only in the control view. (An empty coin — the retired pooled
+  // view — still resolves, so old renders keep working.)
   const COIN_KEYS = new Set(["rating", "rating_att", "rating_def", "rounds"]);
   const keyFor = base => state.coin && COIN_KEYS.has(base) ? base + "_theta" + state.coin : base;
   const resolveKey = () => {
@@ -1119,8 +1121,7 @@
     ["ci", "\u00b1", null],
     ["rating_att", "Att", "rating_att"],
     ["rating_def", "Def", "rating_def"],
-    ["rounds", "Rounds", "rounds", "atk / def"],
-    ["wl", "W\u2013L", null, "atk / def"],
+    ["wl", "W\u2013L", null, "all \u00b7 atk \u00b7 def"],
     ["wr", "Winrate", null],
     ["cost_total", "Cost", "cost_total"],
     ["cost_per_round", "$/round", "cost_per_round"],
@@ -1131,8 +1132,8 @@
   ];
 
   // The benchmark views trade the coin-specific metric column: the attack
-  // task shows patch validity, the control shows the false-alarm rate, the
-  // pooled view shows both.
+  // task shows patch validity, the control shows the false-alarm rate. (The
+  // retired pooled view showed both.)
   const columnsFor = () => COLUMNS.filter(([id]) =>
     !(state.coin === "1" && id === "fpr") && !(state.coin === "0" && id === "patch_validity"));
 
@@ -1207,20 +1208,24 @@
     const rankHtml = rank == null
       ? `<span class="rank">\u2014</span>`
       : `<span class="rank ${rank <= 3 ? "top" + rank : ""}" title="${tied ? "equal rating: this rank is shared" : ""}">${tied ? "=" : ""}${rank}</span>`;
+    // The W–L cell is the whole record: the overall record up front, the
+    // attack and defence records as a compact second line. Rounds live in
+    // the hover card — the old Rounds column said how many, this says what
+    // happened.
     const wlTitle = state.coin
       ? [
           `played record on ${state.coin === "1" ? "\u2694\uFE0E \u03b8=1 attack-task" : "\u25CB \u03b8=0 control"} rounds`,
-          `${v.wins}\u2013${v.losses} over ${v.rounds} rounds`,
-          `as attacker ${v.att.rounds} rounds: ${v.att.wins}\u2013${v.att.losses}`,
-          `as defender ${v.def.rounds} rounds: ${v.def.wins}\u2013${v.def.losses}`,
+          `overall ${v.wins}\u2013${v.losses} over ${v.rounds} rounds`,
+          `as attacker, ${v.att.rounds} rounds: ${v.att.wins}\u2013${v.att.losses}`,
+          `as defender, ${v.def.rounds} rounds: ${v.def.wins}\u2013${v.def.losses}`,
         ].join(" \u00b7 ")
       : [
           "played record",
-          `${v.wins}\u2013${v.losses} over ${v.rounds} rounds`,
-          `as attacker ${v.att.rounds} rounds: ${v.att.wins}\u2013${v.att.losses} `
+          `overall ${v.wins}\u2013${v.losses} over ${v.rounds} rounds`,
+          `as attacker, ${v.att.rounds} rounds: ${v.att.wins}\u2013${v.att.losses} `
             + `(\u2694\uFE0E real ${v.att.exploit_wins}\u2013${v.att.exploit_losses}, `
             + `\u25CB clean ${v.att.clean_wins}\u2013${v.att.clean_losses})`,
-          `as defender ${v.def.rounds} rounds: ${v.def.wins}\u2013${v.def.losses} `
+          `as defender, ${v.def.rounds} rounds: ${v.def.wins}\u2013${v.def.losses} `
             + `(\u2694\uFE0E real ${v.def.patch_wins}\u2013${v.def.patch_losses}, `
             + `\u25CB clean ${v.def.clean_wins}\u2013${v.def.clean_losses})`,
         ].join(" \u00b7 ");
@@ -1236,8 +1241,7 @@
       <td class="dim ci" title="95% confidence \u00b7 \u00b1${v.rating_ci.toFixed(1)} from the fit \u00b7 a gap smaller than two intervals is noise, not a ranking">\u00b1${v.rating_ci.toFixed(0)}</td>
       ${roleCell(v, "att")}
       ${roleCell(v, "def")}
-      <td>${v.rounds}<em class="rec"> \u00b7 ${v.att.rounds}/${v.def.rounds}</em></td>
-      <td title="${wlTitle}">${v.wins}\u2013${v.losses}<em class="rec"> \u00b7 ${v.att.wins}\u2013${v.att.losses}/${v.def.wins}\u2013${v.def.losses}</em></td>
+      <td title="${wlTitle}">${v.wins}\u2013${v.losses}<em class="rec">atk ${v.att.wins}\u2013${v.att.losses} \u00b7 def ${v.def.wins}\u2013${v.def.losses}</em></td>
       <td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>
       <td>${usd(a.cost_total)}</td>
       <td class="dim">${usd(a.cost_per_round)}</td>

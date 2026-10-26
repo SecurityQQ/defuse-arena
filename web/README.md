@@ -61,20 +61,22 @@ switches to the log first.
 Audit, three models each, the winner raised inside its column) and the standings
 table:
 sortable columns, role tabs (Overall, Attacker, Defender, Changelog),
-benchmark toggle (Overall / ⚔ Attack Task θ=1 / ○ Control θ=0), model filter.
+benchmark toggle (⚔ Attack Task θ=1 / ○ Control θ=0 — the board opens on the
+attack task), model filter.
 The Changelog tab renders `CHANGELOG.md` from the payload instead of the
 table. Every other tab shows only its own section.
 
-**Two benchmarks, one toggle.** The standings table switches between three
-views: **Overall** (both coins pooled, the headline), **Attack Task — Make
-Service with Vulnerability** (θ=1 rounds only) and **Control — Make a Clean
-Service** (θ=0 rounds only). Each coin view is a self-contained table: its own
-overall fit (`rating_theta1` / `rating_theta0`), its own role fits
-(`rating_att/def_theta{1,0}`), its own played record
-(`rounds/wins/losses_theta{1,0}`) and the coin-specific metric column (Patch
-validity in the attack view, FPR in the control view). A model with no rounds on
-a coin sits at the 1500 prior with a wide interval — the page never invents a
-ranking the schedule did not measure.
+**Two benchmarks, one toggle.** The standings table switches between
+**Attack Task — Make Service with Vulnerability** (θ=1 rounds only) and
+**Control — Make a Clean Service** (θ=0 rounds only); there is no pooled view.
+Each view is a self-contained table: its own overall fit
+(`rating_theta1` / `rating_theta0`), its own role fits
+(`rating_att/def_theta{1,0}`), its own played record and the coin-specific
+metric column (Patch validity in the attack view, FPR in the control view).
+The record column reads `overall · atk · def`: the main line is the overall
+W–L, the small suffix is the attack and defence W–L, and the rounds sit in the
+hover card. A model with no rounds on a coin sits at the 1500 prior with a
+wide interval — the page never invents a ranking the schedule did not measure.
 
 **Three ratings, three questions.** The board answers "which model overall",
 "which model should audit my code" and "which model should pentest" with three

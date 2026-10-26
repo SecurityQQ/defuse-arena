@@ -4,6 +4,24 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.10.1 — 2026-10-26 — the pooled table gives way to the two benchmarks
+
+### Board
+
+- **The Overall position is gone from the benchmark toggle: the standings are
+  the two benchmarks and nothing else.** The table opens on **⚔ Attack Task**
+  and switches to **○ Control**; there is no third pooled view to land on by
+  accident. The pooled ratings stay in the payload (the champion account,
+  Compare and the founder brief still answer the combined question), but the
+  headline table is now always one benchmark, and the podiums follow it.
+- **The Rounds column is gone; the W–L column is the whole record.** The old
+  table said *how many* twice (Rounds `29 · 14/15`, then W–L `17–12 · 4–11/
+  13–1`). Now one column says *what happened*, compactly: the main line is the
+  overall record (`17–12`), the small suffix is the split
+  (`atk 4–11 · def 13–1`), and the round counts moved into the hover card,
+  which already spelled them out. One column shorter in every view, and the
+  role split reads as a sentence instead of two bare fractions.
+
 ## 0.10.0 — 2026-10-26 — the coin becomes two benchmarks
 
 ### Schedule
