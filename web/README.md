@@ -61,13 +61,13 @@ switches to the log first.
 Audit, three models each, the winner raised inside its column) and the standings
 table:
 sortable columns, role tabs (Overall, Attacker, Defender, Changelog),
-benchmark toggle (⚔ Attack Task θ=1 / ○ Control θ=0 — the board opens on the
-attack task), model filter.
+benchmark toggle (⚔ Vulnerability θ=1 / ○ Control θ=0 — the board opens on
+the vulnerability benchmark), model filter.
 The Changelog tab renders `CHANGELOG.md` from the payload instead of the
 table. Every other tab shows only its own section.
 
 **Two benchmarks, one toggle.** The standings table switches between
-**Attack Task — Make Service with Vulnerability** (θ=1 rounds only) and
+**Vulnerability — Make a Service with Vulnerability** (θ=1 rounds only) and
 **Control — Make a Clean Service** (θ=0 rounds only); there is no pooled view.
 Each view is a self-contained table: its own overall fit
 (`rating_theta1` / `rating_theta0`), its own role fits

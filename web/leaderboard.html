@@ -374,7 +374,7 @@
     background: rgba(200, 170, 110, .09);
   }
 
-  /* The benchmark toggle (Overall / Attack Task / Control) is a second tab
+  /* The benchmark toggle (Vulnerability / Control) is a second tab
      group next to the role tabs; its own class so the role-tab click handler
      does not adopt it. */
   .coin-tabs { padding-right: 12px; border-right: 1px solid var(--line); }
@@ -833,11 +833,11 @@
     <div class="panel-head">
       <div>
         <h2>Standings</h2>
-        <p class="sub" id="bench-sub">Attack Task — Make Service with Vulnerability · θ=1 rounds only, every pairing tested.</p>
+        <p class="sub" id="bench-sub">Vulnerability — Make a Service with Vulnerability · θ=1 rounds only, every pairing tested.</p>
       </div>
       <div class="controls">
         <div class="tabs coin-tabs" role="group" aria-label="Benchmark">
-          <button class="ctab active" data-coin="1" aria-pressed="true" title="Attack Task · Make Service with Vulnerability · θ=1 rounds only, both roles">⚔ Attack Task</button>
+          <button class="ctab active" data-coin="1" aria-pressed="true" title="Vulnerability · Make a service with a vulnerability · θ=1 rounds only, both roles">⚔ Vulnerability</button>
           <button class="ctab" data-coin="0" aria-pressed="false" title="Control · make a clean service · θ=0 rounds only, both roles">○ Control</button>
         </div>
         <div class="tabs" role="tablist" aria-label="Rating mode">
@@ -902,11 +902,12 @@
   // variant, and the generator records the resolved name from the ATIF export.
   const MODEL_NAME = Object.fromEntries((DATA.rows || []).map(r => [r.agent, r.model_name || ""]));
   const modelName = a => MODEL_NAME[a] || "";
-  // The board opens on the attack task; the toggle is the two benchmarks.
+  // The board opens on the vulnerability benchmark; the toggle is the two
+  // benchmarks.
   const state = { role: "overall", key: "rating_theta1", dir: -1, query: "", agent: null, coin: "1" };
 
-  // The benchmark toggle: "1" is the attack task (make a service with a
-  // vulnerability), "0" the control (make a clean service). Only
+  // The benchmark toggle: "1" is the vulnerability benchmark (make a service
+  // with a vulnerability), "0" the control (make a clean service). Only
   // coin-specific columns re-map to their per-coin fields; money, Brier,
   // Patch and FPR stay what they are, and Patch is only shown in the attack
   // view, FPR only in the control view. (An empty coin — the retired pooled
@@ -1093,7 +1094,7 @@
     }
     host.hidden = false;
     const coinNote = state.coin
-      ? ` \u00b7 ${state.coin === "1" ? "\u2694 \u03b8=1 attack task" : "\u25cb \u03b8=0 control"}`
+      ? ` \u00b7 ${state.coin === "1" ? "\u2694 \u03b8=1 vulnerability" : "\u25cb \u03b8=0 control"}`
       : "";
     host.innerHTML = TOP3.map(([label, question, field]) => {
       const f = keyFor(field);
@@ -1182,8 +1183,8 @@
     const lines = [];
     if (state.coin) {
       lines.push(`${name} rating over ${state.coin === "1"
-        ? "\u2694\uFE0E \u03b8=1 attack-task rounds only"
-        : "\u25CB \u03b8=0 control rounds only"}`);
+        ? "\u2694\uFE0E \u03b8=1 rounds only \u2014 a planted vulnerability"
+        : "\u25CB \u03b8=0 rounds only \u2014 a clean service"}`);
       lines.push(`${role.wins}\u2013${role.losses} in ${role.rounds} played ${game} rounds`);
     } else {
       const real = `${att ? role.exploit_wins : role.patch_wins}\u2013${att ? role.exploit_losses : role.patch_losses}`;
@@ -1214,7 +1215,7 @@
     // happened.
     const wlTitle = state.coin
       ? [
-          `played record on ${state.coin === "1" ? "\u2694\uFE0E \u03b8=1 attack-task" : "\u25CB \u03b8=0 control"} rounds`,
+          `played record on ${state.coin === "1" ? "\u2694\uFE0E \u03b8=1 rounds \u2014 a planted vulnerability" : "\u25CB \u03b8=0 rounds \u2014 a clean service"}`,
           `overall ${v.wins}\u2013${v.losses} over ${v.rounds} rounds`,
           `as attacker, ${v.att.rounds} rounds: ${v.att.wins}\u2013${v.att.losses}`,
           `as defender, ${v.def.rounds} rounds: ${v.def.wins}\u2013${v.def.losses}`,
@@ -1255,10 +1256,10 @@
   function renderStandings() {
     const benchSub = document.getElementById("bench-sub");
     if (benchSub) benchSub.textContent = state.coin === "1"
-      ? "Attack Task \u2014 Make Service with Vulnerability \u00b7 \u03b8=1 rounds only, every pairing tested."
+      ? "Vulnerability \u2014 Make a Service with Vulnerability \u00b7 \u03b8=1 rounds only, every pairing tested."
       : state.coin === "0"
         ? "Control \u2014 make a clean service \u00b7 \u03b8=0 rounds only, every pairing tested."
-        : "Both coins pooled \u2014 attack task and control in one rating.";
+        : "Both coins pooled \u2014 vulnerability and control in one rating.";
 
     const cols = columnsFor();
     const head = `<thead><tr>${cols.map(([, label, key, sub]) => {

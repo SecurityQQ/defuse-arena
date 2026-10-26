@@ -1,7 +1,7 @@
 # Round-robin runner
 
 `round-robin.sh` runs every pair of models in both directions — A attacks B,
-then B attacks A — on both coins: θ=1 (attack task) and θ=0 (clean control),
+then B attacks A — on both coins: θ=1 (vulnerability) and θ=0 (clean control),
 using the prompts in `prompts/`. Each round is frozen, graded, and recorded.
 
 > A full season is hours of wall clock. Launch it in a background agent or
@@ -58,7 +58,7 @@ DRY_RUN=1 scripts/round-robin.sh
 ## A deterministic coin: both coins on every pairing
 
 There is no coin draw any more. The schedule itself fixes θ: every ordered
-pair plays one θ=1 match (attack task — the attacker must plant a
+pair plays one θ=1 match (vulnerability — the attacker must plant a
 vulnerability) and one θ=0 match (control — the attacker ships a clean
 service). The runner writes `seasons/<season>/theta.tsv` from the match list
 before any match runs and leaves an existing file alone, so a resumed season

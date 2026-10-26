@@ -9,7 +9,7 @@
 #   ROSTER_FILE=rosters/season-2026-02.tsv scripts/round-robin.sh
 #
 # Each unordered pair plays four matches: both directions (A attacks B, B
-# attacks A) on both coins (theta=1 attack task, theta=0 clean control), so
+# attacks A) on both coins (theta=1 vulnerability, theta=0 clean control), so
 # every pairing is tested and so, with no randomness in the schedule.
 # 5 models -> 10 pairs -> 40 matches; N models -> 2N(N-1) matches.
 
@@ -87,7 +87,7 @@ for ((i = 0; i < n; i++)); do
         continue
       fi
 
-      # Both coins on every ordered pair: theta=1 (attack task) and theta=0
+      # Both coins on every ordered pair: theta=1 (vulnerability) and theta=0
       # (clean control). No draw, no seed — the schedule itself fixes the coin
       # before any service is built. The coin is recorded for every match in
       # the schedule, including ones SKIP_DONE would skip, so theta.tsv is

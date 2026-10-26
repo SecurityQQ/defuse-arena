@@ -22,8 +22,8 @@ scheduled in. Every pool answers one question (SPEC §9.4):
   pools do not split on it.
 * ``rating_theta1`` / ``rating_theta0`` — the two benchmarks (v0.10.0). The
   schedule now plays both coins on every ordered pair, so each coin is a
-  self-contained season: θ=1 is the attack task (make a service with a
-  vulnerability), θ=0 is the control (make a clean service). Each coin gets
+  self-contained season: θ=1 is the vulnerability benchmark (make a service
+  with a vulnerability), θ=0 is the control (make a clean service). Each coin gets
   its own overall fit and its own role fits (``rating_att/def_theta{1,0}``,
   the coin as a suffix on the pooled field name), priced exactly like the
   pooled ones.
@@ -593,8 +593,9 @@ eff_x, eff_se = fit_overall(eff_games, N)
 ROLES = fit_roles(role_games, N)
 att_x, def_x = ROLES["att"], ROLES["def"]
 
-# Two benchmarks, two more fits (v0.10.0): the attack task (θ=1 — make a
-# service with a vulnerability) and the control (θ=0 — make a clean service)
+# Two benchmarks, two more fits (v0.10.0): the vulnerability benchmark
+# (θ=1 — make a service with a vulnerability) and the control (θ=0 — make a
+# clean service)
 # are separate questions now, not one pooled rating. Each coin gets its own
 # overall fit and its own role fit, priced exactly like the pooled ones: a
 # played round is a game, a forfeit is a one-sided loss for the offender.
@@ -985,7 +986,8 @@ for agent, v in acc.items():
         "rating_efficiency": round(1500 + eff_x[i], 4),
         "rating_efficiency_ci": round(1.96 * eff_se[i], 4),
         # The two benchmarks (v0.10.0), one fit per coin: rating_theta1 is the
-        # attack task (make a service with a vulnerability), rating_theta0 the
+        # vulnerability benchmark (make a service with a vulnerability),
+        # rating_theta0 the
         # control (make a clean service). The role fits and records carry the
         # coin as a suffix on the base field (rating_att_theta1, rounds_theta0),
         # so the board resolves any column by appending the coin to the pooled

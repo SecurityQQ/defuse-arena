@@ -4,6 +4,18 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.10.2 — 2026-10-26 — the attack task is now the vulnerability benchmark
+
+### Board
+
+- **The θ=1 benchmark is renamed Attack Task → Vulnerability.** The toggle
+  reads **⚔ Vulnerability / ○ Control**, the panel subtitle reads
+  *Vulnerability — Make a Service with Vulnerability*, and the hover cards say
+  what the coin means instead of naming a role: *θ=1 rounds — a planted
+  vulnerability* vs *θ=0 rounds — a clean service*. Same benchmark, same fits,
+  same fields — only the label changed, because "vulnerability" says what is
+  being measured and "attack task" did not.
+
 ## 0.10.1 — 2026-10-26 — the pooled table gives way to the two benchmarks
 
 ### Board
