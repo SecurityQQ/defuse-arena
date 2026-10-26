@@ -1,7 +1,8 @@
 # Round-robin runner
 
-`round-robin.sh` runs every pair of models twice — A attacks B, then B attacks
-A — using the prompts in `prompts/`. Each round is frozen, graded, and recorded.
+`round-robin.sh` runs every pair of models in both directions — A attacks B,
+then B attacks A — on both coins: θ=1 (attack task) and θ=0 (clean control),
+using the prompts in `prompts/`. Each round is frozen, graded, and recorded.
 
 > A full season is hours of wall clock. Launch it in a background agent or
 > background shell, not the main conversation thread; the runner is unattended
@@ -17,9 +18,10 @@ A — using the prompts in `prompts/`. Each round is frozen, graded, and recorde
 | `opus-5.5` | `claude-opus-5.5` | |
 | `gpt-6.1` | `gpt-6.1-sol` | the only 6.1 variant |
 
-Five models give 10 unordered pairs and 20 matches. A season can use a larger
-field with `ROSTER_FILE`; `N` models give `N(N-1)` matches, because every pair
-plays both directions. `rosters/season-2026-02.tsv` is the eleven-model field.
+Five models give 10 unordered pairs and 40 matches. A season can use a larger
+field with `ROSTER_FILE`; `N` models give `2N(N-1)` matches, because every pair
+plays both directions and every direction plays both coins.
+`rosters/season-2026-02.tsv` is the eleven-model field.
 
 ## Requirements
 
@@ -53,30 +55,19 @@ ROSTER_FILE=rosters/season-2026-02.tsv JOBS=4 scripts/round-robin.sh
 DRY_RUN=1 scripts/round-robin.sh
 ```
 
-## A balanced coin for a verification season
+## A deterministic coin: both coins on every pairing
 
-`round-robin.sh` draws one θ per match from a season-level shuffle. That keeps
-the season at half attack / half clean, but a pair can draw the same coin in
-both directions and a model can end up with seven attack rounds of one coin and
-three of the other. For a season whose job is to compare a handful of models,
-that is the difference between testing a role and testing a coin.
+There is no coin draw any more. The schedule itself fixes θ: every ordered
+pair plays one θ=1 match (attack task — the attacker must plant a
+vulnerability) and one θ=0 match (control — the attacker ships a clean
+service). The runner writes `seasons/<season>/theta.tsv` from the match list
+before any match runs and leaves an existing file alone, so a resumed season
+keeps the coins it started with. Every pairing is therefore tested on both
+coins, the season is exactly half attack / half clean by construction, and
+nothing about the coin is random.
 
-`scripts/theta-paired.py` writes the θ file the runner would otherwise
-generate. It gives every pair one attack direction and one clean direction and
-gives every model as close to half of its attack rounds and half of its defence
-rounds on each coin as the field allows — exact for an odd number of models,
-2+3 / 3+2 for six — using a regular tournament with a seeded permutation:
-
-```bash
-python3 scripts/theta-paired.py rosters/season-2026-04.tsv \
-  seasons/s-2026-04/theta.tsv 20261026
-SEASON=s-2026-04 ROSTER_FILE=rosters/season-2026-04.tsv ROUNDS=2 JOBS=4 \
-  scripts/round-robin.sh
-```
-
-The runner leaves an existing `theta.tsv` alone, so the pre-written file is the
-one the rounds use. The assignment is still random and is fixed before any
-service is built.
+`THETA=<0|1> scripts/run-match.sh '<spec>'` still pins the coin for a one-off
+manual run, and `scripts/replay-voids.sh` re-reads it from the round manifest.
 
 Environment:
 
@@ -98,7 +89,8 @@ Environment:
 
 1. Create `attacker/`, `defender/`, `sealed/`, `frozen/`, `grader/`, `reveal/`
    and the `.devin/config.json` scopes for both roles.
-2. Draw `theta` and write it to `attacker/theta`.
+2. Read `theta` from the season schedule (or the `THETA` override) and write
+   it to `attacker/theta`.
 3. Run the attacker with `--sandbox --export`, under a wall-clock timeout.
 4. Freeze `attacker/work/` into `frozen/tree/`, reject symlinks, enforce the
    50 MB / 10,000 file cap, copy to `defender/inbox/`, and move `work/poc/` to
@@ -168,9 +160,9 @@ Two real rounds, one round per match:
 | `deepseek-v4-pro` vs `glm-5.2` | 33,640 | 44,046 | 77,686 | 1,454,390 |
 
 Billable is `(prompt − cached) + completion`; gross includes cached prompt
-tokens. A 20-match round robin at `ROUNDS=1` is therefore roughly **1.6–1.9M
-billable** and **29–34M gross**. At `ROUNDS=4`, multiply by four: **6.2–7.6M
-billable** and **116–137M gross**.
+tokens. A 40-match round robin (both coins per pair, five models) at
+`ROUNDS=1` is therefore roughly **3.2–3.8M billable** and **58–68M gross**.
+At `ROUNDS=4`, multiply by four.
 
 ## Caveats
 

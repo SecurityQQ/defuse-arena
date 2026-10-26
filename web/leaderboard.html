@@ -374,6 +374,32 @@
     background: rgba(200, 170, 110, .09);
   }
 
+  /* The benchmark toggle (Overall / Attack Task / Control) is a second tab
+     group next to the role tabs; its own class so the role-tab click handler
+     does not adopt it. */
+  .coin-tabs { padding-right: 12px; border-right: 1px solid var(--line); }
+
+  .ctab {
+    font-family: var(--font-ui);
+    font-size: 10px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: none;
+    border: 1px solid transparent;
+    padding: 7px 11px;
+    cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+
+  .ctab:hover { color: var(--gold-2); }
+
+  .ctab.active {
+    color: var(--gold-2);
+    border-color: var(--line);
+    background: rgba(200, 170, 110, .09);
+  }
+
   .search {
     font-family: var(--font-ui);
     font-size: 12px;
@@ -753,15 +779,17 @@
     .search { flex: 1 1 auto; min-width: 0; }
     .tabs { flex-wrap: wrap; }
 
-    /* phones: rank, model, rating, record and chips; the rest is one tap away in the account */
-    #standings th:nth-child(n+4):not(:nth-child(8)):not(:nth-child(15)),
-    #standings td:nth-child(n+4):not(:nth-child(8)):not(:nth-child(15)) { display: none; }
+    /* phones: rank, model, rating, record and chips; the rest is one tap away in the account.
+       Chips is the last column in every benchmark view (14 in a coin view, 15 pooled), so the
+       phone cut keeps it with :nth-last-child rather than a fixed index. */
+    #standings th:nth-child(n+4):not(:nth-child(8)):not(:nth-last-child(1)),
+    #standings td:nth-child(n+4):not(:nth-child(8)):not(:nth-last-child(1)) { display: none; }
     #standings .rec, #standings .hsub { display: none; }
     #standings th, #standings td { padding-left: 6px; padding-right: 6px; }
     #standings .agent-model { white-space: normal; word-break: break-word; }
     #standings .agent-name { font-size: 12px; }
     #standings td.rating { font-size: 15px; }
-    #standings-wrap::after { content: "Showing 5 of 15 columns \00b7 open a model for its full account"; display: block;
+    #standings-wrap::after { content: "Showing the key columns \00b7 open a model for its full account"; display: block;
       padding: 10px 12px; font-size: 10.5px; letter-spacing: .06em; color: var(--muted); }
   }
 
@@ -804,8 +832,14 @@
     <div class="panel-head">
       <div>
         <h2>Standings</h2>
+        <p class="sub" id="bench-sub">Both coins pooled — attack task and control in one rating.</p>
       </div>
       <div class="controls">
+        <div class="tabs coin-tabs" role="group" aria-label="Benchmark">
+          <button class="ctab active" data-coin="" aria-pressed="true">Overall</button>
+          <button class="ctab" data-coin="1" aria-pressed="false" title="Attack Task · Make Service with Vulnerability · θ=1 rounds only, both roles">⚔ Attack Task</button>
+          <button class="ctab" data-coin="0" aria-pressed="false" title="Control · make a clean service · θ=0 rounds only, both roles">○ Control</button>
+        </div>
         <div class="tabs" role="tablist" aria-label="Rating mode">
           <button class="tab active" data-role="overall" role="tab" aria-selected="true">Overall</button>
           <button class="tab" data-role="att" role="tab" aria-selected="false" title="pentest tab \u00b7 sort the table by the attack rating, every round attacked">Attacker</button>
@@ -868,7 +902,18 @@
   // variant, and the generator records the resolved name from the ATIF export.
   const MODEL_NAME = Object.fromEntries((DATA.rows || []).map(r => [r.agent, r.model_name || ""]));
   const modelName = a => MODEL_NAME[a] || "";
-  const state = { role: "overall", key: "rating", dir: -1, query: "", agent: null };
+  const state = { role: "overall", key: "rating", dir: -1, query: "", agent: null, coin: "" };
+
+  // The benchmark toggle: "" is the pooled view (both coins), "1" is the
+  // attack task (make a service with a vulnerability), "0" the control (make
+  // a clean service). Only coin-specific columns re-map to their per-coin
+  // fields; money, Brier, Patch and FPR stay what they are, and Patch is only
+  // shown in the attack view, FPR only in the control view.
+  const COIN_KEYS = new Set(["rating", "rating_att", "rating_def", "rounds"]);
+  const keyFor = base => state.coin && COIN_KEYS.has(base) ? base + "_theta" + state.coin : base;
+  const resolveKey = () => {
+    state.key = keyFor(state.role === "overall" ? "rating" : "rating_" + state.role);
+  };
 
   const TIERS = [
     [1550, "Challenger", "challenger"],
@@ -970,7 +1015,7 @@
   const ranked = () =>
     DATA.rows
       .filter(r => r.agent.toLowerCase().includes(state.query))
-      .sort((a, b) => state.dir * (a[state.key] - b[state.key]) || b.rating - a.rating);
+      .sort((a, b) => state.dir * (a[state.key] - b[state.key]) || b[keyFor("rating")] - a[keyFor("rating")]);
 
   const topThree = () =>
     DATA.rows
@@ -1045,19 +1090,23 @@
       return;
     }
     host.hidden = false;
+    const coinNote = state.coin
+      ? ` \u00b7 ${state.coin === "1" ? "\u2694 \u03b8=1 attack task" : "\u25cb \u03b8=0 control"}`
+      : "";
     host.innerHTML = TOP3.map(([label, question, field]) => {
-      const list = DATA.rows.slice().sort((a, b) => b[field] - a[field]).slice(0, 3);
-      const ranks = ranksFor(list, field);
+      const f = keyFor(field);
+      const list = DATA.rows.slice().sort((a, b) => b[f] - a[f]).slice(0, 3);
+      const ranks = ranksFor(list, f);
       const cards = list.map((a, i) => {
         const tied = ranks.filter(r => r === ranks[i]).length > 1;
         return `<article class="champ ${i === 0 ? "first" : ""}" data-agent="${a.agent}" title="${a.model_name || a.agent}">
           <div class="champ-rank">${tied ? "=" : ""}${ranks[i]}</div>
           <h3>${a.agent}</h3>
-          <div class="champ-rating" title="${label} rating \u00b7 ${question}">${a[field].toFixed(1)}</div>
+          <div class="champ-rating" title="${label} rating \u00b7 ${question}">${a[f].toFixed(1)}</div>
         </article>`;
       }).join("");
       return `<div class="podium-col">
-        <div class="podium-head"><h3>${label}</h3><p>${question}</p></div>
+        <div class="podium-head"><h3>${label}</h3><p>${question}${coinNote}</p></div>
         <div class="podium-list">${cards}</div>
       </div>`;
     }).join("");
@@ -1081,77 +1130,136 @@
     ["net_chips", "Chips", "net_chips"],
   ];
 
-  // One role cell: the rating and nothing else. The rating pools every round
-  // the model played in that role, both coins — the coin is the game's
-  // condition, not the role. The record behind it, split into ⚔ real (θ=1, a
-  // planted bug) and ○ clean (θ=0, nothing to find), plus the model's own
-  // forfeits in that pool, lives in the hover card.
-  function roleCell(a, kind) {
+  // The benchmark views trade the coin-specific metric column: the attack
+  // task shows patch validity, the control shows the false-alarm rate, the
+  // pooled view shows both.
+  const columnsFor = () => COLUMNS.filter(([id]) =>
+    !(state.coin === "1" && id === "fpr") && !(state.coin === "0" && id === "patch_validity"));
+
+  // One row's view on the active benchmark. Pooled passes the season fields
+  // through untouched; a coin view resolves to that coin's own fits and its
+  // own played record, so each benchmark is a self-contained table. A model
+  // with no rounds on the coin sits at the 1500 prior with a wide interval.
+  const coinView = a => {
+    if (!state.coin) {
+      return {
+        rating: a.rating, rating_ci: a.rating_ci,
+        rating_att: a.rating_att, rating_att_ci: a.rating_att_ci,
+        rating_def: a.rating_def, rating_def_ci: a.rating_def_ci,
+        rounds: a.rounds, wins: a.wins, losses: a.losses,
+        att: a.att, def: a.def,
+      };
+    }
+    const s = "_theta" + state.coin;
+    const att = state.coin === "1"
+      ? { rounds: a.att.exploit_rounds, wins: a.att.exploit_wins, losses: a.att.exploit_losses,
+          forf: a.att.exploit_forfeits }
+      : { rounds: a.att.clean_rounds, wins: a.att.clean_wins, losses: a.att.clean_losses, forf: 0 };
+    const def = state.coin === "1"
+      ? { rounds: a.def.patch_rounds, wins: a.def.patch_wins, losses: a.def.patch_losses,
+          forf: a.def.patch_forfeits }
+      : { rounds: a.def.clean_rounds, wins: a.def.clean_wins, losses: a.def.clean_losses, forf: 0 };
+    return {
+      rating: a["rating" + s], rating_ci: a["rating" + s + "_ci"],
+      rating_att: a["rating_att" + s], rating_att_ci: a["rating_att" + s + "_ci"],
+      rating_def: a["rating_def" + s], rating_def_ci: a["rating_def" + s + "_ci"],
+      rounds: a["rounds" + s], wins: a["wins" + s], losses: a["losses" + s],
+      att, def,
+    };
+  };
+
+  // One role cell: the coin-view rating and nothing else. The pooled view
+  // keeps the real/clean record split in the hover card; a coin view shows
+  // that coin's own record.
+  function roleCell(v, kind) {
     const att = kind === "att";
-    const role = att ? a.att : a.def;
-    const rating = att ? a.rating_att : a.rating_def;
-    const ci = att ? a.rating_att_ci : a.rating_def_ci;
-    const real = `${att ? role.exploit_wins : role.patch_wins}\u2013${att ? role.exploit_losses : role.patch_losses}`;
-    const clean = `${role.clean_wins}\u2013${role.clean_losses}`;
-    const forf = att ? role.exploit_forfeits : role.patch_forfeits;
-    const realRounds = att ? role.exploit_rounds : role.patch_rounds;
+    const role = att ? v.att : v.def;
+    const rating = att ? v.rating_att : v.rating_def;
+    const ci = att ? v.rating_att_ci : v.rating_def_ci;
     const name = att ? "pentest" : "audit";
     const game = att ? "attack" : "defence";
-    const title = [
-      `${name} rating over every ${game} round, both coins`,
-      `${real} in ${realRounds} real ${game} round${realRounds === 1 ? "" : "s"} \u2014 \u2694\uFE0E \u03b8=1, the service had a planted bug`,
-      `${clean} in ${role.clean_rounds} clean ${game} round${role.clean_rounds === 1 ? "" : "s"} \u2014 \u25CB \u03b8=0, nothing to find`,
-      `${role.rounds} played ${game} rounds in total`,
-      forf ? `${forf} own forfeit${forf === 1 ? "" : "s"} in this pool, priced as a plain loss` : "",
-      `95% CI \u00b1${ci.toFixed(0)}`,
-      role.rounds ? "" : "no round played in this pool: the rating is forfeits only",
-    ].filter(Boolean).join(" \u00b7 ");
-    return `<td class="dim${role.rounds ? "" : " thin"}" title="${title}">${rating.toFixed(1)}</td>`;
+    const lines = [];
+    if (state.coin) {
+      lines.push(`${name} rating over ${state.coin === "1"
+        ? "\u2694\uFE0E \u03b8=1 attack-task rounds only"
+        : "\u25CB \u03b8=0 control rounds only"}`);
+      lines.push(`${role.wins}\u2013${role.losses} in ${role.rounds} played ${game} rounds`);
+    } else {
+      const real = `${att ? role.exploit_wins : role.patch_wins}\u2013${att ? role.exploit_losses : role.patch_losses}`;
+      const realRounds = att ? role.exploit_rounds : role.patch_rounds;
+      const clean = `${role.clean_wins}\u2013${role.clean_losses}`;
+      lines.push(`${name} rating over every ${game} round, both coins`);
+      lines.push(`${real} in ${realRounds} real ${game} round${realRounds === 1 ? "" : "s"} \u2014 \u2694\uFE0E \u03b8=1, the service had a planted bug`);
+      lines.push(`${clean} in ${role.clean_rounds} clean ${game} round${role.clean_rounds === 1 ? "" : "s"} \u2014 \u25CB \u03b8=0, nothing to find`);
+      lines.push(`${role.rounds} played ${game} rounds in total`);
+    }
+    const forf = state.coin ? (role.forf || 0) : (att ? role.exploit_forfeits : role.patch_forfeits);
+    if (forf) lines.push(`${forf} own forfeit${forf === 1 ? "" : "s"} in this pool, priced as a plain loss`);
+    lines.push(`95% CI \u00b1${ci.toFixed(0)}`);
+    if (!role.rounds) lines.push("no round played in this pool: the rating is the 1500 prior, not a measurement");
+    return `<td class="dim${role.rounds ? "" : " thin"}" title="${lines.join(" \u00b7 ")}">${rating.toFixed(1)}</td>`;
   }
 
   function rowHtml(a, rank, tied) {
-    const total = a.wins + a.losses || 1;
-    const wr = (a.wins / total) * 100;
+    const v = coinView(a);
+    const total = v.wins + v.losses || 1;
+    const wr = (v.wins / total) * 100;
     const rankHtml = rank == null
       ? `<span class="rank">\u2014</span>`
       : `<span class="rank ${rank <= 3 ? "top" + rank : ""}" title="${tied ? "equal rating: this rank is shared" : ""}">${tied ? "=" : ""}${rank}</span>`;
-    const wlTitle = [
-      "played record",
-      `${a.wins}\u2013${a.losses} over ${a.rounds} rounds`,
-      `as attacker ${a.att.rounds} rounds: ${a.att.wins}\u2013${a.att.losses} `
-        + `(\u2694\uFE0E real ${a.att.exploit_wins}\u2013${a.att.exploit_losses}, `
-        + `\u25CB clean ${a.att.clean_wins}\u2013${a.att.clean_losses})`,
-      `as defender ${a.def.rounds} rounds: ${a.def.wins}\u2013${a.def.losses} `
-        + `(\u2694\uFE0E real ${a.def.patch_wins}\u2013${a.def.patch_losses}, `
-        + `\u25CB clean ${a.def.clean_wins}\u2013${a.def.clean_losses})`,
-    ].join(" \u00b7 ");
+    const wlTitle = state.coin
+      ? [
+          `played record on ${state.coin === "1" ? "\u2694\uFE0E \u03b8=1 attack-task" : "\u25CB \u03b8=0 control"} rounds`,
+          `${v.wins}\u2013${v.losses} over ${v.rounds} rounds`,
+          `as attacker ${v.att.rounds} rounds: ${v.att.wins}\u2013${v.att.losses}`,
+          `as defender ${v.def.rounds} rounds: ${v.def.wins}\u2013${v.def.losses}`,
+        ].join(" \u00b7 ")
+      : [
+          "played record",
+          `${v.wins}\u2013${v.losses} over ${v.rounds} rounds`,
+          `as attacker ${v.att.rounds} rounds: ${v.att.wins}\u2013${v.att.losses} `
+            + `(\u2694\uFE0E real ${v.att.exploit_wins}\u2013${v.att.exploit_losses}, `
+            + `\u25CB clean ${v.att.clean_wins}\u2013${v.att.clean_losses})`,
+          `as defender ${v.def.rounds} rounds: ${v.def.wins}\u2013${v.def.losses} `
+            + `(\u2694\uFE0E real ${v.def.patch_wins}\u2013${v.def.patch_losses}, `
+            + `\u25CB clean ${v.def.clean_wins}\u2013${v.def.clean_losses})`,
+        ].join(" \u00b7 ");
 
     return `<tr class="${rank && rank <= 3 ? "podium-row" : ""} ${rank == null ? "prov" : ""}" data-agent="${a.agent}">
       <td>${rankHtml}</td>
       <td><div class="agent">
-        <span class="agent-line"><button class="agent-name" data-agent="${a.agent}">${a.agent}</button>${tierIcon(a.rating)}</span>
+        <span class="agent-line"><button class="agent-name" data-agent="${a.agent}">${a.agent}</button>${tierIcon(v.rating)}</span>
         ${a.model_name ? `<span class="agent-model">${a.model_name}</span>` : ""}
         <div class="form">${formHtml(a.agent)}</div>
       </div></td>
-      <td class="rating">${a.rating.toFixed(1)}</td>
-      <td class="dim ci" title="95% confidence \u00b7 \u00b1${a.rating_ci.toFixed(1)} from the fit \u00b7 a gap smaller than two intervals is noise, not a ranking">\u00b1${a.rating_ci.toFixed(0)}</td>
-      ${roleCell(a, "att")}
-      ${roleCell(a, "def")}
-      <td>${a.rounds}<em class="rec"> \u00b7 ${a.att.rounds}/${a.def.rounds}</em></td>
-      <td title="${wlTitle}">${a.wins}\u2013${a.losses}<em class="rec"> \u00b7 ${a.att.wins}\u2013${a.att.losses}/${a.def.wins}\u2013${a.def.losses}</em></td>
+      <td class="rating">${v.rating.toFixed(1)}</td>
+      <td class="dim ci" title="95% confidence \u00b7 \u00b1${v.rating_ci.toFixed(1)} from the fit \u00b7 a gap smaller than two intervals is noise, not a ranking">\u00b1${v.rating_ci.toFixed(0)}</td>
+      ${roleCell(v, "att")}
+      ${roleCell(v, "def")}
+      <td>${v.rounds}<em class="rec"> \u00b7 ${v.att.rounds}/${v.def.rounds}</em></td>
+      <td title="${wlTitle}">${v.wins}\u2013${v.losses}<em class="rec"> \u00b7 ${v.att.wins}\u2013${v.att.losses}/${v.def.wins}\u2013${v.def.losses}</em></td>
       <td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>
       <td>${usd(a.cost_total)}</td>
       <td class="dim">${usd(a.cost_per_round)}</td>
       <td>${a.brier.toFixed(3)}</td>
-      <td>${pct(a.patch_validity)}</td>
-      <td>${pct(a.fpr)}</td>
+      ${state.coin === "0" ? "" : `<td>${pct(a.patch_validity)}</td>`}
+      ${state.coin === "1" ? "" : `<td>${pct(a.fpr)}</td>`}
       <td class="${a.net_chips >= 0 ? "pos" : "neg"}">${usdSigned(a.net_chips)}</td>
     </tr>`;
   }
 
   function renderStandings() {
-    const head = `<thead><tr>${COLUMNS.map(([, label, key, sub]) => {
-      const sorted = key && key === state.key;
+    const benchSub = document.getElementById("bench-sub");
+    if (benchSub) benchSub.textContent = state.coin === "1"
+      ? "Attack Task \u2014 Make Service with Vulnerability \u00b7 \u03b8=1 rounds only, every pairing tested."
+      : state.coin === "0"
+        ? "Control \u2014 make a clean service \u00b7 \u03b8=0 rounds only, every pairing tested."
+        : "Both coins pooled \u2014 attack task and control in one rating.";
+
+    const cols = columnsFor();
+    const head = `<thead><tr>${cols.map(([, label, key, sub]) => {
+      const rk = key ? keyFor(key) : null;
+      const sorted = rk && rk === state.key;
       const arrow = sorted ? (state.dir === -1 ? " \u25be" : " \u25b4") : "";
       return `<th ${key ? `data-key="${key}"` : ""} class="${sorted ? "sorted" : ""}">${label}${arrow}`
         + `${sub ? `<em class="hsub">${sub}</em>` : ""}</th>`;
@@ -1163,7 +1271,7 @@
     const rows = list.map((a, i) => rowHtml(a, ranks[i], counts.get(ranks[i]) > 1)).join("");
 
     const empty = !rows
-      ? `<tr><td colspan="15" class="dim">${DATA.rows.length
+      ? `<tr><td colspan="${cols.length}" class="dim">${DATA.rows.length
           ? `No models match \u201c${state.query}\u201d.`
           : "No season data. Generate this page from a season export."}</td></tr>`
       : "";
@@ -1357,11 +1465,29 @@
   }
 
   document.addEventListener("click", event => {
+    // The benchmark toggle: switch the standings and the podiums to one coin
+    // (or back to the pooled view) and re-resolve the sort key, so a table
+    // sorted by rating keeps sorting by the rating of the new benchmark.
+    const ctab = event.target.closest(".ctab");
+    if (ctab) {
+      state.coin = ctab.dataset.coin;
+      resolveKey();
+      state.dir = -1;
+      document.querySelectorAll(".ctab").forEach(t => {
+        const active = t === ctab;
+        t.classList.toggle("active", active);
+        t.setAttribute("aria-pressed", String(active));
+      });
+      renderPodium();
+      renderStandings();
+      return;
+    }
+
     const tab = event.target.closest(".tab");
     if (tab) {
       const isLog = tab.dataset.role === "changelog";
       state.role = isLog ? "overall" : tab.dataset.role;
-      state.key = state.role === "overall" ? "rating" : "rating_" + state.role;
+      resolveKey();
       state.dir = -1;
       document.querySelectorAll(".tab").forEach(t => {
         const active = t === tab;
@@ -1389,7 +1515,7 @@
 
     const th = event.target.closest("th[data-key]");
     if (th) {
-      const key = th.dataset.key;
+      const key = keyFor(th.dataset.key);
       state.dir = state.key === key ? -state.dir : -1;
       state.key = key;
       renderStandings();

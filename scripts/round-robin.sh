@@ -8,8 +8,10 @@
 #   DRY_RUN=1 scripts/round-robin.sh          # print commands, no model calls
 #   ROSTER_FILE=rosters/season-2026-02.tsv scripts/round-robin.sh
 #
-# Each unordered pair plays twice: A attacks B, then B attacks A.
-# 5 models -> 10 pairs -> 20 matches; N models -> N(N-1) matches.
+# Each unordered pair plays four matches: both directions (A attacks B, B
+# attacks A) on both coins (theta=1 attack task, theta=0 clean control), so
+# every pairing is tested and so, with no randomness in the schedule.
+# 5 models -> 10 pairs -> 40 matches; N models -> 2N(N-1) matches.
 
 set -euo pipefail
 
@@ -67,6 +69,7 @@ SEASON_DIR="$ROOT/seasons/$SEASON"
 mkdir -p "$SEASON_DIR/matches"
 
 SPECS=()
+THETA_LINES=()
 match_no=0
 n=${#MODELS[@]}
 
@@ -84,17 +87,25 @@ for ((i = 0; i < n; i++)); do
         continue
       fi
 
-      match_no=$((match_no + 1))
-      match_id=$(printf 'm-%04d' "$match_no")
+      # Both coins on every ordered pair: theta=1 (attack task) and theta=0
+      # (clean control). No draw, no seed — the schedule itself fixes the coin
+      # before any service is built. The coin is recorded for every match in
+      # the schedule, including ones SKIP_DONE would skip, so theta.tsv is
+      # complete whatever subset is actually (re)run.
+      for coin in 1 0; do
+        match_no=$((match_no + 1))
+        match_id=$(printf 'm-%04d' "$match_no")
+        THETA_LINES+=("$match_id"$'\t'"$coin")
 
-      if [[ "$SKIP_DONE" == "1" && -s "$SEASON_DIR/matches/$match_id/result.tsv" ]]; then
-        log "skip $match_id (already has result.tsv)"
-        continue
-      fi
+        if [[ "$SKIP_DONE" == "1" && -s "$SEASON_DIR/matches/$match_id/result.tsv" ]]; then
+          log "skip $match_id (already has result.tsv)"
+          continue
+        fi
 
-      start_round=$(((match_no - 1) * ROUNDS + 1))
+        start_round=$(((match_no - 1) * ROUNDS + 1))
 
-      SPECS+=("$SEASON|$match_id|$start_round|$ROUNDS|$BAND|$a_label|$a_model|$d_label|$d_model")
+        SPECS+=("$SEASON|$match_id|$start_round|$ROUNDS|$BAND|$a_label|$a_model|$d_label|$d_model")
+      done
     done
   done
 done
@@ -105,22 +116,14 @@ log "season=$SEASON matches=${#SPECS[@]} rounds/match=$ROUNDS jobs=$JOBS dry_run
 
 "$ROOT/scripts/write-season-run.py" "$SEASON_DIR" "$SEASON" "$ROUNDS" "$BAND" "${MODELS[@]}"
 
-# Stratify the coin. An independent per-round flip leaves a 20-match season with
-# lopsided splits (this one drew 6 attack rounds out of 20), which starves the
-# attack and patch metrics. Assign exactly half the rounds to each side in a
-# random order instead; every theta is still fixed before its build.
-if [[ -z "${THETA:-}" && ! -f "$SEASON_DIR/theta.tsv" ]]; then
-  "$PY" - "$SEASON_DIR/theta.tsv" <<PY
-import random, sys
-from pathlib import Path
-
-specs = """$(printf '%s\n' "${SPECS[@]}")""".strip().splitlines()
-ids = sorted(s.split("|")[1] for s in specs)
-vals = [1] * (len(ids) // 2) + [0] * (len(ids) - len(ids) // 2)
-random.shuffle(vals)
-Path(sys.argv[1]).write_text("".join(f"{m}\t{v}\n" for m, v in zip(ids, vals)))
-PY
-  log "theta: $(awk -F'\t' '{c[$2]++} END {printf "%d attack / %d clean", c[1], c[0]}' "$SEASON_DIR/theta.tsv")"
+# The coin schedule is the match list itself: every ordered pair gets one
+# theta=1 match and one theta=0 match, so the season is exactly half attack
+# and half clean by construction and every pairing is tested on both coins.
+# Write it before any match runs; an existing theta.tsv is left alone so a
+# resumed or replayed season keeps the coins it started with.
+if [[ ! -f "$SEASON_DIR/theta.tsv" ]]; then
+  printf '%s\n' "${THETA_LINES[@]}" > "$SEASON_DIR/theta.tsv"
+  log "theta: $(awk -F'\t' '{c[$2]++} END {printf "%d attack / %d clean", c[1], c[0]}' "$SEASON_DIR/theta.tsv") (both coins per pair, deterministic)"
 fi
 
 set +e

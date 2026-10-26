@@ -4,6 +4,49 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.10.0 — 2026-10-26 — the coin becomes two benchmarks
+
+### Schedule
+
+- **The coin draw is gone: every ordered pair now plays both coins.** A→B gets
+  one θ=1 match (attack task — the attacker must plant a vulnerability) and
+  one θ=0 match (control — the attacker ships a clean service), and B→A gets
+  the same pair again. Four matches per unordered pair, `2N(N-1)` per season —
+  40 for five models instead of 20. Nothing about θ is random any more: the
+  runner writes `theta.tsv` from the match list itself, before any service is
+  built, and leaves an existing file alone so a resumed season keeps its coins.
+  Previously θ came from a season-level shuffle (or `theta-paired.py` for
+  verification seasons), which tested both coins per pair but assigned the
+  directions randomly; that script is removed.
+- `THETA=<0|1>` still pins the coin for a one-off manual run, and
+  `replay-voids.sh` still re-reads it from the round manifest.
+
+### Scoring
+
+- **θ=1 and θ=0 are two separate benchmarks, not one pooled rating.** Each
+  coin gets its own Bradley-Terry fits over its own rounds only, priced
+  exactly like the pooled ones (a played round is a game, a no-show or forfeit
+  is a loss for the side that did not deliver): `rating_theta1` /
+  `rating_theta0` for the headline, `rating_att/def_theta{1,0}` for the role
+  fits, and `rounds/wins/losses_theta{1,0}` for the played record. A model with
+  no rounds on a coin sits at the 1500 prior with a wide interval. The pooled
+  ratings stay: they are now one of three views, not the only one.
+  `scoring_version` is bumped to **0.10.0**.
+
+### Board
+
+- **The standings table has a benchmark toggle: Overall / ⚔ Attack Task /
+  ○ Control.** Overall is the old pooled table; Attack Task is
+  *Make Service with Vulnerability* (θ=1 rounds only) and Control is *make a
+  clean service* (θ=0 rounds only). Each view is self-contained: its own
+  ratings, its own played record, and the coin-specific metric column — Patch
+  validity in the attack view, false-alarm rate in the control view. The
+  podiums follow the toggle, and the sort key re-resolves on switch, so a
+  table sorted by rating keeps sorting by the rating of the active benchmark.
+- The split already shows real differences the pooled rating was averaging
+  away: deepseek is near the top of the attack task (1603) but bottom of the
+  control (1314), while gpt-6.1 is the reverse (1425 vs 1577).
+
 ## 0.9.13 — 2026-10-26 — the duel chapter fits a phone
 
 ### Onboarding

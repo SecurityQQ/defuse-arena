@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://inspection-arena.local/schemas/standings.schema.json",
   "title": "Standings",
-  "description": "Derived leaderboard for a season. Regenerable from the round records. Ratings are a batch Bradley-Terry fit (the maximum-likelihood Elo), not a sequential update, so the same ledger always yields the same table. Three skill ratings answer three questions (overall, audit, pentest); the spend margin is not in any of them.",
+  "description": "Derived leaderboard for a season. Regenerable from the round records. Ratings are a batch Bradley-Terry fit (the maximum-likelihood Elo), not a sequential update, so the same ledger always yields the same table. Three skill ratings answer three questions (overall, audit, pentest); since v0.10.0 each coin is also a self-contained benchmark: rating_theta1 (attack task \u2014 make a service with a vulnerability) and rating_theta0 (control \u2014 make a clean service), each with its own overall and role fits. The spend margin is in no skill rating.",
   "type": "object",
   "required": [
     "season_id",
@@ -79,6 +79,24 @@
           "rating_def_ci",
           "rating_efficiency",
           "rating_efficiency_ci",
+          "rating_theta1",
+          "rating_theta1_ci",
+          "rating_att_theta1",
+          "rating_att_theta1_ci",
+          "rating_def_theta1",
+          "rating_def_theta1_ci",
+          "rounds_theta1",
+          "wins_theta1",
+          "losses_theta1",
+          "rating_theta0",
+          "rating_theta0_ci",
+          "rating_att_theta0",
+          "rating_att_theta0_ci",
+          "rating_def_theta0",
+          "rating_def_theta0_ci",
+          "rounds_theta0",
+          "wins_theta0",
+          "losses_theta0",
           "rounds",
           "eligible",
           "wins",
@@ -578,6 +596,84 @@
           "rating_efficiency_ci": {
             "type": "number",
             "description": "95% confidence half-width for rating_efficiency."
+          },
+          "rating_theta1": {
+            "type": "number",
+            "description": "Attack-task benchmark (v0.10.0): pure Bradley-Terry over the \u03b8=1 rounds only \u2014 the attacker was required to plant a vulnerability. Same pricing as the pooled rating: a played round is a game, a no-show or forfeit is a loss for the side that did not deliver. A model with no \u03b8=1 rounds sits at the 1500 prior."
+          },
+          "rating_theta1_ci": {
+            "type": "number",
+            "description": "95% confidence half-width for rating_theta1."
+          },
+          "rating_att_theta1": {
+            "type": "number",
+            "description": "Attack-task role fit, attacker side: every \u03b8=1 round the model attacked, priced against the defender's rating_def_theta1."
+          },
+          "rating_att_theta1_ci": {
+            "type": "number",
+            "description": "95% confidence half-width for rating_att_theta1."
+          },
+          "rating_def_theta1": {
+            "type": "number",
+            "description": "Attack-task role fit, defender side: every \u03b8=1 round the model defended, priced against the attacker's rating_att_theta1."
+          },
+          "rating_def_theta1_ci": {
+            "type": "number",
+            "description": "95% confidence half-width for rating_def_theta1."
+          },
+          "rounds_theta1": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Played \u03b8=1 rounds, both roles combined (attack exploit rounds + defence patch rounds)."
+          },
+          "wins_theta1": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Played \u03b8=1 wins, both roles combined."
+          },
+          "losses_theta1": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Played \u03b8=1 losses, both roles combined."
+          },
+          "rating_theta0": {
+            "type": "number",
+            "description": "Control benchmark (v0.10.0): pure Bradley-Terry over the \u03b8=0 rounds only \u2014 the attacker shipped a clean service and the defender had to call it clean. Same pricing as the pooled rating. A model with no \u03b8=0 rounds sits at the 1500 prior."
+          },
+          "rating_theta0_ci": {
+            "type": "number",
+            "description": "95% confidence half-width for rating_theta0."
+          },
+          "rating_att_theta0": {
+            "type": "number",
+            "description": "Control role fit, attacker side: every \u03b8=0 round the model attacked (a clean service that survives an audit), priced against the defender's rating_def_theta0."
+          },
+          "rating_att_theta0_ci": {
+            "type": "number",
+            "description": "95% confidence half-width for rating_att_theta0."
+          },
+          "rating_def_theta0": {
+            "type": "number",
+            "description": "Control role fit, defender side: every \u03b8=0 round the model defended (call a clean service clean), priced against the attacker's rating_att_theta0."
+          },
+          "rating_def_theta0_ci": {
+            "type": "number",
+            "description": "95% confidence half-width for rating_def_theta0."
+          },
+          "rounds_theta0": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Played \u03b8=0 rounds, both roles combined (attack clean rounds + defence clean rounds)."
+          },
+          "wins_theta0": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Played \u03b8=0 wins, both roles combined."
+          },
+          "losses_theta0": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Played \u03b8=0 losses, both roles combined."
           }
         }
       }
