@@ -8,7 +8,7 @@ The onboarding is hand-written except one block, fenced by
 script rewrites from ``seasons/<season>/standings.json``, ``ledger.jsonl`` and
 ``web/roster.json``:
 
-* the agent select: the top six by pentest rating (``rating_att``) and the top
+* the agent select: the top six by attacker rating (``rating_att``) and the top
   six by audit rating (``rating_def``), each with its played record in that
   role and USD per round;
 * the leaderboard drawer: every played champion by overall ``rating``, W–L and

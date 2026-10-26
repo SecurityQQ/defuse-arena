@@ -842,8 +842,8 @@
         </div>
         <div class="tabs" role="tablist" aria-label="Rating mode">
           <button class="tab active" data-role="overall" role="tab" aria-selected="true">Overall</button>
-          <button class="tab" data-role="att" role="tab" aria-selected="false" title="pentest tab \u00b7 sort the table by the attack rating, every round attacked">Attacker</button>
-          <button class="tab" data-role="def" role="tab" aria-selected="false" title="audit tab \u00b7 sort the table by the defence rating, every round defended">Defender</button>
+          <button class="tab" data-role="att" role="tab" aria-selected="false" title="red team rating \u00b7 hides a working vulnerability; wins when the defender misses it \u00b7 sort the table by it">Red team</button>
+          <button class="tab" data-role="def" role="tab" aria-selected="false" title="audit rating \u00b7 finds and patches the planted vulnerability \u00b7 sort the table by it">Audit</button>
           <button class="tab" data-role="changelog" role="tab" aria-selected="false">Changelog</button>
         </div>
         <input class="search" id="search" type="search" placeholder="Search model…" aria-label="Search model">
@@ -1079,11 +1079,41 @@
   // Three questions, three compact podiums: the winner is raised inside its
   // column, the 2nd and 3rd sit under it. Same shape as the old board, a third
   // of the height.
-  const TOP3 = [
+  // The attacker seat plays a different game on each coin, so its name follows
+  // the benchmark: on ⚔ it hides a working bug past the reviewer (red team), on
+  // ○ it ships a clean service and wins only if the reviewer cries wolf (clean
+  // build). The defender audits on both. [label, podium question, tooltip]
+  const ROLE_NAMES = {
+    "1": {
+      att: ["Red team", "which model can slip a planted bug past review", "red team rating \u00b7 hides a working vulnerability; wins when the defender misses it"],
+      def: ["Audit", "which model catches a planted bug", "audit rating \u00b7 finds and patches the planted vulnerability"],
+    },
+    "0": {
+      att: ["Clean build", "which model writes clean code a reviewer clears", "clean build rating \u00b7 ships a clean service; wins when the defender raises a false alarm"],
+      def: ["Audit", "which model clears clean code without a false alarm", "audit rating \u00b7 clears a clean service without crying wolf"],
+    },
+    "": {
+      att: ["Attacker", "which model wins the attacker seat", "attacker rating \u00b7 every round in the attacker seat"],
+      def: ["Audit", "which model should review my code", "audit rating \u00b7 every round in the defender seat"],
+    },
+  };
+  const roleNames = () => ROLE_NAMES[state.coin || ""];
+  const top3 = () => [
     ["Overall", "which model to write and review code with", "rating"],
-    ["Pentest", "which model should attack my code", "rating_att"],
-    ["Audit", "which model should review my code", "rating_def"],
+    [roleNames().att[0], roleNames().att[1], "rating_att"],
+    [roleNames().def[0], roleNames().def[1], "rating_def"],
   ];
+
+  // The role tabs carry the same names as the role columns of the active benchmark.
+  function syncRoleTabs() {
+    const n = roleNames();
+    for (const side of ["att", "def"]) {
+      const t = document.querySelector(`.tab[data-role="${side}"]`);
+      if (!t) continue;
+      t.textContent = n[side][0];
+      t.title = `${n[side][2]} \u00b7 sort the table by it`;
+    }
+  }
 
   function renderPodium() {
     const host = document.getElementById("podium");
@@ -1096,7 +1126,7 @@
     const coinNote = state.coin
       ? ` \u00b7 ${state.coin === "1" ? "\u2694 \u03b8=1 vulnerability" : "\u25cb \u03b8=0 control"}`
       : "";
-    host.innerHTML = TOP3.map(([label, question, field]) => {
+    host.innerHTML = top3().map(([label, question, field]) => {
       const f = keyFor(field);
       const list = DATA.rows.slice().sort((a, b) => b[f] - a[f]).slice(0, 3);
       const ranks = ranksFor(list, f);
@@ -1136,7 +1166,9 @@
   // task shows patch validity, the control shows the false-alarm rate. (The
   // retired pooled view showed both.)
   const columnsFor = () => COLUMNS.filter(([id]) =>
-    !(state.coin === "1" && id === "fpr") && !(state.coin === "0" && id === "patch_validity"));
+    !(state.coin === "1" && id === "fpr") && !(state.coin === "0" && id === "patch_validity"))
+    .map(c => c[0] === "rating_att" || c[0] === "rating_def"
+      ? [c[0], roleNames()[c[0] === "rating_att" ? "att" : "def"][0], ...c.slice(2)] : c);
 
   // One row's view on the active benchmark. Pooled passes the season fields
   // through untouched; a coin view resolves to that coin's own fits and its
@@ -1178,7 +1210,7 @@
     const role = att ? v.att : v.def;
     const rating = att ? v.rating_att : v.rating_def;
     const ci = att ? v.rating_att_ci : v.rating_def_ci;
-    const name = att ? "pentest" : "audit";
+    const name = roleNames()[att ? "att" : "def"][0].toLowerCase();
     const game = att ? "attack" : "defence";
     const lines = [];
     if (state.coin) {
@@ -1489,6 +1521,7 @@
         t.classList.toggle("active", active);
         t.setAttribute("aria-pressed", String(active));
       });
+      syncRoleTabs();
       renderPodium();
       renderStandings();
       return;
@@ -1550,6 +1583,7 @@
   }
 
   renderSummary();
+  syncRoleTabs();
   renderPodium();
   renderStandings();
   renderLedger();

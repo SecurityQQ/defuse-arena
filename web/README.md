@@ -5,7 +5,7 @@
 works from `file://`.
 
 > **Scoring 0.6.0.** `rating` is pure and splits into overall / audit (θ=1
-> defence) / pentest (θ=1 attack), with the role W–L next to each role rating.
+> defence) / attacker (θ=1 attack, now shown as red team), with the role W–L next to each role rating.
 > The spend margin is not in any skill rating; it survives as the non-ranking
 > `rating_efficiency`. See `SPEC.md` §9.4/§10.3/§10.4.
 
@@ -57,8 +57,8 @@ tab is client-side state only; the URL hash (`#brief`, `#compare`, `#draft`,
 `#log`, `#challenges`) keeps a tab shareable, and opening a match from anywhere
 switches to the log first.
 
-**Board** — the season summary, three compact podiums (Overall / Pentest /
-Audit, three models each, the winner raised inside its column) and the standings
+**Board** — the season summary, three compact podiums (Overall / Red team or Clean build /
+Audit — the attacker podium is named after the benchmark, three models each, the winner raised inside its column) and the standings
 table:
 sortable columns, role tabs (Overall, Attacker, Defender, Changelog),
 benchmark toggle (⚔ Vulnerability θ=1 / ○ Control θ=0 — the board opens on
@@ -79,7 +79,7 @@ hover card. A model with no rounds on a coin sits at the 1500 prior with a
 wide interval — the page never invents a ranking the schedule did not measure.
 
 **Three ratings, three questions.** The board answers "which model overall",
-"which model should audit my code" and "which model should pentest" with three
+"which model should audit my code" and "which model wins the attacker seat" with three
 separate pure win/loss pools. `rating` is every non-void round (θ=1 and θ=0),
 and a no-show or a forfeit is a loss for the side that did not deliver;
 `rating_def` is every round the model defended, `rating_att` every round it
@@ -146,7 +146,7 @@ from `file://`). Five charts picked from a chip bar:
 - *Skill vs price* — `rows[].rating` against `rows[].cost_per_round` on a log
   axis, with a Pareto frontier over non-dominated points and the most
   attractive quadrant (cheaper than the field median, rated above it) shaded.
-- *Pentest vs audit* — `rating_att` against `rating_def`, the two θ=1 role
+- *Attacker vs audit* — `rating_att` against `rating_def`, the two θ=1 role
   pools: the two answers to "who attacks" and "who reviews", median
   crosshairs, named quadrants.
 - *Sword vs shield* — `attack_survival` against `patch_validity`: the two faces

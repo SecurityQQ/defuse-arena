@@ -16,7 +16,7 @@ scheduled in. Every pool answers one question (SPEC §9.4):
 * ``rating_def`` — which model should audit my code. Every round it defended,
   θ=1 and θ=0: ``TP``/``TN`` are wins, ``FN``/``FP`` losses; a defender forfeit
   is a plain loss.
-* ``rating_att`` — which model should pentest. Every round it attacked, θ=1 and
+* ``rating_att`` — which model wins the attacker seat (red team on θ=1, clean build on θ=0). Every round it attacked, θ=1 and
   θ=0: ``FN``/``FP`` are wins, ``TP``/``TN`` losses; an attacker forfeit is a
   plain loss. The coin is the game's condition, not the model's role: the role
   pools do not split on it.
@@ -975,7 +975,7 @@ for agent, v in acc.items():
         "model_name": resolved.get(agent, ""),
         # Three questions, three ratings (SPEC §9.4): the all-round rating over
         # every non-void round (a forfeit is a loss), the audit pool over every
-        # round defended, the pentest pool over every round attacked.
+        # round defended, the attacker pool over every round attacked.
         "rating": round(1500 + overall_x[i], 4),
         "rating_ci": round(1.96 * overall_se[i], 4),
         "rating_att": round(1500 + att_x[i], 4),

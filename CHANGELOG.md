@@ -4,6 +4,25 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.10.4 — 2026-10-26 — the attacker role is named after the benchmark
+
+### Board
+
+- **"Pentest" is gone: the attacker seat is named for the game it plays.** On
+  ⚔ Vulnerability the model hides a working bug and wins when the reviewer
+  misses it, so the podium, the role tab, the column and its hover card read
+  **Red team** ("which model can slip a planted bug past review"). On ○ Control
+  it ships a clean service and wins only on a false alarm, so the same places
+  read **Clean build** ("which model writes clean code a reviewer clears").
+  Neither is a pentest, which is finding bugs, not planting them.
+- **The defender seat is Audit on both benchmarks**, with the question to match:
+  "which model catches a planted bug" on ⚔, "which model clears clean code
+  without a false alarm" on ○. The role tabs Attacker / Defender become these
+  names too.
+- The pooled places (the account's both-coin group, the Compare map, the brief)
+  say **attacker rating**; the Compare chart is "Attacker vs audit". Ratings and
+  data are unchanged — only the names.
+
 ## 0.10.3 — 2026-10-26 — honest win rates and a benchmark-shaped account
 
 ### Board

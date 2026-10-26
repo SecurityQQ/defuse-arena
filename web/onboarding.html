@@ -911,7 +911,7 @@ body.leaving #gl{transition:filter .8s,transform .8s;filter:blur(6px) brightness
   /* The season's top 6 per corner by that role's rating, with the played
      record in that role and USD per round. Full standings are in the drawer. */
   const CHAMPS = {
-    att: SEASON.att.map(c => ({ ...c, lbl: 'Pentest rating \u00b7 record as attacker' })),
+    att: SEASON.att.map(c => ({ ...c, lbl: 'Attacker rating \u00b7 record as attacker' })),
     def: SEASON.def.map(c => ({ ...c, lbl: 'Audit rating \u00b7 record as defender' })),
   };
   const ALL = [...new Map([...CHAMPS.att, ...CHAMPS.def].map(c => [c.agent, c])).values()];
