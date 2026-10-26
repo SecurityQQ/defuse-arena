@@ -4,6 +4,80 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.9.4 — 2026-10-26 — the founder brief says what the game is
+
+### Board
+
+- The Founder Brief opens in plain language: we wanted to know which model to
+  pick for which job — the one you write code with, the one that attacks code,
+  the one that reviews it — so the season was run as a game: one model writes a
+  service, a coin decides whether it hides a bug, another model audits it blind,
+  and an executed exploit plus a blocking patch decide the round.
+- A coin flips in the brief header: ⚔ a planted bug, ○ a clean service, with the
+  onboarding link under it. The faces match the board's coin notation, the
+  animation is decorative and respects `prefers-reduced-motion`.
+- The old "if your security story is..." lead is replaced by the result in one
+  paragraph: 39 of 43 planted bugs found and patched, 27 of 72 clean services
+  false-alarmed, 41 refusals priced as losses, median audit $0.362.
+
+## 0.9.3 — 2026-10-26 — the founder brief reads the 0.9.0 season
+
+### Board
+
+- **The Founder Brief is re-derived from the current season, not the pre-0.9.0
+  one.** The header now states the round count it is summarising (156 rounds:
+  115 played, 41 refused) instead of counting only played rounds; the stat strip
+  gains the refusal count (35 as attacker, 6 as defender) beside planted bugs
+  closed, false alarms and the median audit cost.
+- The lead paragraph no longer claims that finding and patching is where
+  reviewers fail — they closed 39 of 43 planted bugs. It states the measured
+  failure instead: 4 of 43 bugs survived, 27 of 72 clean services still drew a
+  claim, 41 rounds were not delivered, and Brier ranges from 0.002 to 0.458
+  across the field.
+- **The GLM verdict is now computed, not asserted.** It names the best GLM
+  variant by audit rating, its field rank, patch record, false alarms, price and
+  interval, and the spread across the family. The old prose hard-coded "closed
+  100% while the field's best closer managed 100%", which reads as a
+  contradiction; the data now has GLM-5.3 Flash Max leading the field.
+- The hiring table sorts by audit rating — the same number the Audit podium
+  ranks — and adds the 95% interval and the role record, so a 2/2 patch record
+  no longer outranks a 4/4 one on sample size alone. Stack cards show both role
+  ratings, the model's own refusals in each role, and say `no θ=1 attacks`
+  instead of a bare dash when a model never attacked a planted bug.
+- The caveats block states the baseline the audit rating sits on: defenders
+  won 84 of 115 played rounds and the fit prices the field's defence advantage
+  at 219 Elo, so audit ratings compare defenders with defenders, not with
+  attackers.
+- Prompt 9 said the audit was cheaper than writing the service; at the medians
+  it is the reverse ($0.362 vs $0.285), so it now states both. Prompt 10 used a
+  0.3 claim threshold, while the grader's threshold is 0.5. Prompt 2 now
+  describes the probability as a calibration diagnostic and the 0.5 claim as
+  what gets executed, which is what `grade.py` does. Prompt 4 called the report
+  machine-checked for locations and mechanism; the grader executes the PoC and
+  the patch and never parses the prose, so the prompt says that instead.
+- The match-log note, the Elo column tooltips, the Compare "Pentest vs audit"
+  subtitle and the FIELD copy still described θ=1-only role pools, a clean
+  diagnostic pool and a running-Elo reference line. All four are gone from the
+  page; the role pools are described as both coins.
+
+## 0.9.2 — 2026-10-25 — the onboarding reads the season
+
+### Web
+
+- **The onboarding is regenerated from `standings.json`, not hand-copied.**
+  `python3 scripts/onboarding.py <season>` rewrites the one fenced data block in
+  `web/onboarding.html` (agent select, leaderboard drawer, demo pair, played
+  rounds badge). The copied numbers had drifted: they predated the batch
+  Bradley-Terry fit and the both-coin role pools, so Opus showed 1622 overall
+  (now 1577) and DeepSeek led the pentest corner at 1636 (now sixth, 1547).
+- The onboarding names each champion by the resolved variant that actually
+  played (`model_name`: Claude Opus 5.5 Medium, GLM-5.3 Low, GPT-6.1 Sol Low
+  Thinking), as the board does, instead of the family name.
+- Agent cards show the played record in that role over both coins (`att.wins`
+  and `att.losses`, `def.wins` and `def.losses`), matching the role pool the
+  rating is fitted on. The θ=1 exploit and patch records they showed before
+  left a card like Opus at 1612 with a 0–0 record.
+
 ## 0.9.1 — 2026-10-25 — the match log stops explaining itself twice
 
 ### Board

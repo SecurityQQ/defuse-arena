@@ -754,6 +754,34 @@
   color:var(--muted); max-width:88ch; }
 .ia-brief-note { margin:9px 0 0; font-size:11.5px; line-height:1.55; color:var(--muted); }
 
+/* ---------- the coin: the one random input in the game ---------- */
+.ia-brief-what { margin:8px 0 0; font-size:15px; line-height:1.55; color:var(--text); max-width:78ch; }
+.ia-brief-what b { color:var(--gold-2); }
+.ia-brief-how { margin:6px 0 0; font-size:12.5px; line-height:1.65; color:var(--muted); max-width:86ch; }
+.ia-brief-toss { align-self:center; display:flex; flex-direction:column; align-items:center;
+  gap:6px; min-width:104px; }
+.ia-coin { width:66px; height:66px; perspective:520px; }
+.ia-coin-inner { position:relative; width:100%; height:100%; transform-style:preserve-3d;
+  animation:iaCoinToss 7.5s ease-in-out infinite; }
+.ia-coin-face { position:absolute; inset:0; display:grid; place-items:center;
+  border-radius:50%; backface-visibility:hidden; border:1px solid rgba(200,170,110,.72);
+  background:radial-gradient(circle at 34% 28%, #f7e4b8, #cba44c 58%, #86651f 100%);
+  color:#2a1c07; font-family:var(--font-display); font-size:25px; line-height:1;
+  box-shadow:0 3px 12px rgba(0,0,0,.42), inset 0 0 8px rgba(255,255,255,.38); }
+.ia-coin-clean { transform:rotateY(180deg); }
+.ia-coin-cap { font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.ia-brief-tour { font-size:11.5px; color:var(--gold); text-decoration:none; white-space:nowrap; }
+.ia-brief-tour:hover { color:var(--gold-2); }
+@keyframes iaCoinToss {
+  0%, 16% { transform:translateY(0) rotateY(0deg); }
+  24% { transform:translateY(-10px) rotateY(90deg); }
+  32%, 48% { transform:translateY(0) rotateY(180deg); }
+  56% { transform:translateY(-8px) rotateY(270deg); }
+  64%, 100% { transform:translateY(0) rotateY(360deg); }
+}
+@media (prefers-reduced-motion:reduce) { .ia-coin-inner { animation:none; } }
+@media (max-width:700px) { .ia-brief-toss { width:100%; } }
+
 .ia-stack-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
   gap:12px; }
 .ia-stack-card { border:1px solid rgba(200,170,110,.22); border-radius:8px;
@@ -789,6 +817,7 @@
 .ia-hire td em.r-model { display:block; font-style:normal; font-family:var(--font-mono);
   font-size:10px; color:var(--teal); margin-top:1px; }
 .ia-hire .num { font-family:var(--font-mono); font-size:11.5px; }
+.ia-hire em.ia-ci { font-style:normal; font-size:10px; color:var(--muted); }
 .ia-hire tbody tr { cursor:pointer; }
 .ia-hire tbody tr:hover td { color:var(--gold-2); background:rgba(200,170,110,.05); }
 
@@ -886,3 +915,33 @@
 .ia-cmp-dot:hover .ia-cmp-lbl, .ia-cmp-dot:focus-visible .ia-cmp-lbl { fill:#F0E6D2; }
 #ia-tip .ia-cmp-num { color:var(--gold); font-family:var(--font-mono); font-size:11.5px; }
 @media (max-width:700px) { .ia-compare { padding:14px; } }
+
+/* ---------- arrival from the onboarding tour ---------- */
+.ia-arrive{position:fixed;inset:0;z-index:300;pointer-events:none;display:grid;place-items:center;
+  background:radial-gradient(circle,rgba(1,10,19,0) 0,rgba(1,10,19,.92) 70%)}
+.ia-arrive i{position:absolute;width:40vmax;height:40vmax;transform:rotate(45deg) scale(4.2);border:2px solid var(--gold);
+  background:radial-gradient(circle,rgba(10,200,185,.18),rgba(1,10,19,.98) 60%);box-shadow:0 0 60px rgba(200,170,110,.5),inset 0 0 60px rgba(10,200,185,.35)}
+.ia-arrive b{position:relative;font:700 clamp(22px,3vw,36px)/1 var(--font-display, serif);letter-spacing:.2em;text-transform:uppercase;color:var(--gold-2);text-shadow:0 0 24px rgba(200,170,110,.6)}
+.ia-arrive.go{animation:iaVeil 1.3s ease forwards}
+.ia-arrive.go i{animation:iaIris 1.1s cubic-bezier(.6,0,.2,1) forwards}
+.ia-arrive.go b{animation:iaWord .9s ease forwards}
+@keyframes iaIris{0%{transform:rotate(45deg) scale(4.2)}55%{transform:rotate(45deg) scale(1)}100%{transform:rotate(45deg) scale(0);opacity:0}}
+@keyframes iaWord{0%{opacity:1;letter-spacing:.2em}100%{opacity:0;letter-spacing:.6em}}
+@keyframes iaVeil{0%,45%{opacity:1}100%{opacity:0}}
+#standings tbody tr.ia-row-in{animation:iaRowIn .55s cubic-bezier(.2,.9,.25,1) both;animation-delay:calc(var(--ia-i,0) * 55ms)}
+@keyframes iaRowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#standings tbody tr.ia-row-tour td{background:rgba(10,200,185,.07)}
+#standings tbody tr.ia-row-tour td:first-child{box-shadow:inset 3px 0 0 var(--teal)}
+#standings tbody tr.ia-row-tour{animation:iaRowIn .55s cubic-bezier(.2,.9,.25,1) both,iaGlow 2.4s ease 1.1s 2;animation-delay:calc(var(--ia-i,0) * 55ms),calc(var(--ia-i,0) * 55ms + .9s)}
+@keyframes iaGlow{0%,100%{box-shadow:none}50%{box-shadow:0 0 0 1px rgba(10,200,185,.55),0 0 22px rgba(10,200,185,.25)}}
+.ia-arrive-note{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:0 0 12px;padding:10px 14px;border:1px solid rgba(10,200,185,.35);
+  border-radius:8px;background:linear-gradient(90deg,rgba(10,200,185,.10),rgba(10,200,185,.02));color:var(--text);font-size:13px;animation:iaRowIn .6s ease .6s both}
+.ia-arrive-note b{color:var(--gold-2);font-weight:600}
+.ia-arrive-k{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+.ia-arrive-sep{margin:0 8px;color:var(--muted)}
+.ia-arrive-note a{margin-left:auto;color:var(--gold);font-size:12px}
+.ia-arrive-note button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 4px}
+@media (prefers-reduced-motion:reduce){
+  .ia-arrive{display:none}
+  #standings tbody tr.ia-row-in,#standings tbody tr.ia-row-tour,.ia-arrive-note{animation:none}
+}

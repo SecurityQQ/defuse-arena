@@ -812,9 +812,9 @@
         <p class="ia-lp-note">One chip per rating, and the number is the change in the
         <b>fitted</b> rating: the prefix refit before the round vs after it — the same curve the
         champion account draws. <b>OVR</b> is the overall pool (every non-void round, a forfeit is
-        a loss), <b>ATK</b>/<b>DEF</b> are the θ=1 role pools. On θ=0 the role pools are not priced
-        and the clean diagnostic moves instead, so those chips read —. Hover a chip for
-        before → after and the running Elo (K=32) as a reference line.</p>
+        a loss), <b>ATK</b>/<b>DEF</b> are the role pools over every round in that role, both coins.
+        A side prices only its own role, so the other chip reads —. Hover a chip for before → after,
+        and for the first-game note when the estimate had nothing else to go on.</p>
       </div>
       <button class="clear" id="clear-filter" hidden>Clear filter ✕</button>
     </div>
@@ -1189,22 +1189,19 @@
   }
 
   // A no-show or a forfeit is a surrender: it is a loss in the headline rating
-  // and, on θ=1, a weighted loss in the role pool of the side that did not
-  // deliver.
+  // and a plain loss in the role pool of the side that did not deliver.
   const isForfeit = o => FORFEIT_A.has(o) || FORFEIT_D.has(o);
   // The chip is the change in the FITTED rating — the prefix refit before the
   // round vs after it, which is the curve the champion account draws. The
-  // running Elo (K=32) is not comparable: it is a fixed-step rule and cannot
-  // move more than 48 points, while a batch estimate can move hundreds. It
-  // stays in the tooltip as a reference line.
+  // running Elo (K=32) is a fixed-step rule and is deliberately not shown:
+  // comparing it with a batch estimate invites the wrong reading.
   const fitOf = (r, side) => {
     const f = (r.fit_delta || {})[side] || {};
     const role = (r.role_delta || {})[side] || 0;
-    const theta = r.theta === 1;
     return {
       overall: f.overall ?? (r.rating_delta || {})[side] ?? 0,
-      attack: f.attack ?? (theta && side === "attacker" ? role : 0),
-      defense: f.defense ?? (theta && side === "defender" ? role : 0),
+      attack: f.attack ?? (side === "attacker" ? role : 0),
+      defense: f.defense ?? (side === "defender" ? role : 0),
     };
   };
 
@@ -1267,8 +1264,8 @@
     const head = `<thead><tr>
       <th>Round</th><th>Match</th><th>Attacker</th><th>Defender</th><th>\u03b8</th>
       <th>Outcome</th><th>Cost A</th><th>Cost D</th>
-      <th title="Change in the FITTED rating the round gave the attacker, one chip per headline pool: OVR = overall (every non-void round, a forfeit is a loss), ATK = θ=1 attack, DEF = θ=1 defence. The number is the prefix refit before vs after the round — the curve the champion account draws. An attacker never prices its defence rating and θ=0 moves the clean diagnostic pool instead, so those chips read —. Hover a chip for before → after and the running Elo.">Elo A</th>
-      <th title="Change in the FITTED rating the round gave the defender, one chip per headline pool: OVR = overall (every non-void round, a forfeit is a loss), ATK = θ=1 attack, DEF = θ=1 defence. The number is the prefix refit before vs after the round — the curve the champion account draws. A defender never prices its attack rating and θ=0 moves the clean diagnostic pool instead, so those chips read —. Hover a chip for before → after and the running Elo.">Elo D</th>
+      <th title="Change in the FITTED rating the round gave the attacker, one chip per headline pool: OVR = overall (every non-void round, a forfeit is a loss), ATK = attack rating over every round it attacked, both coins, DEF = its defence rating, which does not move in a round it attacked. The number is the prefix refit before vs after the round — the curve the champion account draws. Hover a chip for before → after, and for the first-game note.">Elo A</th>
+      <th title="Change in the FITTED rating the round gave the defender, one chip per headline pool: OVR = overall (every non-void round, a forfeit is a loss), DEF = audit rating over every round it defended, both coins, ATK = its attack rating, which does not move in a round it defended. The number is the prefix refit before vs after the round — the curve the champion account draws. Hover a chip for before → after, and for the first-game note.">Elo D</th>
       <th>Chips A</th><th>Chips D</th>
     </tr></thead>`;
 

@@ -22,7 +22,7 @@ Everything else the page needs lives beside it:
 | `standings.js` | behaviour, inlined at the end of the document |
 | `roster.json` | the season's champion pool — identity, not results |
 | `pricing.json` | USD per 1M tokens per model, copied from `devin models list` |
-| `onboarding.html` | the Defuse Arena onboarding — a cinematic 3D tour of one round (attacker, coin, defender, patch, grader); the agent cards and the leaderboard drawer carry the s-2026-02 standings, re-embed them on a new season; self-contained except Three.js and Google Fonts from CDN |
+| `onboarding.html` | the Defuse Arena onboarding — a cinematic 3D tour of one round (attacker, coin, defender, patch, grader); the agent cards and the leaderboard drawer carry one season's standings in a generated block — refresh it with `python3 scripts/onboarding.py <season>` after `standings.py`, never edit it by hand; self-contained except Three.js and Google Fonts from CDN |
 | `index.html` | published copy of the current season, served by the static host at `/` |
 
 ## Data
@@ -92,30 +92,39 @@ Equal ratings share a rank (`=1`), because the fit can return exact ties and
 printing 1 and 2 for the same number would invent an order the data lacks.
 
 **Founder Brief** — the tab for a visitor who ships AI-written code and wants
-to know what to do with this benchmark. Four parts:
+to know what to do with this benchmark. It opens with the question in plain
+words — which model to write code with, which to attack code with, which to
+review it — and the game that answers it: a service, a coin that decides
+whether it hides a bug, a blind audit, an executed exploit and a blocking
+patch. A coin flips beside the text (⚔ bug / ○ clean) with a link to the
+onboarding tour. Four parts:
 
 - *Season headline* — planted bugs closed after a full audit, false alarms on
-  clean code, median audit cost: three aggregates derived from `ledger` at
-  render time, followed by the one-paragraph reading of them.
+  clean code, median audit cost and rounds a model refused: four aggregates
+  derived from `ledger` at render time, followed by the one-paragraph reading
+  of them (miss rate, noise rate, refusals, the Brier range).
 - *Your stack* — both faces of the models most teams run (Claude Opus, GPT)
-  as writer and as reviewer, from `rows`: attack survival, planted bugs
-  closed, false alarms, Brier, dollars per audit. A model absent from the
-  season says so instead of guessing.
-- *Can GLM defend me* — every GLM row in `rows`, its patch rate against the
-  field's best, and a verdict built from those numbers. The resolved variant
+  as writer and as reviewer, from `rows`: the role rating, attack survival
+  (or `no θ=1 attacks` when there was nothing to attack), planted bugs
+  closed, false alarms, Brier, dollars per round and the model's own refusals
+  in that role. A model absent from the season says so instead of guessing.
+- *Can GLM defend me* — every GLM row in `rows`, and a verdict built from the
+  numbers: the best GLM variant's field rank, its patch rate, false alarms,
+  price and interval, plus the spread across the family. The resolved variant
   names are printed with the caveat that family slugs run at the family
   default effort.
 - *Who should review your code* — a hiring table over every defender that
-  played, sorted by patch rate, then false-alarm rate, then Brier; clicking
-  a row opens the champion account.
+  played, sorted by audit rating (the same number the Audit podium ranks) with
+  the 95% interval, the role record, patch rate, false alarms, FPR, Brier and
+  dollars per audit; clicking a row opens the champion account.
 
 Below that, ten copy-paste review prompts rewritten from the defender contract
 (`prompts/defender.md`) with a Copy button (clipboard API where available,
 textarea fallback from `file://`), an arena-to-company mapping table, and a
-caveats block (small n, effort variants, pool-relative ratings, greenfield bug
-classes). The prompts, the mapping and the caveats are editorial and live in
-`standings.js`; every number on the tab is derived from the payload, never
-typed in.
+caveats block (small n, effort variants, the three ratings and refusal-as-loss,
+greenfield bug classes). The prompts, the mapping and the caveats are editorial
+and live in `standings.js`; every number on the tab is derived from the payload,
+never typed in.
 
 **Compare** — scatter maps of the whole field, one dot per champion, hand-drawn
 SVG with no external chart library (the page stays self-contained and works
@@ -153,15 +162,14 @@ read `unplayed`. Every row has a `Profile` button.
 
 **Match log** — one row per round, typed by challenge. Each side carries three
 rating chips, one per headline pool: `OVR` is the overall rating (every non-void
-round; a forfeit is a loss), `ATK` is the θ=1 attack rating, `DEF` is the θ=1
-defence rating. The number is the change in the **fitted** rating — the prefix
-refit before the round vs after it, the same curve the champion account draws —
-so the deltas telescope to the final rating. An attacker only prices its attack
-rating and a defender only its defence rating, so the other chip is a dash;
-both coins feed the role pool. Each chip's tooltip gives the fitted
-before → after and the running Elo (K=32) as a reference line; the running Elo
-is a fixed-step rule and cannot move more than 48 points, so it is not the
-headline. Click a row
+round; a forfeit is a loss), `ATK` is the attack rating over every round the
+model attacked, `DEF` is the audit rating over every round it defended — both
+coins. The number is the change in the **fitted** rating — the prefix refit
+before the round vs after it, the same curve the champion account draws — so
+the deltas telescope to the final rating. An attacker only prices its attack
+rating and a defender only its defence rating, so the other chip is a dash.
+Each chip's tooltip gives the fitted before → after and, on a model's first game
+in that pool, says the estimate had nothing else to go on. Click a row
 to open that match; the toolbar
 has four composable filters: challenge, model, role (`Any` / `Attacker` /
 `Defender`), and coin (`All` / `⚔ θ=1` / `○ θ=0`). The model filter matches
