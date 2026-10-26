@@ -4,6 +4,15 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.10.7 — 2026-10-26 — twelve more rounds for muse
+
+### Data
+
+- **Season s-2026-06 adds 12 rounds for muse-wonder,** three in each of its
+  four seats (red team and clean build, audit on ⚔ and on ○), against
+  opponents it had met only twice. The board now merges s-2026-02, s-2026-04,
+  s-2026-05 and s-2026-06.
+
 ## 0.10.6 — 2026-10-26 — thirty more rounds and the speed of every seat
 
 ### Data
