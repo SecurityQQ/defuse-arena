@@ -9,17 +9,20 @@ works from `file://`.
 > The spend margin is not in any skill rating; it survives as the non-ranking
 > `rating_efficiency`. See `SPEC.md` §9.4/§10.3/§10.4.
 
-The template is **never hand-edited**. `scripts/standings.py` copies it to
-`seasons/<season>/standings.html` and replaces exactly one thing: the embedded
-`arena-data` block. Everything else the page needs lives beside it:
+The template is the source. `scripts/standings.py` copies it to
+`seasons/<season>/standings.html` and injects the generated sections — the
+`arena-data` block, the outcome legend, the match-log toolbar, the tab hosts,
+and the challenge/brief/compare sections. Never hand-edit the generated copy.
+Everything else the page needs lives beside it:
 
 | file | role |
 |---|---|
-| `leaderboard.html` | template; the generator only swaps `arena-data` |
+| `leaderboard.html` | template; the generator injects the generated sections |
 | `standings.css` | styles, inlined into `<head>` |
 | `standings.js` | behaviour, inlined at the end of the document |
 | `roster.json` | the season's champion pool — identity, not results |
 | `pricing.json` | USD per 1M tokens per model, copied from `devin models list` |
+| `onboarding.html` | the Defuse Arena onboarding — a cinematic 3D tour of one round (attacker, coin, defender, patch, grader); the agent cards and the leaderboard drawer carry the s-2026-02 standings, re-embed them on a new season; self-contained except Three.js and Google Fonts from CDN |
 | `index.html` | published copy of the current season, served by the static host at `/` |
 
 ## Data
@@ -54,35 +57,39 @@ tab is client-side state only; the URL hash (`#brief`, `#compare`, `#draft`,
 `#log`, `#challenges`) keeps a tab shareable, and opening a match from anywhere
 switches to the log first.
 
-**Board** — the season summary, podium and the standings table:
+**Board** — the season summary, three compact podiums (Overall / Pentest /
+Audit, three models each, the winner raised inside its column) and the standings
+table:
 sortable columns, role tabs (Overall, Attacker, Defender, Changelog),
 agent filter. The Changelog tab renders `CHANGELOG.md` from the payload instead
-of the table. The all-in table belongs to this tab; every other tab shows only
-its own section.
+of the table. The reliability table belongs to this tab; every other tab shows
+only its own section.
 
 **Three ratings, three questions.** The board answers "which model overall",
 "which model should audit my code" and "which model should pentest" with three
-separate pure win/loss pools. `rating` is every played round (θ=1 and θ=0);
-`rating_def` is θ=1 defence only; `rating_att` is θ=1 attack only.
+separate pure win/loss pools. `rating` is every non-void round (θ=1 and θ=0),
+and a no-show or a forfeit is a loss for the side that did not deliver;
+`rating_def` is every round the model defended, `rating_att` every round it
+attacked — both coins, because the coin is the game's condition, not the role.
 
 The role cells are one number each. The record behind the rating is in the
 hover card: `⚔` real (θ=1, the service has a planted bug) and `○` clean (θ=0,
 nothing to find), with the round counts, the model's own forfeits in that pool
-(losses in the rating, not played rounds), the clean diagnostic's rating and
-the 95% interval. `Rounds` and `W–L` keep their own split, with the order in
+(losses in the rating, not played rounds) and the 95% interval. `Rounds` and `W–L` keep their own split, with the order in
 the header (`atk / def`) and the cell short — `17 · 8/9`, `12–5 · 4–4/8–1` — so
 the row still adds up on its face.
 
-θ=0 is a separate diagnostic (`rating_clean_att`, `rating_clean_def`), shown in
-the champion account with the rest of the pools. The spend margin is in no
-skill rating: it survives as `rating_efficiency`, shown in the account and never
+θ=0 is not a separate rating: it is the other half of the same role sample,
+shown as a record in the hover cards and the champion account. The spend margin
+is in no skill rating: it survives as `rating_efficiency`, shown in the account and never
 used to rank.
 
-**The all-in table** sits below the standings. It is the same field with every
-refused or failed round counted as a loss: scheduled vs played, no-shows,
-forfeits, opponent forfeits, the all-in W–L, the forfeit cost and the delta
-against the overall rating. `no_shows` is `ABSTAIN_*`; `forfeits` is `FAILED_*` +
-`FAULT_A`, so the two never double-count.
+**The reliability table** sits below the standings. It is the record behind the
+one rating, with no rating of its own: scheduled vs played, no-shows, forfeits,
+opponent forfeits, the W–L with forfeits, the forfeit cost. `no_shows` is
+`ABSTAIN_*`; `forfeits` is `FAILED_*` + `FAULT_A`, so the two never double-count.
+Equal ratings share a rank (`=1`), because the fit can return exact ties and
+printing 1 and 2 for the same number would invent an order the data lacks.
 
 **Founder Brief** — the tab for a visitor who ships AI-written code and wants
 to know what to do with this benchmark. Four parts:
@@ -144,14 +151,40 @@ Picking is client-side only; it changes nothing in the season.
 carry rating, role splits, rounds, W–L, tokens and chips; the rest are dimmed and
 read `unplayed`. Every row has a `Profile` button.
 
-**Match log** — one row per round, typed by challenge. Each side carries a
-League-style Elo badge: the big number is the running Elo (K=32) the round
-moved, the sub-line is the role pool, and the tooltip gives the before → after.
-A forfeit shows the running all-in change. The standings are the batch fit; the
-log is the bounded running trail. Click a row to open that match; the challenge
-selector filters by task pack, never by individual match. The log deliberately
-carries no challenge briefing: the selector is a filter, and the briefing lives
-on its own tab.
+**Match log** — one row per round, typed by challenge. Each side carries three
+rating chips, one per headline pool: `OVR` is the overall rating (every non-void
+round; a forfeit is a loss), `ATK` is the θ=1 attack rating, `DEF` is the θ=1
+defence rating. The number is the change in the **fitted** rating — the prefix
+refit before the round vs after it, the same curve the champion account draws —
+so the deltas telescope to the final rating. An attacker only prices its attack
+rating and a defender only its defence rating, so the other chip is a dash;
+both coins feed the role pool. Each chip's tooltip gives the fitted
+before → after and the running Elo (K=32) as a reference line; the running Elo
+is a fixed-step rule and cannot move more than 48 points, so it is not the
+headline. Click a row
+to open that match; the toolbar
+has four composable filters: challenge, model, role (`Any` / `Attacker` /
+`Defender`), and coin (`All` / `⚔ θ=1` / `○ θ=0`). The model filter matches
+either side of the round, so it is the match history of one model; the role
+filter narrows that history to rounds the model attacked or defended. Clicking
+an agent name in a row opens the champion account and sets the same model
+filter; the selector follows. `Clear filter` resets all four and the subtitle
+counts the visible rounds. The dossier header has a `← Back` / `✕` control that
+closes it and returns to the tab the reader came from (Board, Roster, Compare
+or Explore Challenges); a dossier opened from the log returns to the last
+non-log tab, Board by default. The
+log deliberately carries no challenge briefing: the selector is a filter, and
+the briefing lives on its own tab.
+
+Forfeit badges print plain language rather than the raw code: `attacker
+refused` (`ABSTAIN_A`), `attacker failed` (`FAILED_A`), `attacker fault`
+(`FAULT_A`), `void · replayed` (`VOID`). The outcome legend is not rendered;
+the match dossier carries the explanation. `ABSTAIN`/`FAILED`/
+`FAULT` are model results priced as forfeits (auto-loss); `VOID` is the only
+infrastructure error, replayed with no rating moved, and the dossier says to
+report the reason to the GM. A `Copy GM report` button on `VOID`, `FAILED` and
+`FAULT` copies the round id, outcome, void/fault reason, checks, cost and
+mechanism for the game master.
 
 **Explore Challenges** — the task packs as cards, described below.
 
@@ -172,17 +205,22 @@ Medium for Opus. See `AGENTS.md` for the resolved defaults and the all-high ids.
 
 `standings.py` reads the first export per agent into `rows[].model_name` and
 `roster[].model_name`, and the board prints it under the label in the standings,
-the match log, the roster, the draft cards and the champion account. The podium
-deliberately shows the score only: no effort, no money.
+the match log, the roster, the draft cards and the champion account. The podiums
+deliberately show the score only: no effort, no money.
 An agent with no usable export (every round void or refused) falls back to the
 roster's `model` id, and an unplayed champion shows that id as well.
 
-**Champion account** — the overlay behind `Profile`, `acct`, or a podium card:
-six-axis shape, rating curve for the overall/attack/defence/all-in pools, record
-with the role split, all four pools with CIs plus the non-ranking
-margin-weighted number, the θ=1 record and forfeits per role, the θ=0 clean
-record and clean ratings, head-to-head, and every round that champion played.
-Clicking a round in the account closes it and opens that match in the log.
+**Champion account** — the overlay behind `Profile`, `acct`, a Board row, a
+podium card, or an agent name in the standings/match log: six-axis shape, rating curve for the
+overall/attack/defence pools, record with the role split, the pools
+with CIs plus the non-ranking margin-weighted number, the ⚔ real and ○ clean
+records and forfeits per role, head-to-head, and
+every round that champion played. The "Every round" panel has an `Any` /
+`Attacker` / `Defender` filter, so the history can be narrowed to the rounds
+the model attacked or defended. Clicking a round opens the complete Match log —
+filters, dossier and the full ledger table — in a modal over the account; `✕`
+in the popup header closes it and returns to the account, without switching
+tabs.
 
 ## Match schematic
 

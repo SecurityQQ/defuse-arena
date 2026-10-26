@@ -1,13 +1,5 @@
 /* Rendered-leaderboard styles, inlined by scripts/standings.py after the
    template's own <style> block. Keep leaderboard.html itself untouched. */
-.ia-legend { display:flex; flex-wrap:wrap; gap:6px 18px; align-items:center;
-  margin:0 0 14px; padding:12px 14px; background:var(--panel-2);
-  border:1px solid var(--line-soft); border-radius:10px; }
-.ia-legend-title { flex-basis:100%; font-family:var(--font-display); letter-spacing:.12em;
-  text-transform:uppercase; font-size:11px; color:var(--gold); opacity:.85; }
-.ia-legend-item { font-size:12.5px; color:var(--muted); display:inline-flex;
-  align-items:center; gap:7px; }
-.ia-legend-item .outcome, .ia-legend-item .coin { cursor:help; }
 #ledger .outcome, #ledger .coin { cursor:help; }
 .coin.h { color:#FF6B6B; background:rgba(230,60,60,.10);
   border-color:rgba(230,60,60,.55); box-shadow:0 0 10px rgba(230,60,60,.35); font-size:12px; }
@@ -16,11 +8,9 @@
 .stat .k, .tier, .champ-tier, .champ-rating { cursor:help; }
 .ia-ci { font-family:var(--font-mono); font-style:normal; font-size:10px;
   color:var(--muted); letter-spacing:0; }
-#allin .rating { font-family:var(--font-mono); }
 
-/* League-style Elo badge in the match log: the big number is the rating the
-   round actually moved, the sub-line is the role pool. Green/red is the
-   only colour cue, as in a ranked post-game screen. */
+/* The void marker in the match log: a void round moved nothing, so it carries
+   no chips — just a muted dash and the word. */
 .ia-lp { display:flex; flex-direction:column; gap:2px; min-width:58px; }
 .ia-lp b { font-family:var(--font-mono); font-size:14px; font-weight:700;
   line-height:1.05; letter-spacing:-.01em; }
@@ -31,6 +21,22 @@
   color:var(--muted); white-space:nowrap; }
 .ia-lp-note { color:var(--muted); font-size:11px; margin-top:3px; }
 .ia-lp-note b { color:var(--gold-2); font-weight:600; }
+
+/* Three-pool rating change: one chip per headline rating — overall, attack,
+   defence — so a round shows what it did to every rating it can move instead
+   of one number plus a sub-line. A pool the round did not feed prints a dash
+   rather than a fake zero. */
+.ia-elo3 { display:flex; flex-wrap:wrap; gap:3px 5px; min-width:82px; max-width:132px; }
+.ia-elo-chip { display:inline-flex; align-items:baseline; gap:4px;
+  padding:1px 5px; border-radius:5px; border:1px solid var(--line-soft);
+  font-family:var(--font-mono); font-size:10.5px; line-height:1.2;
+  white-space:nowrap; }
+.ia-elo-chip i { font-style:normal; font-size:8px; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--muted); }
+.ia-elo-chip.up { color:var(--pos); border-color:rgba(79,224,176,.30); }
+.ia-elo-chip.down { color:var(--neg); border-color:rgba(224,96,96,.30); }
+.ia-elo-chip.flat { color:var(--muted); }
+.ia-side .ia-elo3 { margin-top:5px; }
 
 /* ---- Challenges ------------------------------------------------------ */
 .ia-preview { margin:0 0 12px; padding:10px 14px; border-radius:8px;
@@ -65,6 +71,11 @@
 .ia-vs { font-size:22px; color:#FF6B6B; text-shadow:0 0 14px rgba(230,60,60,.5); }
 .ia-dossier-outcome { display:flex; align-items:center; gap:12px; flex-wrap:wrap;
   margin-left:auto; }
+.ia-dossier-close { min-width:28px; height:28px; flex:0 0 auto; padding:0 8px;
+  border-radius:5px; border:1px solid rgba(200,170,110,.28); background:transparent;
+  color:var(--muted); cursor:pointer; font-family:var(--font-ui);
+  font-size:12px; line-height:1; letter-spacing:.04em; }
+.ia-dossier-close:hover { color:var(--gold); border-color:var(--gold); }
 .ia-story { margin:14px 0 0; color:var(--text); font-size:13.5px; line-height:1.65; }
 .ia-story em { color:var(--gold-2); font-style:normal; font-weight:600; }
 .ia-facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
@@ -84,6 +95,13 @@
   background:rgba(224,96,96,.07); }
 .ia-mech { margin-top:12px; color:var(--muted); font-size:12.5px;
   border-left:2px solid rgba(200,170,110,.35); padding-left:11px; }
+.ia-gm { margin-top:12px; padding:9px 11px; border-left:2px solid var(--gold);
+  background:rgba(200,170,110,.06); color:var(--text); font-size:12.5px;
+  line-height:1.5; }
+.ia-gm b { display:inline-block; margin-right:8px; color:var(--gold);
+  font-family:var(--font-display); font-size:10.5px; letter-spacing:.1em;
+  text-transform:uppercase; }
+.ia-gm .ia-btn { display:block; margin-top:8px; }
 #ledger tr.ia-picked { background:rgba(200,170,110,.10) !important;
   box-shadow:inset 2px 0 0 var(--gold); }
 #ledger tbody tr { cursor:pointer; }
@@ -334,6 +352,29 @@
   background:rgba(1,6,13,.88);
   animation:iaFade .18s ease-out; }
 .ia-acct[hidden] { display:none; }
+.ia-log-popup { position:fixed; inset:0; z-index:9200; display:flex; align-items:flex-start;
+  justify-content:center; padding:3vh 18px; overflow:auto;
+  background:rgba(1,6,13,.9); animation:iaFade .18s ease-out; }
+.ia-log-popup[hidden] { display:none; }
+.ia-log-popup-card { position:relative; width:min(1400px,100%); max-height:94vh;
+  overflow:auto; border-radius:12px; border:1px solid rgba(200,170,110,.42);
+  background:linear-gradient(165deg,#0B1B33,#06101F 55%,#010A13);
+  box-shadow:0 30px 80px rgba(0,0,0,.7); padding:0 18px 18px; }
+.ia-log-popup-head { display:flex; align-items:center; justify-content:space-between;
+  gap:14px; padding:14px 4px 10px; margin-bottom:12px;
+  border-bottom:1px solid rgba(200,170,110,.16); }
+.ia-log-popup-head span { font-family:var(--font-display); font-size:15px;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--gold); }
+.ia-log-popup-close { width:30px; height:30px; border-radius:6px; cursor:pointer;
+  color:var(--muted); background:transparent; border:1px solid rgba(200,170,110,.24);
+  font-size:14px; line-height:1; }
+.ia-log-popup-close:hover { color:var(--gold); border-color:var(--gold); }
+.ia-log-popup #ledger-panel { border:0; background:transparent; margin:0; padding:0; }
+.ia-log-popup #ledger-panel .panel-head { padding:0 0 12px;
+  border-bottom:1px solid var(--line-soft); }
+.ia-log-popup #ledger-panel .panel-head > div:first-child { display:none; }
+.ia-log-popup #ledger-panel .table-wrap { max-height:calc(88vh - 130px); }
+.ia-log-popup .ia-dossier-close { display:none; }
 @keyframes iaFade { from { opacity:0 } to { opacity:1 } }
 .ia-acct-card { position:relative; width:min(1080px,100%);
   border-radius:12px;
@@ -412,6 +453,12 @@
 .ia-hist .win { color:var(--pos); }
 .ia-hist .loss { color:var(--neg); }
 .ia-hist .void { color:var(--muted); }
+.ia-hist-tools { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 0 8px; }
+.ia-hist-tools .ia-seg { display:flex; gap:4px; }
+.ia-hist-tools .ia-btn { padding:4px 9px; font-size:10.5px; }
+.ia-hist-count { margin-left:auto; font-family:var(--font-mono); font-size:10.5px;
+  color:var(--muted); }
+.ia-hist-empty td { text-align:center; color:var(--muted); }
 
 /* ===================== Roster comparison =========================== */
 .ia-roster { margin:0 0 14px; padding:16px 18px; border-radius:10px;
@@ -469,7 +516,9 @@
 
 /* the match log keeps only the pack filter, not the briefing */
 .ia-logtools { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-.ia-logtools .ia-picker select { min-width:220px; }
+.ia-logtools .ia-picker select { min-width:240px; }
+.ia-logtools .ia-seg { display:flex; align-items:center; gap:4px; }
+.ia-logtools .ia-seg .ia-btn { padding:7px 10px; }
 
 /* ===================== Explore Challenges ==========================
    A pack is a card, like a champion card in a collection: art panel,
@@ -654,7 +703,7 @@
    The tab swaps the standings table for CHANGELOG.md, rendered from the
    arena-data payload. Styles keep the page voice: gold headings, quiet
    prose, teal code. */
-.changelog { max-width: 920px; margin: 0 auto; padding: 10px 4px 26px; }
+.changelog { max-width: none; margin: 0; padding: 10px 6px 26px; }
 .changelog h3 { font-family: var(--font-display); font-size: 15px;
   letter-spacing: .1em; text-transform: uppercase; color: var(--gold);
   margin: 26px 0 6px; padding-bottom: 6px; border-bottom: 1px solid var(--line-soft); }

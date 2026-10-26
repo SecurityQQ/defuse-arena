@@ -10,31 +10,32 @@ not a sequential update. The fit is a pure function of the season's games, so
 the same ledger yields the same table whatever order the rounds were graded or
 scheduled in. Every pool answers one question (SPEC §9.4):
 
-* ``rating`` — which model overall for cyber security. Every played round,
-  θ=1 and θ=0, pure win/loss.
-* ``rating_def`` — which model should audit my code. θ=1 defence only: ``TP``
-  is a win, ``FN`` a loss; a defender forfeit is a loss at weight 1.5.
-* ``rating_att`` — which model should pentest. θ=1 attack only: ``FN`` is a
-  win, ``TP`` a loss; an attacker forfeit is a loss at weight 1.5.
-* ``rating_clean_att`` / ``rating_clean_def`` — θ=0 diagnostics: who writes
-  clean services, who avoids false alarms. Not the audit or pentest answer.
-* ``rating_contest`` — every non-void round, a forfeit is a loss: reliability
-  when showing up is part of the score.
+* ``rating`` — which model should write and review my code. Every non-void round,
+  θ=1 and θ=0, pure win/loss: a no-show or a forfeit is a loss for the side
+  that did not deliver, so refusing is never cheaper than playing.
+* ``rating_def`` — which model should audit my code. Every round it defended,
+  θ=1 and θ=0: ``TP``/``TN`` are wins, ``FN``/``FP`` losses; a defender forfeit
+  is a plain loss.
+* ``rating_att`` — which model should pentest. Every round it attacked, θ=1 and
+  θ=0: ``FN``/``FP`` are wins, ``TP``/``TN`` losses; an attacker forfeit is a
+  plain loss. The coin is the game's condition, not the model's role: the role
+  pools do not split on it.
 * ``rating_efficiency`` — the 0.5.0 margin-weighted played-only fit, kept as a
   separate non-ranking axis. The spend margin is in no skill rating.
 
-The role and clean pools are one two-sided fit, ``P(attacker wins) = σ(θ·(A_i
-− D_j) + c)``, so an attack is priced against the defender's defence rating and
-a defence against the attacker's attack rating. ``c`` is published as
+The role pools are one two-sided fit, ``P(attacker wins) = σ(θ·(A_i − D_j) +
+c)``, so an attack is priced against the defender's defence rating and a defence
+against the attacker's attack rating. ``c`` is published as
 ``defense_advantage``. A forfeit is a one-sided game: it moves the offending
 role only, because the opponent's forfeit is not a test of that role.
 
 A Gaussian prior toward 1500 (sd 250) keeps a small sample finite; the 95%
 confidence interval comes from the Hessian. VOID (infrastructure) moves
-nothing and is replayed. No-shows and forfeits are published on their own axis
-and in the all-in table instead of corrupting the played-only pools.
+nothing and is replayed. A no-show or a forfeit is a surrender: it is a loss
+in the headline rating and a loss in the role pool of the side
+that did not deliver, so abstaining is never safer than playing.
 """
-import hashlib, json, math, re, sys
+import hashlib, html, json, math, re, sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -61,10 +62,10 @@ RANKED_AT = int(_args[1]) if len(_args) > 1 else 20
 RENDER_RANKED_AT = int(_args[2]) if len(_args) > 2 else RANKED_AT
 SDIR = ROOT / "seasons" / SEASON
 
-# Outcome sets (scoring 0.4.0). Played rounds move every pool. Forfeits move
-# only the all-in contest pool: the played-only pools measure skill conditional
-# on actually playing, and a refusal is published as its own axis instead.
-# VOID is infrastructure only and is replayed, never priced.
+# Outcome sets. A played round moves every pool. A forfeit is a surrender: it
+# is a loss in the headline rating and, on θ=1, a plain loss in the role
+# pool of the side that did not deliver. VOID is infrastructure only and is
+# replayed, never priced.
 PLAYED = {"TP", "TN", "FP", "FN", "DISCOVERY"}
 FORFEIT_A = {"ABSTAIN_A", "FAILED_A", "FAULT_A"}
 FORFEIT_D = {"ABSTAIN_D", "FAILED_D"}
@@ -363,9 +364,6 @@ RATING_PRIOR_SD = 250.0
 MARGIN_LAMBDA = 1.0
 MARGIN_LO, MARGIN_HI = 0.25, 2.0
 THETA = math.log(10) / 400.0
-# A role forfeit is worse than a played loss: the model did not even put an
-# artifact in front of the opponent. SPEC §9.4 prices it at 1.5.
-ROLE_FORFEIT_W = 1.5
 
 
 def _solve(A, b):
@@ -539,69 +537,52 @@ AGENTS = sorted({r["attacker"] for r in raw} | {r["defender"] for r in raw})
 AIDX = {a: i for i, a in enumerate(AGENTS)}
 N = len(AGENTS)
 
-played_games, contest_games, eff_games = [], [], []
-role_games, clean_games = [], []
+overall_games, eff_games = [], []
+role_games = []
 for r in raw:
     i, j = AIDX[r["attacker"]], AIDX[r["defender"]]
-    o, theta = r["outcome"], r["theta"]
+    o = r["outcome"]
     s_b = r["scores"]["defender"]
     s_a = 1.0 - s_b
     if o in PLAYED:
-        played_games.append((i, j, s_b, 1.0))
-        contest_games.append((i, j, s_b, 1.0))
+        overall_games.append((i, j, s_b, 1.0))
         eff_games.append((i, j, s_b, margin_weight(r)))
-        if theta == 1:
-            role_games.append((i, j, s_a, 1.0, 1, 1))
-        else:
-            clean_games.append((i, j, s_a, 1.0, 1, 1))
+        role_games.append((i, j, s_a, 1.0, 1, 1))
     elif o in FORFEIT_A:
-        # The attacker did not deliver. That is a loss in the attack pool and a
-        # win for the defender in the contest, but it is not an audit test, so
-        # the defender's defence rating is untouched.
-        contest_games.append((i, j, 1.0, 1.0))
-        if theta == 1:
-            role_games.append((i, j, 0.0, ROLE_FORFEIT_W, 1, 0))
+        # The attacker did not deliver: a surrender in the headline rating and a
+        # loss in the attack pool. The defender's defence is untouched — there
+        # was nothing to audit.
+        overall_games.append((i, j, 1.0, 1.0))
+        role_games.append((i, j, 0.0, 1.0, 1, 0))
     elif o in FORFEIT_D:
-        contest_games.append((i, j, 0.0, 1.0))
-        if theta == 1:
-            role_games.append((i, j, 1.0, ROLE_FORFEIT_W, 0, 1))
+        overall_games.append((i, j, 0.0, 1.0))
+        role_games.append((i, j, 1.0, 1.0, 0, 1))
 
 # One fit per question. Every skill pool is pure win/loss: the spend margin is
 # an efficiency axis, not a skill term, so it only appears in rating_efficiency.
-gen_x, gen_se = fit_overall(played_games, N)
-contest_x, contest_se = fit_overall(contest_games, N)
+overall_x, overall_se = fit_overall(overall_games, N)
 eff_x, eff_se = fit_overall(eff_games, N)
 ROLES = fit_roles(role_games, N)
-CLEAN = fit_roles(clean_games, N)
 att_x, def_x = ROLES["att"], ROLES["def"]
-clean_att_x, clean_def_x = CLEAN["att"], CLEAN["def"]
 
 # Per-round trail: refit the pools on the prefix of rounds in scheduled order,
 # so the final point of the trail is the headline rating. The trail is a
 # narrative device; the standings use the full fit above.
 overall_prefix = [0.0] * N
-contest_prefix = [0.0] * N
 role_prefix = [0.0] * (2 * N + 1)
-clean_prefix = [0.0] * (2 * N + 1)
-gen_prev = [0.0] * N
-contest_prev = [0.0] * N
+overall_prev = [0.0] * N
 att_prev = [0.0] * N
 def_prev = [0.0] * N
-clean_att_prev = [0.0] * N
-clean_def_prev = [0.0] * N
-prefix_played, prefix_contest, prefix_role, prefix_clean = [], [], [], []
+prefix_overall, prefix_role = [], []
 ledger = []
 
 
-def pool_after(overall, role, clean, contest, k):
-    """The four pools a round leaves behind, for one side."""
+def pool_after(overall, role, k):
+    """The pools a round leaves behind, for one side."""
     return {
-        "gen": round(1500 + overall[k], 4),
+        "overall": round(1500 + overall[k], 4),
         "att": round(1500 + role[k], 4),
         "def": round(1500 + role[N + k], 4),
-        "clean_att": round(1500 + clean[k], 4),
-        "clean_def": round(1500 + clean[N + k], 4),
-        "contest": round(1500 + contest[k], 4),
     }
 
 
@@ -610,66 +591,61 @@ for r in raw:
     i, j = AIDX[a], AIDX[d]
     played = o in PLAYED
     contest = o != "VOID"
-    theta = r["theta"]
     s_b = r["scores"]["defender"]
     s_a = 1.0 - s_b
-    role_changed = clean_changed = False
+    role_changed = False
 
-    gen_before = gen_prev[i]
-    contest_before = contest_prev[i]
+    overall_before = overall_prev[i]
     att_before, def_before = att_prev[i], def_prev[j]
-    clean_att_before, clean_def_before = clean_att_prev[i], clean_def_prev[j]
 
     if contest:
-        prefix_contest.append((i, j, s_b, 1.0))
-        contest_prefix, _ = fit_overall(prefix_contest, N, contest_prefix)
+        prefix_overall.append((i, j, s_b, 1.0))
+        overall_prefix, _ = fit_overall(prefix_overall, N, overall_prefix)
     if played:
-        prefix_played.append((i, j, s_b, 1.0))
-        overall_prefix, _ = fit_overall(prefix_played, N, overall_prefix)
-        if theta == 1:
-            prefix_role.append((i, j, s_a, 1.0, 1, 1))
-            role_changed = True
-        else:
-            prefix_clean.append((i, j, s_a, 1.0, 1, 1))
-            clean_changed = True
-    elif theta == 1 and o in FORFEIT_A:
-        prefix_role.append((i, j, 0.0, ROLE_FORFEIT_W, 1, 0))
+        prefix_role.append((i, j, s_a, 1.0, 1, 1))
         role_changed = True
-    elif theta == 1 and o in FORFEIT_D:
-        prefix_role.append((i, j, 1.0, ROLE_FORFEIT_W, 0, 1))
+    elif o in FORFEIT_A:
+        prefix_role.append((i, j, 0.0, 1.0, 1, 0))
+        role_changed = True
+    elif o in FORFEIT_D:
+        prefix_role.append((i, j, 1.0, 1.0, 0, 1))
         role_changed = True
     if role_changed:
         role_prefix = fit_roles(prefix_role, N, role_prefix)["x"]
-    if clean_changed:
-        clean_prefix = fit_roles(prefix_clean, N, clean_prefix)["x"]
 
-    gen_delta = {"attacker": round(overall_prefix[i] - gen_before, 4),
-                 "defender": round(overall_prefix[j] - gen_prev[j], 4)}
-    contest_delta = {"attacker": round(contest_prefix[i] - contest_before, 4),
-                     "defender": round(contest_prefix[j] - contest_prev[j], 4)}
-    role_delta = {
-        "attacker": round((role_prefix[i] if theta == 1 else clean_prefix[i]) -
-                          (att_before if theta == 1 else clean_att_before), 4) if played else 0.0,
-        "defender": round((role_prefix[N + j] if theta == 1 else clean_prefix[N + j]) -
-                          (def_before if theta == 1 else clean_def_before), 4) if played else 0.0,
-    }
+    overall_delta = {"attacker": round(overall_prefix[i] - overall_before, 4),
+                     "defender": round(overall_prefix[j] - overall_prev[j], 4)}
+    role_delta = {"attacker": 0.0, "defender": 0.0}
+    if played:
+        role_delta = {
+            "attacker": round(role_prefix[i] - att_before, 4),
+            "defender": round(role_prefix[N + j] - def_before, 4),
+        }
+    elif o in FORFEIT_A:
+        role_delta["attacker"] = round(role_prefix[i] - att_before, 4)
+    elif o in FORFEIT_D:
+        role_delta["defender"] = round(role_prefix[N + j] - def_before, 4)
 
-    gen_prev = list(overall_prefix)
-    contest_prev = list(contest_prefix)
+    overall_prev = list(overall_prefix)
     att_prev = list(role_prefix[:N])
     def_prev = list(role_prefix[N:2 * N])
-    clean_att_prev = list(clean_prefix[:N])
-    clean_def_prev = list(clean_prefix[N:2 * N])
 
-    r["rating_delta"] = gen_delta
-    r["contest_delta"] = contest_delta
+    r["rating_delta"] = overall_delta
     r["role_delta"] = role_delta
-    # Which pool the round fed: the θ=1 attack/defence pools, the θ=0 clean
-    # diagnostics, or nothing (a void or a forfeit).
-    r["role_pool"] = ("att" if theta == 1 else "clean") if played else ""
+    # The fitted change this round caused in the published batch trail: the
+    # prefix refit before the round vs after it. This is what the match log
+    # prints; the running Elo below is only the tooltip's reference line.
+    r["fit_delta"] = {
+        "attacker": {"overall": overall_delta["attacker"],
+                     "attack": role_delta["attacker"],
+                     "defense": 0.0},
+        "defender": {"overall": overall_delta["defender"],
+                     "attack": 0.0,
+                     "defense": role_delta["defender"]},
+    }
     r["rating_after"] = {
-        "attacker": pool_after(overall_prefix, role_prefix, clean_prefix, contest_prefix, i),
-        "defender": pool_after(overall_prefix, role_prefix, clean_prefix, contest_prefix, j),
+        "attacker": pool_after(overall_prefix, role_prefix, i),
+        "defender": pool_after(overall_prefix, role_prefix, j),
     }
     ledger.append(r)
 
@@ -679,8 +655,7 @@ for r in raw:
 # sequential to give one round a bounded effect. The standings use the batch
 # fit; the match log and the champion's every-round table use this run.
 RUN_K = 32.0
-run = defaultdict(lambda: {"gen": 1500.0, "att": 1500.0, "def": 1500.0,
-                           "clean_att": 1500.0, "clean_def": 1500.0, "contest": 1500.0})
+run = defaultdict(lambda: {"overall": 1500.0, "att": 1500.0, "def": 1500.0})
 for r in ledger:
     a, d, o = r["attacker"], r["defender"], r["outcome"]
     played = o in PLAYED
@@ -689,39 +664,50 @@ for r in ledger:
     s_b = r["scores"]["defender"]
     s_a = 1.0 - s_b
 
-    run_gen = {"attacker": 0.0, "defender": 0.0}
+    run_overall = {"attacker": 0.0, "defender": 0.0}
     run_role = {"attacker": 0.0, "defender": 0.0}
-    run_contest = {"attacker": 0.0, "defender": 0.0}
 
     if contest:
-        e = 1.0 / (1.0 + 10 ** ((run[d]["contest"] - run[a]["contest"]) / 400.0))
+        e = 1.0 / (1.0 + 10 ** ((run[d]["overall"] - run[a]["overall"]) / 400.0))
         delta = RUN_K * (s_b - e)
-        run[d]["contest"] += delta
-        run[a]["contest"] -= delta
-        run_contest = {"attacker": round(-delta, 4), "defender": round(delta, 4)}
+        run[d]["overall"] += delta
+        run[a]["overall"] -= delta
+        run_overall = {"attacker": round(-delta, 4), "defender": round(delta, 4)}
 
     if played:
-        e = 1.0 / (1.0 + 10 ** ((run[d]["gen"] - run[a]["gen"]) / 400.0))
-        delta = RUN_K * (s_b - e)
-        run[d]["gen"] += delta
-        run[a]["gen"] -= delta
-        run_gen = {"attacker": round(-delta, 4), "defender": round(delta, 4)}
-
-        if theta == 1:
-            e = 1.0 / (1.0 + 10 ** ((run[d]["def"] - run[a]["att"]) / 400.0))
-            delta = RUN_K * (s_a - e)
-            run[a]["att"] += delta
-            run[d]["def"] -= delta
-        else:
-            e = 1.0 / (1.0 + 10 ** ((run[d]["clean_def"] - run[a]["clean_att"]) / 400.0))
-            delta = RUN_K * (s_a - e)
-            run[a]["clean_att"] += delta
-            run[d]["clean_def"] -= delta
+        e = 1.0 / (1.0 + 10 ** ((run[d]["def"] - run[a]["att"]) / 400.0))
+        delta = RUN_K * (s_a - e)
+        run[a]["att"] += delta
+        run[d]["def"] -= delta
         run_role = {"attacker": round(delta, 4), "defender": round(-delta, 4)}
+    else:
+        # A forfeit is a role-pool game in the batch fit, and only on the
+        # offending side. Price it the same way here, so the log's ATK/DEF line
+        # matches the headline pool instead of reading zero while the fitted
+        # rating moved. It is a plain loss, weight 1, like any played loss.
+        e = 1.0 / (1.0 + 10 ** ((run[d]["def"] - run[a]["att"]) / 400.0))
+        if o in FORFEIT_A:
+            delta = RUN_K * (0.0 - e)
+            run[a]["att"] += delta
+            run_role = {"attacker": round(delta, 4), "defender": 0.0}
+        elif o in FORFEIT_D:
+            delta = RUN_K * (1.0 - e)
+            run[d]["def"] -= delta
+            run_role = {"attacker": 0.0, "defender": round(-delta, 4)}
 
-    r["run_delta"] = run_gen
-    r["run_contest_delta"] = run_contest
+    r["run_delta"] = run_overall
     r["run_role_delta"] = run_role
+    # The three headline pools, one round at a time. An attacker only prices
+    # its attack rating and a defender only its defence rating, so the other
+    # slot is always zero.
+    r["elo_delta"] = {
+        "attacker": {"overall": run_overall["attacker"],
+                     "attack": run_role["attacker"],
+                     "defense": 0.0},
+        "defender": {"overall": run_overall["defender"],
+                     "attack": 0.0,
+                     "defense": run_role["defender"]},
+    }
     r["run_after"] = {
         "attacker": {k: round(v, 4) for k, v in run[a].items()},
         "defender": {k: round(v, 4) for k, v in run[d].items()},
@@ -747,11 +733,11 @@ acc = defaultdict(lambda: {
     "forfeit_spend": 0.0, "forfeit_fee": 0.0,
     "att_wins": 0, "att_losses": 0, "att_wins_all": 0, "att_losses_all": 0,
     "def_wins": 0, "def_losses": 0, "def_wins_all": 0, "def_losses_all": 0,
-    # θ=1 role sample: the games behind rating_att / rating_def, plus the
-    # one-sided forfeits that the role pool also prices.
+    # Role sample split by coin, descriptive only: the rating itself pools both
+    # coins, these counters are what the hover cards break out.
     "att_exploit_wins": 0, "att_exploit_losses": 0, "att_exploit_forfeits": 0,
     "def_patch_wins": 0, "def_patch_losses": 0, "def_patch_forfeits": 0,
-    # θ=0 clean diagnostics: the games behind rating_clean_att / _def.
+    # The θ=0 half of the same role sample.
     "att_clean_wins": 0, "att_clean_losses": 0,
     "def_clean_wins": 0, "def_clean_losses": 0,
 })
@@ -784,15 +770,15 @@ for r in ledger:
     D["chips"] += r["chips"]["defender"]
 
     ra, rd = r["rating_after"]["attacker"], r["rating_after"]["defender"]
-    A["hist"].append([r["round_id"], r["ts"], round(ra["gen"], 2), round(ra["att"], 2),
-                      round(ra["def"], 2), round(ra["contest"], 2)])
-    D["hist"].append([r["round_id"], r["ts"], round(rd["gen"], 2), round(rd["att"], 2),
-                      round(rd["def"], 2), round(rd["contest"], 2)])
+    A["hist"].append([r["round_id"], r["ts"], round(ra["overall"], 2), round(ra["att"], 2),
+                      round(ra["def"], 2)])
+    D["hist"].append([r["round_id"], r["ts"], round(rd["overall"], 2), round(rd["att"], 2),
+                      round(rd["def"], 2)])
 
     A["rounds_list"].append([r["round_id"], r["match_id"], "attacker", d, r["theta"], o,
-                             ac, r["run_delta"]["attacker"], r["run_contest_delta"]["attacker"]])
+                             ac, r["rating_delta"]["attacker"]])
     D["rounds_list"].append([r["round_id"], r["match_id"], "defender", a, r["theta"], o,
-                             dc, r["run_delta"]["defender"], r["run_contest_delta"]["defender"]])
+                             dc, r["rating_delta"]["defender"]])
 
     if void:
         A["voids"] += 1; D["voids"] += 1
@@ -904,25 +890,18 @@ for agent, v in acc.items():
     rows.append({
         "agent": agent,
         "model_name": resolved.get(agent, ""),
-        # Three questions, three ratings (SPEC §9.4): the all-round played
-        # contest, the θ=1 audit pool, the θ=1 pentest pool.
-        "rating": round(1500 + gen_x[i], 4),
-        "rating_ci": round(1.96 * gen_se[i], 4),
+        # Three questions, three ratings (SPEC §9.4): the all-round rating over
+        # every non-void round (a forfeit is a loss), the audit pool over every
+        # round defended, the pentest pool over every round attacked.
+        "rating": round(1500 + overall_x[i], 4),
+        "rating_ci": round(1.96 * overall_se[i], 4),
         "rating_att": round(1500 + att_x[i], 4),
         "rating_att_ci": round(1.96 * ROLES["att_se"][i], 4),
         "rating_def": round(1500 + def_x[i], 4),
         "rating_def_ci": round(1.96 * ROLES["def_se"][i], 4),
-        # Diagnostics, not answers: θ=0 clean build and false-alarm avoidance.
-        "rating_clean_att": round(1500 + clean_att_x[i], 4),
-        "rating_clean_att_ci": round(1.96 * CLEAN["att_se"][i], 4),
-        "rating_clean_def": round(1500 + clean_def_x[i], 4),
-        "rating_clean_def_ci": round(1.96 * CLEAN["def_se"][i], 4),
-        # Reliability, and the retired 0.5.0 headline kept as a non-ranking axis.
-        "rating_contest": round(1500 + contest_x[i], 4),
-        "rating_contest_ci": round(1.96 * contest_se[i], 4),
+        # The retired 0.5.0 headline kept as a non-ranking axis.
         "rating_efficiency": round(1500 + eff_x[i], 4),
         "rating_efficiency_ci": round(1.96 * eff_se[i], 4),
-        "delta_contest": round(contest_x[i] - gen_x[i], 4),
         "rounds": rounds,
         "eligible": rounds,
         "wins": v["wins"],
@@ -963,8 +942,8 @@ for agent, v in acc.items():
         "cost_total": round(v["cost_total"], 6),
         "cost_per_round": round(v["cost_total"] / (scheduled + voids), 6) if (scheduled + voids) else 0.0,
         "hist": v["hist"] + [[v["hist"][-1][0], v["hist"][-1][1],
-                              round(1500 + gen_x[i], 2), round(1500 + att_x[i], 2),
-                              round(1500 + def_x[i], 2), round(1500 + contest_x[i], 2)]]
+                              round(1500 + overall_x[i], 2), round(1500 + att_x[i], 2),
+                              round(1500 + def_x[i], 2)]]
                 if v["hist"] else [],
         "rounds_list": v["rounds_list"],
         "h2h": sorted([[o] + vals for o, vals in v["h2h"].items()], key=lambda x: (-x[1], x[0])),
@@ -1002,14 +981,12 @@ season_sha = hashlib.sha256(
 standings = {
     "season_id": SEASON,
     "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-    "scoring_version": "0.6.0",
+    "scoring_version": "0.9.0",
     "rating_method": "bradley-terry",
     "rating_prior_sd": RATING_PRIOR_SD,
     "margin_lambda": MARGIN_LAMBDA,
     "margin_clip": [MARGIN_LO, MARGIN_HI],
-    "role_forfeit_weight": ROLE_FORFEIT_W,
     "defense_advantage": round(ROLES["adv"], 4),
-    "clean_defense_advantage": round(CLEAN["adv"], 4),
     "season_sha256": season_sha,
     "ledger_sha256": ledger_sha,
     "rows": rows,
@@ -1082,14 +1059,12 @@ changelog_md = changelog_path.read_text() if changelog_path.exists() else ""
 payload = {
     "season_id": SEASON,
     "generated_at": standings["generated_at"],
-    "scoring_version": "0.6.0",
+    "scoring_version": "0.9.0",
     "rating_method": standings["rating_method"],
     "rating_prior_sd": standings["rating_prior_sd"],
     "margin_lambda": standings["margin_lambda"],
     "margin_clip": standings["margin_clip"],
-    "role_forfeit_weight": standings["role_forfeit_weight"],
     "defense_advantage": standings["defense_advantage"],
-    "clean_defense_advantage": standings["clean_defense_advantage"],
     "ledger_sha256": ledger_sha,
     "rows": [dict(r, provisional=r["eligible"] < RENDER_RANKED_AT) for r in rows],
     "ledger": ledger,
@@ -1108,26 +1083,22 @@ rendered, n = re.subn(
 )
 assert n == 1, "arena-data block not found"
 
-# --------------------------------------------------- explain layer (tooltips)
-LEGEND = """<div class="ia-legend">
-  <span class="ia-legend-title">What each outcome means</span>
-  <span class="ia-legend-item"><span class="outcome tp">TP</span> defender found the vulnerability and patched it</span>
-  <span class="ia-legend-item"><span class="outcome tn">TN</span> service was clean, defender said so</span>
-  <span class="ia-legend-item"><span class="outcome fp">FP</span> defender claimed a vulnerability on a clean service</span>
-  <span class="ia-legend-item"><span class="outcome fn">FN</span> vulnerability was there, defender missed it or patched wrongly</span>
-  <span class="ia-legend-item"><span class="outcome abstain_a">ABSTAIN</span> an agent declined to play the round — priced as a forfeit</span>
-  <span class="ia-legend-item"><span class="outcome fault_a">FAULT</span> the artifact broke the contract — priced as a forfeit</span>
-  <span class="ia-legend-item"><span class="outcome void">VOID</span> infrastructure only: replayed, no rating moved</span>
-  <span class="ia-legend-item"><span class="coin h">⚔</span> real, &theta;=1: the service has a planted vulnerability</span>
-  <span class="ia-legend-item"><span class="coin t">○</span> clean, &theta;=0: the service ships with nothing to find</span>
-</div>
-"""
-
-
+# --------------------------------------------------- tooltip layer
 def challenge_options(challenges):
     out = ['<option value="">All challenges</option>']
     for c in challenges:
         out.append(f'<option value="{c["task_id"]}">{c["title"]}</option>')
+    return "".join(out)
+
+
+def model_options(roster):
+    out = ['<option value="">All models</option>']
+    for c in sorted(roster, key=lambda c: (c.get("name") or c["agent"]).lower()):
+        if not c.get("played", True):
+            continue
+        agent = html.escape(c["agent"], quote=True)
+        label = html.escape(c.get("model_name") or c.get("name") or c["agent"])
+        out.append(f'<option value="{agent}">{label}</option>')
     return "".join(out)
 
 
@@ -1136,11 +1107,25 @@ LOG_TOOLS = """<div class="ia-logtools">
         <span>Challenge</span>
         <select id="ia-challenge">%s</select>
       </label>
+      <label class="ia-picker">
+        <span>Model</span>
+        <select id="ia-model">%s</select>
+      </label>
+      <div class="ia-seg" id="ia-role" role="group" aria-label="Role filter">
+        <button class="ia-btn" type="button" data-role="" aria-pressed="true">Any</button>
+        <button class="ia-btn" type="button" data-role="attacker" aria-pressed="false">Attacker</button>
+        <button class="ia-btn" type="button" data-role="defender" aria-pressed="false">Defender</button>
+      </div>
+      <div class="ia-seg" id="ia-theta" role="group" aria-label="Coin filter">
+        <button class="ia-btn" type="button" data-theta="" aria-pressed="true">All</button>
+        <button class="ia-btn" type="button" data-theta="1" aria-pressed="false">\u2694 \u03b8=1</button>
+        <button class="ia-btn" type="button" data-theta="0" aria-pressed="false">\u25cb \u03b8=0</button>
+      </div>
       <button class="clear" id="clear-filter" hidden>Clear filter \u2715</button>
     </div>"""
 
-# The full challenge briefing lives on its own tab, so the match log keeps only
-# the filter that narrows the log by pack.
+# The full challenge briefing lives on its own tab; the match log keeps the
+# compact filters that narrow it by pack, model, role and coin.
 CHALLENGES = '<section class="ia-challenges" id="ia-challenges"></section>'
 
 # The founder brief is a tab too: what a company that ships AI-written code
@@ -1164,9 +1149,13 @@ EXTRA_JS = ('<script id="ia-tips-script">\n'
 
 CLEAR_OLD = '<button class="clear" id="clear-filter" hidden>Clear filter \u2715</button>'
 assert CLEAR_OLD in rendered, "clear-filter button not found"
-rendered = rendered.replace(CLEAR_OLD, LOG_TOOLS % challenge_options(challenge_list), 1)
 rendered = rendered.replace(
-    "<table id=\"ledger\">", LEGEND + GAME_DETAIL + "<table id=\"ledger\">", 1,
+    CLEAR_OLD,
+    LOG_TOOLS % (challenge_options(challenge_list), model_options(roster)),
+    1,
+)
+rendered = rendered.replace(
+    "<table id=\"ledger\">", GAME_DETAIL + "<table id=\"ledger\">", 1,
 )
 assert "  <footer>" in rendered, "page footer not found"
 rendered = rendered.replace(
@@ -1238,11 +1227,11 @@ print(f"roster      : {len(roster)} champions, {len(played)} played")
 print(f"battles     : {len(battles)} rounds with a transcript replay")
 print(f"ranked at   : {RANKED_AT} eligible rounds; provisional={sum(r['provisional'] for r in rows)}/{len(rows)}")
 for r in rows:
-    print(f"  {r['agent']:14s} gen={r['rating']:7.1f}\u00b1{r['rating_ci']:5.1f} "
+    print(f"  {r['agent']:14s} rating={r['rating']:7.1f}\u00b1{r['rating_ci']:5.1f} "
           f"att={r['rating_att']:7.1f}\u00b1{r['rating_att_ci']:5.1f} "
           f"({r['att']['exploit_wins']}-{r['att']['exploit_losses']}) "
           f"def={r['rating_def']:7.1f}\u00b1{r['rating_def_ci']:5.1f} "
           f"({r['def']['patch_wins']}-{r['def']['patch_losses']}) "
-          f"all-in={r['rating_contest']:7.1f} W-L={r['wins']}-{r['losses']} "
+          f"W-L={r['wins']}-{r['losses']} all-in={r['wins_all']}-{r['losses_all']} "
           f"A={r['att']['wins']}-{r['att']['losses']} D={r['def']['wins']}-{r['def']['losses']} "
           f"void={r['voids']} played={r['rounds']} no-show={r['no_shows']} forf={r['forfeits']}")

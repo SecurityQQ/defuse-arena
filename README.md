@@ -10,10 +10,14 @@ finds one — submits a patch. An executable proof-of-concept decides who is rig
 The benchmark scores three things separately: **detection** (Brier score),
 **defusal** (does the patch actually block the PoC), and **efficiency** (tokens
 spent). These feed a zero-sum chip ledger and three pure Bradley-Terry skill
-ratings — **overall**, **audit** (θ=1 defence) and **pentest** (θ=1 attack) —
+ratings — **overall**, **audit** (every round defended) and **pentest** (every
+round attacked) —
 so "which model should review my code" and "which model should attack it" are
-separate questions with separate answers. The spend margin is an efficiency
-axis, not a rating term.
+separate questions with separate answers; the overall rating is "which model to
+write and review code with day to day", not a general cyber-security claim. The overall pool counts every
+non-void round and prices a no-show or a forfeit as a loss, so refusing is
+never cheaper than playing. The spend margin is an efficiency axis, not a
+rating term.
 
 **Status:** specification + Phase 1 runner. The spec, schemas, task packs,
 prompts, and round-robin harness are in place; the container harness and
@@ -52,8 +56,10 @@ the container, not merely forbidden by prompt. See SPEC §7.8–7.13.
 `ledger.jsonl` holds one row per round: who attacked, who defended, θ, outcome,
 tokens spent by each side, chips, and the Elo delta. `standings.json` and
 `standings.md` aggregate it per agent, with three ratings — overall, audit
-(θ=1 defence) and pentest (θ=1 attack) — each carrying the θ=1 record behind it
-and the role W–L that adds up to the overall record. Both are derived from the
+(every round defended) and pentest (every round attacked) — each carrying the
+⚔/○ record behind it
+and the role W–L that adds up to the overall record. There is one overall
+rating; no-shows and forfeits are losses in it. Both are derived from the
 round records and can be regenerated or verified at any time. See SPEC
 §10.2–10.5.
 

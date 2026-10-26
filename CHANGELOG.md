@@ -4,6 +4,173 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.9.0 — 2026-10-25 — the role is the role, not the coin
+
+### Scoring
+
+- **`rating_att` and `rating_def` now pool every round in that role, both
+  coins.** The coin is the game's condition, not what the model did: a θ=1
+  round and a θ=0 round in the same role are two games in the same pool. The
+  attacker wins a θ=1 round when the planted bug survives (`FN`) and a θ=0
+  round when the defender false-alarms (`FP`); the defender wins a θ=1 round
+  with `TP` and a θ=0 round with `TN`.
+- **`rating_clean_att` / `rating_clean_def` are gone**, and with them
+  `clean_defense_advantage`. They were the same role split by coin; that split
+  is now only a descriptive record (`att.clean_*`, `def.clean_*`) in the hover
+  card.
+- The effect: every model now has ~12 games in each role pool instead of 1–7,
+  so the 95% intervals shrink from ±350–450 to ±220–300 and one forfeit no
+  longer defines a defence rating. gpt-6.1's `rating_def` moves 1325.5 → 1562.6,
+  glm-5.3-flash's `rating_att` 1394.5 → 1286.7.
+- `rating` is unchanged: every non-void round, a forfeit a loss.
+- `scoring_version` is 0.9.0.
+
+### Board
+
+- **The podium becomes three podiums: Overall, Pentest and Audit**, three
+  models each — one champion per question instead of one overall champion and a
+  single best per role. They are compact: one column per question, the winner
+  raised inside its own column, 2nd and 3rd under it. Equal ratings share a
+  rank (`=1`), and every card opens the champion account.
+- **The overall question is renamed**: "which model overall for cyber security"
+  becomes "which model to write and review code with, day to day". The rating
+  pools writing a service and auditing one, so it is a working-with-code answer,
+  not a general security claim and not a claim that the services are safe.
+- **The summary strip counts games, not ledger rows**: Models, Games played,
+  Successful attacks, Successful defences, False alarms (FP), Missed bugs (FN)
+  and Refusals. Refusals carries the breakdown in its hover card, in plain
+  language: refused as attacker / as defender, failed as attacker / as
+  defender, artifact fault. Mean Brier and Void are gone, and so are Spend
+  and the ledger hash: the hash stays in the footer, the spend in the table.
+- The `Att` / `Def` hover cards show the ⚔ / ○ split as a record, not as two
+  ratings. The champion account drops the "clean rating" rows and labels the
+  role blocks "both coins".
+- The match-log `ATK` / `DEF` chips now move on θ=0 rounds too — those rounds
+  feed the role pools. A pool still prints a dash for the side that is not in
+  that role.
+
+## 0.8.0 — 2026-10-25 — a surrender is a plain loss
+
+### Scoring
+
+- **The 1.5× forfeit weight is gone.** A no-show or a forfeit is now a plain
+  loss, weight 1, in the role pool of the side that did not deliver — exactly
+  like a played loss. Refusing costs the round and nothing more; it is not
+  punished twice for the same surrender. `role_forfeit_weight` is removed from
+  the standings, the payload and the schema.
+- This changes `rating_att` and `rating_def`, not `rating` (the overall pool
+  already priced a forfeit as a plain loss). The running Elo in the match-log
+  tooltip drops the multiplier too.
+- `scoring_version` is 0.8.0.
+
+## 0.7.0 — 2026-10-25 — one rating: a refusal is a surrender
+
+### Scoring
+
+- **There is one overall rating again.** `rating` is now a pure Bradley-Terry
+  fit over every non-void round: a played round is a win or a loss, and a
+  no-show or a forfeit is a loss for the side that did not deliver. Refusing is
+  never cheaper than playing, and the separate `rating_contest` ("all-in") pool
+  is gone. `rating_att` and `rating_def` are unchanged; they already priced a
+  θ=1 forfeit at 1.5×.
+- **`rating_contest`, `rating_contest_ci` and `delta_contest` are removed** from
+  the standings, the payload and the schema. `wins_all` / `losses_all` stay:
+  they are the record behind the one rating.
+- **Ties are real and the board shows them.** With forfeits filling every
+  missing game the pool is a complete round-robin, and in s-2026-02 the fit
+  returns exact ties — seven distinct values for thirteen models. Equal ratings
+  now share a rank (`=1`), on the podium and in the table, instead of an
+  alphabetical order pretending to be a difference.
+- `scoring_version` is 0.7.0. Every model's number changes, and the order with
+  it: gpt-6-astra falls from 1586.0 to 1500.0 on eight no-shows, glm-5.3-max
+  rises from 1489.6 to 1551.1 on none.
+
+### Board
+
+- The **All-in** table becomes **Reliability**: the same scheduled / played /
+  no-show / forfeit / opponent-forfeit / forfeit-cost breakdown, with the rating
+  columns and the Δ vs played column removed. It is the record behind the
+  rating, not a second rating.
+- The **match log** drops the `ALL-IN` chip: `OVR` now moves on a forfeit too.
+- **The match-log chips show the fitted rating change, not the running Elo.**
+  `OVR` / `ATK` / `DEF` now carry the change in the FITTED rating — the prefix
+  refit before the round vs after it, the same curve the champion account draws —
+  and the deltas telescope to the final rating. The running Elo (K=32) stays in
+  the chip tooltip as a reference line. It could not be the headline: a fixed
+  K-step cannot move more than 48 points, so the same defender forfeit read
+  `−28.8` in the log while the fitted defence rating moved `−252`. The champion
+  account's "Every round" column switches from `Δ run` to `Δ rating` for the
+  same reason.
+- `ledger.jsonl` rows gain `fit_delta` (`overall` / `attack` / `defense` per
+  side) and `rounds_list` carries the fitted delta instead of the running one.
+- The champion account loses the all-in row and the all-in line on the rating
+  curve; the record keeps the with-forfeits W–L.
+- The summary strip's `All-in` count is renamed `Scheduled`.
+
+### Ledger
+
+- `elo_delta` is `{overall, attack, defense}` per side; `all_in` is gone and
+  `run_contest_delta` is removed. `rating_after` / `run_after` key the overall
+  pool as `overall` (was `gen`) and no longer carry `contest`. `hist` is
+  `[round_id, ts, rating, rating_att, rating_def]` and `rounds_list` is
+  `[round_id, match_id, role, opponent, theta, outcome, cost, running_delta]`.
+
+## 0.6.1 — 2026-10-25 — the match log gets filters, model profiles, and plain-language forfeits
+
+### Board
+
+- **The match log has four composable filters**: challenge, model, role
+  (`Any` / `Attacker` / `Defender`), and coin (`All` / `⚔ θ=1` / `○ θ=0`).
+  The model selector matches either side of the round, so it is the match
+  history of one model; the role selector narrows that history to rounds the
+  model attacked or defended. Clicking an agent name in a row opens the
+  champion account and sets the same model filter; the selector follows.
+  `Clear filter` resets all four; the subtitle counts the visible rounds.
+- **Clicking a model name — or a Board row or podium card — opens the
+  champion account**, not just a filter: shape, fitted rating curve, role
+  blocks, head-to-head and every round. The
+  "Every round" panel has its own `Any` / `Attacker` / `Defender` filter, so
+  the history can be narrowed to the rounds the model attacked or defended.
+  The match-log model selector stays a filter; the agent name is the profile.
+- **The champion-account history opens the full Match log as a popup.**
+  Clicking a round in "Every round" opens the complete Match log — filters,
+  dossier and the full ledger table — in a modal over the account. `✕` in the
+  popup header closes it and returns to the account; the popup never switches
+  tabs.
+- **A match dossier can be closed.** In the Match log tab the `← Back` / `✕`
+  control hides the dossier and returns to the tab the reader came from —
+  Board, Roster, Compare or Explore Challenges. A dossier opened from the
+  match log returns to the last non-log tab (Board by default).
+- **Forfeit badges are plain language, not codes.** `ABSTAIN_A` prints
+  `attacker refused`, `ABSTAIN_D` `defender refused`, `FAILED_A`
+  `attacker failed`, `FAILED_D` `defender failed`, `FAULT_A`
+  `attacker fault`, `VOID` `void · replayed`. The raw code stays in
+  `data-code` for the tooltip, the filters, and the JSON.
+- **The outcome legend is removed.** The badges and the match dossier carry
+  the explanation instead. `ABSTAIN` is a refusal/no-show,
+  `FAILED` is a model that burned budget and delivered nothing, `FAULT` is an
+  attacker artifact fault — all three are priced as forfeits (auto-loss).
+  `VOID` is the only infrastructure error: it is replayed, moves no rating,
+  and the dossier says to report the reason to the GM. A `Copy GM report`
+  button on `VOID`, `FAILED` and `FAULT` copies the round id, outcome,
+  void/fault reason, checks, cost and mechanism, so the operator can hand the
+  exact record to the game master.
+- **Every match-log row shows all three ratings.** The single `Elo A` / `Elo D`
+  badge is replaced by one chip per headline pool: `OVR` (overall, every played
+  round), `ATK` (θ=1 attack, attacker only) and `DEF` (θ=1 defence, defender
+  only). A pool the round did not feed prints a dash, not `+0.0`: θ=0 moves the
+  clean diagnostic pool, and a forfeit moves `ALL-IN`, shown as a fourth chip.
+  Each chip's tooltip carries before → after. The match dossier uses the same
+  chips, so a round reads the same in the table and in the dossier. (The
+  `ALL-IN` chip is removed in 0.7.0, where `OVR` prices the forfeit itself.)
+- `ledger.jsonl` rows gain `elo_delta` — `overall` / `attack` / `defense` /
+  `all_in` per side. A θ=1 forfeit now prices the offender's role pool in the
+  running trail at `role_forfeit_weight`, matching the batch fit, so `role_pool`
+  is `att` for it instead of empty. Headline ratings are unchanged; the ledger
+  hash changes because the row carries the new field.
+- No scoring change in this entry: `scoring_version` stays 0.6.0. Superseded by
+  0.7.0, which folds the forfeits into the one rating.
+
 ## 0.6.0 — 2026-10-25 — three ratings for three questions
 
 ### Scoring
@@ -76,6 +243,32 @@ plain markdown — no HTML, no links to local files.
   with no games sits at 1500 instead of inheriting an offset.
 - `ledger.jsonl` rows gain `role_pool` and `rating_after.{clean_att,clean_def}`;
   `role_delta` is the change in the pool the round fed.
+
+### Web
+
+- **An onboarding now ships beside the leaderboard** (`web/onboarding.html`):
+  the cinematic 3D tour of one round, rewritten in English around the actual
+  mechanics — the attacker builds the service, a fair coin decides whether a
+  vulnerability is planted, the defender reports a posterior probability and
+  submits a patch, and the grader checks the PoC against the conformance
+  suite. Rounds settle in USD, and the round Brier score is shown against the
+  truth. It is self-contained except Three.js and Google Fonts from a CDN, so
+  it needs the network, unlike `leaderboard.html`.
+- **The onboarding carries the real season, not a mock roster.** Before the
+  agent select, the tour picks the challenge: the eight v1 task-pack families
+  with their service shapes and legal bug classes, the played pack badged
+  with its real round count (Notes API · 156 rounds), and the tour round
+  marked on the ledger family. The agent select then shows the s-2026-02
+  field: the top six attackers by pentest rating in the red corner and the
+  top six defenders by audit rating in the blue corner, each card with the
+  champion's name, house title, θ=1 role record and USD per round. The
+  leaderboard drawer lists the full played standings — rank, overall rating,
+  W–L, net chips — and highlights the two champions the demo round features.
+  The numbers are copied from `standings.json`; re-embed them when a new
+  season closes.
+- The leaderboard template topbar links to it ("onboarding"). The published
+  board picks the link up on the next `--publish` regeneration; copies under
+  `seasons/` keep the relative link and are not part of the deploy.
 
 ## 0.5.0 — 2026-10-25 — honest ratings, and forfeits get their own table
 

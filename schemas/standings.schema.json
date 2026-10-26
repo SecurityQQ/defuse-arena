@@ -12,9 +12,7 @@
     "rating_prior_sd",
     "margin_lambda",
     "margin_clip",
-    "role_forfeit_weight",
     "defense_advantage",
-    "clean_defense_advantage",
     "season_sha256",
     "ledger_sha256",
     "rows"
@@ -55,18 +53,9 @@
       },
       "description": "Lower and upper bound on the spend-margin weight, used only by rating_efficiency."
     },
-    "role_forfeit_weight": {
-      "type": "number",
-      "minimum": 1,
-      "description": "Weight of a role forfeit in the attack/defence pool. A forfeit is worse than a played loss, so it weighs more than 1."
-    },
     "defense_advantage": {
       "type": "number",
-      "description": "Global defender advantage in Elo points for the \u03b8=1 audit/pentest pools, after centring attack and defence separately at 1500."
-    },
-    "clean_defense_advantage": {
-      "type": "number",
-      "description": "Global defender advantage in Elo points for the \u03b8=0 clean-build/false-alarm pools."
+      "description": "Global defender advantage in Elo points for the role pools, after centring attack and defence separately at 1500. Both coins are in the pool, so this is the average advantage across \u03b8=1 and \u03b8=0."
     },
     "season_sha256": {
       "type": "string",
@@ -88,15 +77,8 @@
           "rating_att_ci",
           "rating_def",
           "rating_def_ci",
-          "rating_clean_att",
-          "rating_clean_att_ci",
-          "rating_clean_def",
-          "rating_clean_def_ci",
-          "rating_contest",
-          "rating_contest_ci",
           "rating_efficiency",
           "rating_efficiency_ci",
-          "delta_contest",
           "rounds",
           "eligible",
           "wins",
@@ -155,7 +137,7 @@
           },
           "rating": {
             "type": "number",
-            "description": "Overall rating: pure Bradley-Terry over every played round, \u03b8=1 and \u03b8=0. 1500 is the field average. No spend margin: this is the answer to \"which model overall for cyber security\"."
+            "description": "Overall rating: pure Bradley-Terry over every non-void round, \u03b8=1 and \u03b8=0. A played round is a win or a loss; a no-show or a forfeit is a loss for the side that did not deliver, so refusing is never cheaper than playing. 1500 is the field average. No spend margin: this is the answer to \"which model overall for cyber security\"."
           },
           "rating_ci": {
             "type": "number",
@@ -163,7 +145,7 @@
           },
           "rating_att": {
             "type": "number",
-            "description": "Pentest rating: pure two-sided Bradley-Terry over the \u03b8=1 attack pool. FN is a win (the planted bug survived), TP a loss (the defender caught and closed it); an attacker forfeit is a loss at role_forfeit_weight. A defender forfeit is not an attack test and is excluded. Priced against the defender's rating_def."
+            "description": "Pentest rating: pure two-sided Bradley-Terry over every round the model attacked, \u03b8=1 and \u03b8=0. FN and FP are wins (the bug survived, or the defender false-alarmed on a clean service), TP and TN losses; an attacker forfeit is a plain loss. A defender forfeit is not an attack test and is excluded. Priced against the defender's rating_def. The coin is the game's condition, not the role, so it does not split the pool."
           },
           "rating_att_ci": {
             "type": "number",
@@ -171,23 +153,11 @@
           },
           "rating_def": {
             "type": "number",
-            "description": "Audit rating: pure two-sided Bradley-Terry over the \u03b8=1 defence pool. TP is a win, FN a loss; a defender forfeit is a loss at role_forfeit_weight. An attacker forfeit is not an audit test and is excluded. Priced against the attacker's rating_att."
+            "description": "Audit rating: pure two-sided Bradley-Terry over every round the model defended, \u03b8=1 and \u03b8=0. TP and TN are wins (the bug was caught, or the clean service was correctly called), FN and FP losses; a defender forfeit is a plain loss. An attacker forfeit is not an audit test and is excluded. Priced against the attacker's rating_att. The coin is the game's condition, not the role, so it does not split the pool."
           },
           "rating_def_ci": {
             "type": "number",
             "description": "95% confidence half-width for rating_def."
-          },
-          "rating_contest": {
-            "type": "number",
-            "description": "All-in contest rating: pure Bradley-Terry over every non-void round, with no-shows and forfeits priced as losses. Reliability when showing up is part of the score, not the skill ranking."
-          },
-          "rating_contest_ci": {
-            "type": "number",
-            "description": "95% confidence half-width for rating_contest."
-          },
-          "delta_contest": {
-            "type": "number",
-            "description": "rating_contest minus rating: what the forfeits and opponent-forfeit wins do to the played-only rating."
           },
           "rounds": {
             "type": "integer",
@@ -409,11 +379,11 @@
           },
           "hist": {
             "type": "array",
-            "description": "Prefix-fit rating trail per round: [round_id, ts, rating, rating_att, rating_def, rating_contest]. A final season-end point carries the full-fit rating."
+            "description": "Prefix-fit rating trail per round: [round_id, ts, rating, rating_att, rating_def]. A final season-end point carries the full-fit rating."
           },
           "rounds_list": {
             "type": "array",
-            "description": "Per-round record: [round_id, match_id, role, opponent, theta, outcome, cost_usd, running_delta, running_contest_delta]. The deltas are the running Elo (K=32), not the batch fit."
+            "description": "Per-round record: [round_id, match_id, role, opponent, theta, outcome, cost_usd, running_delta]. The delta is the running Elo (K=32) for the overall rating, not the batch fit."
           },
           "h2h": {
             "type": "array",
@@ -469,7 +439,7 @@
               },
               "clean_rounds": {
                 "type": "integer",
-                "description": "theta=0 clean-build rounds played."
+                "description": "\u03b8=0 attack rounds: the other half of the rating_att sample, broken out for the hover card."
               },
               "tokens": {
                 "type": "integer"
@@ -490,17 +460,17 @@
               "exploit_forfeits": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "\u03b8=1 attacker no-shows and forfeits. Priced as losses at role_forfeit_weight in rating_att; excluded from rating_def."
+                "description": "\u03b8=1 attacker no-shows and forfeits. Priced as plain losses in rating_att; excluded from rating_def because an attacker forfeit is not an audit test."
               },
               "clean_wins": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "\u03b8=0 attack wins (FP): the clean build triggered a false alarm. The sample that feeds rating_clean_att."
+                "description": "\u03b8=0 attack rounds: the other half of the rating_att sample, broken out for the hover card."
               },
               "clean_losses": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "\u03b8=0 attack losses (TN): the defender correctly called the service clean."
+                "description": "\u03b8=0 attack rounds: the other half of the rating_att sample, broken out for the hover card."
               }
             }
           },
@@ -554,7 +524,7 @@
               },
               "clean_rounds": {
                 "type": "integer",
-                "description": "theta=0 clean-service rounds played."
+                "description": "\u03b8=0 defence rounds: the other half of the rating_def sample, broken out for the hover card."
               },
               "tokens": {
                 "type": "integer"
@@ -587,35 +557,19 @@
               "patch_forfeits": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "\u03b8=1 defender no-shows and forfeits. Priced as losses at role_forfeit_weight in rating_def; excluded from rating_att."
+                "description": "\u03b8=1 defender no-shows and forfeits. Priced as plain losses in rating_def; excluded from rating_att because a defender forfeit is not an attack test."
               },
               "clean_wins": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "\u03b8=0 defence wins (TN): no false alarm. The sample that feeds rating_clean_def."
+                "description": "\u03b8=0 defence rounds: the other half of the rating_def sample, broken out for the hover card."
               },
               "clean_losses": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "\u03b8=0 defence losses (FP): a false alarm on a clean service."
+                "description": "\u03b8=0 defence rounds: the other half of the rating_def sample, broken out for the hover card."
               }
             }
-          },
-          "rating_clean_att": {
-            "type": "number",
-            "description": "Clean-build diagnostic (\u03b8=0 attack): FP is a win, TN a loss. Answers \"who writes clean services\", not \"who can pentest\". Priced against the defender's rating_clean_def."
-          },
-          "rating_clean_att_ci": {
-            "type": "number",
-            "description": "95% confidence half-width for rating_clean_att."
-          },
-          "rating_clean_def": {
-            "type": "number",
-            "description": "False-alarm diagnostic (\u03b8=0 defence): TN is a win, FP a loss. Answers \"who avoids false alarms\", not \"who can audit\". Priced against the attacker's rating_clean_att."
-          },
-          "rating_clean_def_ci": {
-            "type": "number",
-            "description": "95% confidence half-width for rating_clean_def."
           },
           "rating_efficiency": {
             "type": "number",

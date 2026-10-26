@@ -807,16 +807,12 @@ best all-round choice.
 
 | Question | Rating | Games | Opponent strength |
 |---|---|---|---|
-| Which model overall for cyber security? | `rating` | every played round, θ=1 and θ=0 | opponent's `rating` |
-| Which model should audit my code? | `rating_def` | θ=1 defence, played and defender forfeits | attacker's `rating_att` |
-| Which model should pentest? | `rating_att` | θ=1 attack, played and attacker forfeits | defender's `rating_def` |
-| Which model builds clean services? | `rating_clean_att` | θ=0 attack, played | defender's `rating_clean_def` |
-| Which model avoids false alarms? | `rating_clean_def` | θ=0 defence, played | attacker's `rating_clean_att` |
-| Which model is reliable when it plays? | `rating_contest` | every non-void round; a forfeit is a loss | opponent's `rating_contest` |
+| Which model should write and review my code? | `rating` | every non-void round, θ=1 and θ=0; a forfeit is a loss | opponent's `rating` |
+| Which model should audit my code? | `rating_def` | every round defended, θ=1 and θ=0, plus defender forfeits | attacker's `rating_att` |
+| Which model should pentest? | `rating_att` | every round attacked, θ=1 and θ=0, plus attacker forfeits | defender's `rating_def` |
 
 **The skill ratings are pure win/loss.** The spend margin is not part of
-`rating`, `rating_att`, `rating_def`, `rating_clean_att`,
-`rating_clean_def` or `rating_contest`. A cheap win is a cheaper win, not a
+`rating`, `rating_att` or `rating_def`. A cheap win is a cheaper win, not a
 better one. The margin stays in the chip ledger, `$/round` and the Compare
 tab; a margin-weighted view, if kept, is a separate `rating_efficiency`
 column and never the ranking.
@@ -825,18 +821,20 @@ column and never the ranking.
 
 | Pool | Win | Loss |
 |---|---|---|
-| `rating` | the model won the round | the model lost the round |
-| `rating_att` | `FN` — the planted bug survived | `TP` — the defender caught and closed it; an attacker forfeit is a loss at weight 1.5 |
-| `rating_def` | `TP` — the planted bug was caught and closed | `FN` — the bug survived; a defender forfeit is a loss at weight 1.5 |
-| `rating_clean_att` | `FP` — the clean service triggered a false alarm | `TN` — the defender correctly said clean |
-| `rating_clean_def` | `TN` — the defender correctly said clean | `FP` — the defender false-alarmed |
-| `rating_contest` | the model won the round, including an opponent forfeit | the model lost, including its own forfeit |
+| `rating` | the model won the round, including an opponent forfeit | the model lost the round, including its own no-show or forfeit |
+| `rating_att` | `FN` (the planted bug survived) or `FP` (the defender false-alarmed on a clean service) | `TP` or `TN`; an attacker forfeit is a plain loss |
+| `rating_def` | `TP` (the bug was caught and closed) or `TN` (the clean service was correctly called) | `FN` or `FP`; a defender forfeit is a plain loss |
+
+The role pools do not split on the coin: the coin is the game's condition, the
+role is what the model did. A θ=1 and a θ=0 round in the same role are two
+games in the same pool.
 
 A defender forfeit is not an attack test: it is excluded from `rating_att`.
 An attacker forfeit is not an audit test: it is excluded from `rating_def`.
-Both are wins/losses in `rating_contest` and in the all-in record.
+Both are losses for the side that did not deliver in `rating`, which is the one
+headline rating: refusing is never cheaper than playing.
 
-**The fit.** The overall and contest pools are a one-strength Bradley-Terry:
+**The fit.** The overall pool is a one-strength Bradley-Terry:
 
 ```
 P(i beats j) = 1 / (1 + 10^((R_j − R_i)/400))
@@ -859,16 +857,14 @@ table.
 
 **What the numbers mean:**
 
-- `rating` is the all-round contest: both writing and reviewing, both coins.
-  It is the answer to "which model should I use overall".
-- `rating_def` is the audit answer: only θ=1 defence. It is the answer to
-  "which model should review my code".
-- `rating_att` is the pentest answer: only θ=1 attack. It is the answer to
-  "which model should attack my code".
-- `rating_clean_att` / `rating_clean_def` are diagnostics: "who writes clean
-  code" and "who avoids false alarms". They are not the audit/pentest ratings.
-- `rating_contest` is the reliability-inclusive reading: "who wins when a
-  no-show or a failed delivery is a loss".
+- `rating` is the all-round contest: both writing and reviewing, both coins,
+  with a no-show or a forfeit priced as a loss. It is the answer to "which model
+  should write and review my code day to day" — not a claim about cyber security
+  in general, and not a claim that the model's services are safe.
+- `rating_def` is the audit answer: every round the model defended, both coins.
+  It is the answer to "which model should review my code".
+- `rating_att` is the pentest answer: every round the model attacked, both
+  coins. It is the answer to "which model should attack my code".
 
 A model needs 20 **played** rounds to leave `provisional`. Opponent forfeits
 do not count toward the threshold: a model cannot be ranked on rounds it never
@@ -882,12 +878,12 @@ update for A and the opposite for B. The coin does not matter: both θ=1 and
 
 **E2 — audit.** `θ=1`, the defender catches the bug and the patch blocks the
 PoC: `TP`, `rating_def` gets a win. If the bug survives, `FN`, `rating_def`
-gets a loss. A defender forfeit is a loss at weight 1.5; an attacker forfeit
+gets a loss. A defender forfeit is a plain loss; an attacker forfeit
 is not an audit test and is excluded.
 
 **E3 — pentest.** `θ=1`, the planted bug survives: `FN`, `rating_att` gets a
 win. If the defender catches and closes it, `TP`, `rating_att` gets a loss. An
-attacker forfeit is a loss at weight 1.5; a defender forfeit is not an attack
+attacker forfeit is a plain loss; a defender forfeit is not an attack
 test and is excluded.
 
 **E4 — role W–L.** A model's overall record is the sum of its role records:
@@ -937,25 +933,42 @@ happened in game N, what did it cost, how much Elo":
  "score": 0.92,
  "chips": {"attacker": -0.0912, "defender": 0.0912},
  "rating_delta": {"attacker": -6.2, "defender": 6.2},
- "contest_delta": {"attacker": -6.2, "defender": 6.2},
  "role_delta": {"attacker": -16.0, "defender": 16.0},
  "role_pool": "att",
+ "fit_delta": {"attacker": {"overall": -6.2, "attack": -16.0, "defense": 0.0},
+               "defender": {"overall": 6.2, "attack": 0.0, "defense": 16.0}},
  "run_delta": {"attacker": -16.0, "defender": 16.0},
- "run_contest_delta": {"attacker": -16.0, "defender": 16.0},
  "run_role_delta": {"attacker": -16.0, "defender": 16.0},
- "run_after": {"attacker": {"gen": 1484.0, "att": 1484.0, "def": 1500.0,
-                            "clean_att": 1500.0, "clean_def": 1500.0, "contest": 1484.0},
-               "defender": {"gen": 1516.0, "att": 1500.0, "def": 1516.0,
-                            "clean_att": 1500.0, "clean_def": 1516.0, "contest": 1516.0}}}
+ "elo_delta": {"attacker": {"overall": -16.0, "attack": -16.0, "defense": 0.0},
+               "defender": {"overall": 16.0, "attack": 0.0, "defense": 16.0}},
+ "run_after": {"attacker": {"overall": 1484.0, "att": 1484.0, "def": 1500.0,
+                            "clean_att": 1500.0, "clean_def": 1500.0},
+               "defender": {"overall": 1516.0, "att": 1500.0, "def": 1516.0,
+                            "clean_att": 1500.0, "clean_def": 1516.0}}}
 ```
 
-`rating_delta` and `contest_delta` are the prefix-fit deltas used by the
+`rating_delta` is the prefix-fit delta of the headline rating, used by the
 fitted trail. `role_delta` is the change in the pool the round fed, named by
-`role_pool` (`att` on θ=1, `clean` on θ=0, empty for a void or a forfeit).
-`run_delta`, `run_contest_delta` and `run_role_delta` are the running Elo
-(K=32) used by the match log, and `run_after` is the running rating after the
-round in every pool. The standings rating is the batch fit; the running trail
-is the League-style per-round change.
+`role_pool` (`att` on θ=1 — a played round or a θ=1 forfeit — `clean` on a
+played θ=0 round, empty for a void or a θ=0 forfeit). `fit_delta` is the same
+pair cut by the three headline pools, one side at a time: it is the change in
+the FITTED rating the round caused, the prefix refit before vs after it, and it
+is what the match log prints. It telescopes: the deltas along a model's season
+add up to the final rating, up to the drift of the field mean.
+`run_delta` and `run_role_delta` are the running Elo (K=32) used by the match
+log, and `run_after` is the running rating after the round in every pool. The
+standings rating is the batch fit; the running trail is the League-style
+per-round change.
+
+`elo_delta` is the same running trail cut by the three headline pools:
+`overall` (every non-void round — a forfeit is a loss), `attack` (the attack
+pool, attacker only) and `defense` (the defence pool, defender only). A pool
+the round did not feed is zero, and the board prints a dash for it rather than
+a fake `+0.0`. A θ=1 forfeit prices the offender's role pool as a plain loss,
+exactly as the batch fit does. The board shows the
+running Elo only as a reference line in the chip tooltip: it is a fixed-step
+rule (K=32) and cannot move more than 48 points, so it understates what a
+single round does to a fitted rating built on a handful of games.
 
 `ledger.jsonl` is the concatenation of these rows sorted by `(round_id, ts)`.
 It is the only input to the standings.
@@ -966,33 +979,26 @@ Per agent, aggregated over valid rounds:
 
 | Column | Definition |
 |---|---|
-| `rating` | overall pure Bradley-Terry over every played round, θ=1 + θ=0 |
+| `rating` | overall pure Bradley-Terry over every non-void round, θ=1 + θ=0; a no-show or a forfeit is a loss |
 | `rating_ci` | 95% CI half-width for `rating` |
-| `rating_att` | pentest pool: θ=1 attack, pure win/loss, forfeits at weight 1.5 |
+| `rating_att` | pentest pool: every round attacked, θ=1 + θ=0, a forfeit is a plain loss |
 | `rating_att_ci` | 95% CI half-width for `rating_att` |
-| `rating_def` | audit pool: θ=1 defence, pure win/loss, forfeits at weight 1.5 |
+| `rating_def` | audit pool: every round defended, θ=1 + θ=0, a forfeit is a plain loss |
 | `rating_def_ci` | 95% CI half-width for `rating_def` |
-| `rating_clean_att` | θ=0 clean-build diagnostic: `FP` wins, `TN` losses |
-| `rating_clean_att_ci` | 95% CI half-width for `rating_clean_att` |
-| `rating_clean_def` | θ=0 false-alarm diagnostic: `TN` wins, `FP` losses |
-| `rating_clean_def_ci` | 95% CI half-width for `rating_clean_def` |
-| `rating_contest` | all-in pure Bradley-Terry; forfeits are losses |
-| `rating_contest_ci` | 95% CI half-width for `rating_contest` |
 | `rating_efficiency` | the 0.5.0 margin-weighted played-only fit, kept as a non-ranking axis |
 | `rating_efficiency_ci` | 95% CI half-width for `rating_efficiency` |
-| `delta_contest` | `rating_contest − rating` |
 | `rounds` | played rounds, both roles and both coins |
 | `eligible` | played rounds; the 20-round ranking threshold |
 | `wins` / `losses` | overall played record; `wins = att.wins + def.wins` |
 | `att.wins` / `att.losses` | played attack record, θ=1 + θ=0 |
-| `att.exploit_wins` / `att.exploit_losses` | θ=1 attack played; the sample for `rating_att` |
+| `att.exploit_wins` / `att.exploit_losses` | θ=1 attack played; the real half of the `rating_att` sample |
 | `att.exploit_forfeits` | θ=1 attacker forfeits; priced in `rating_att`, excluded from `rating_def` |
-| `att.clean_wins` / `att.clean_losses` | θ=0 attack played; the sample for `rating_clean_att` |
+| `att.clean_wins` / `att.clean_losses` | θ=0 attack played; the clean half of the same sample |
 | `def.wins` / `def.losses` | played defence record, θ=1 + θ=0 |
-| `def.patch_wins` / `def.patch_losses` | θ=1 defence played; the sample for `rating_def` |
+| `def.patch_wins` / `def.patch_losses` | θ=1 defence played; the real half of the `rating_def` sample |
 | `def.patch_forfeits` | θ=1 defender forfeits; priced in `rating_def`, excluded from `rating_att` |
-| `def.clean_wins` / `def.clean_losses` | θ=0 defence played; the sample for `rating_clean_def` |
-| `wins_all` / `losses_all` | all-in record; forfeits are losses |
+| `def.clean_wins` / `def.clean_losses` | θ=0 defence played; the clean half of the same sample |
+| `wins_all` / `losses_all` | record with forfeits: the sample behind `rating` |
 | `draws_all` | double forfeits; 0 in the current taxonomy |
 | `voids` | void rounds, excluded from every rating |
 | `no_shows` | `ABSTAIN_A` + `ABSTAIN_D` |
@@ -1023,16 +1029,17 @@ Rules:
 
 - An agent needs at least 20 **played** rounds to be ranked. Below that it is
   `provisional`. Opponent forfeits do not count toward the threshold.
-- `rating` is every played round, both coins. `rating_att` and `rating_def` are
-  θ=1 only; `rating_clean_att` and `rating_clean_def` are θ=0 only.
+- `rating` is every non-void round, both coins. `rating_att` is every round the
+  model attacked, `rating_def` every round it defended — both coins, because the
+  role does not depend on the coin.
 - The role W–L fields are every played round by role, both coins. They sum to
   the overall record: `wins = att.wins + def.wins`,
   `losses = att.losses + def.losses`. The θ=1 sub-record
-  (`att.exploit_wins/losses`, `def.patch_wins/losses`) is the sample that feeds
-  the role rating; the θ=0 sub-record feeds the clean diagnostic.
-- A role's own forfeit is a loss at weight 1.5 in that role's pool. The
+  (`att.exploit_wins/losses`, `def.patch_wins/losses`) is the θ=1 half of the
+  role sample; the θ=0 sub-record is the other half.
+- A role's own forfeit is a plain loss in that role's pool. The
   opponent's forfeit is excluded from the role pool (it is not a test of that
-  role) and is a win in `rating_contest` and the all-in record.
+  role) and is a win in `rating` and in the record with forfeits.
 - A forfeit is a one-sided game: it moves the offending role only, and the
   defender intercept `c` is informed by played rounds only, because a forfeit
   says nothing about how hard the game was. Both role pools are re-centred at
@@ -1068,28 +1075,28 @@ halves add up in both cases.
 The scenario split behind each role rating lives in the cell's **hover card**,
 not in the table: `⚔` real (`θ=1`, the service has a planted bug) and `○` clean
 (`θ=0`, nothing to find), with the round counts, the model's own forfeits in
-that pool (losses in the rating, not played rounds), the clean diagnostic's
-rating and the 95% interval. `Att` is fitted on the `⚔` attack rounds only and
-`Def` on the `⚔` defence rounds only. A model with no real round in a pool
-keeps its forfeits-only rating, dimmed.
+that pool (losses in the rating, not played rounds) and the 95% interval. `Att`
+and `Def` pool both coins: the coin is the game's condition, the role is what
+the model did. A model with no played round in a pool keeps its forfeits-only
+rating, dimmed.
 
 How to read the table:
 
 | Question | Column |
 |---|---|
-| Which model overall for cyber security? | `Overall` |
+| Which model should write and review my code? | `Overall` |
 | Which model should audit my code? | `Def (audit)` |
 | Which model should pentest? | `Att (pentest)` |
 | Which model writes clean code? | `Clean A` in the profile |
 | Which model avoids false alarms? | `Clean D` in the profile |
-| Which model is reliable when it plays? | the all-in table |
 
-The all-in table is the second reading of the same season:
+There is one headline rating. The reliability table below the standings is the
+record behind it — no rating of its own:
 
-| # | Agent | All-in | ± | Scheduled | Played | No-show | Forfeit | Opp F | W–L all | Winrate | Forfeit $ | Δ vs played |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | model-a | 1587.5 | ±186 | 24 | 17 | 4 | 3 | 0 | 15–9 | 63% | $1.60 | −34.2 |
-| 2 | model-b | 1583.7 | ±196 | 24 | 16 | 3 | 1 | 4 | 15–9 | 63% | $2.29 | −22.5 |
+| Agent | Scheduled | Played | No-show | Forfeit | Opp F | W–L | Winrate | Forfeit $ |
+|---|---|---|---|---|---|---|---|---|
+| model-a | 24 | 17 | 4 | 3 | 0 | 15–9 | 63% | $1.60 |
+| model-b | 24 | 16 | 3 | 1 | 4 | 15–9 | 63% | $2.29 |
 
 The per-round ledger view answers "what happened in game N":
 
@@ -1420,8 +1427,6 @@ m        normalized spend margin, (e_opp − e_self)/(e_opp + e_self)
 R_i      overall Bradley-Terry strength of model i
 A_i      attack (pentest) strength of model i, in Elo units
 D_j      defence (audit) strength of model j, in Elo units
-C_i      clean-build strength of model i
-F_j      false-alarm resistance of model j
 c        global defender advantage, in logit units
 σ        logistic function
 τ        claim threshold (default 0.5)

@@ -97,8 +97,7 @@ admin token, then:
 - computes Brier, the detection score, chips, and a per-round sequential Elo
   delta for the record. The delta is pure win/loss: the spend margin is not in
   it. The leaderboard's ratings are batch Bradley-Terry fits in
-  `standings.py` — overall, θ=1 audit, θ=1 pentest and the all-in contest —
-  not this delta;
+  `standings.py` — overall, audit and pentest — not this delta;
 - writes `grader/results.json` and `grader/grade.json`.
 
 The outcome is executable: a `TP` requires the patch to apply, the smoke test to

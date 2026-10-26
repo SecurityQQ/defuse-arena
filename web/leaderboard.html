@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Inspection Arena — Leaderboard</title>
+<title>Code Audit Benchmark — Leaderboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -83,6 +83,8 @@
   }
 
   .topbar b { color: var(--gold); font-weight: 600; }
+  .topbar a { color: var(--gold); text-decoration: none; }
+  .topbar a:hover { color: var(--gold-2); }
 
   /* ---------- masthead ---------- */
 
@@ -90,13 +92,6 @@
     text-align: center;
     padding: 46px 0 34px;
     position: relative;
-  }
-
-  .eyebrow {
-    font-size: 10px;
-    letter-spacing: .38em;
-    text-transform: uppercase;
-    color: var(--muted);
   }
 
   h1 {
@@ -121,33 +116,6 @@
     100% { background-position: -20% center; }
   }
 
-  .ornament {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    color: var(--gold);
-    font-size: 11px;
-  }
-
-  .ornament::before,
-  .ornament::after {
-    content: "";
-    width: min(180px, 22vw);
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold));
-  }
-
-  .ornament::after { transform: scaleX(-1); }
-
-  .tagline {
-    margin: 16px 0 0;
-    color: var(--muted);
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    font-size: 10px;
-  }
-
   .empty-banner {
     margin: 0 0 18px;
     padding: 14px 18px;
@@ -167,7 +135,7 @@
 
   .summary {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(7, 1fr);
     gap: 1px;
     background: var(--line);
     border: 1px solid var(--line);
@@ -201,68 +169,107 @@
     letter-spacing: .14em;
   }
 
-  /* ---------- podium ---------- */
+  /* ---------- podiums: one per question, compact ---------- */
 
-  .podium {
+  .podiums {
     display: grid;
-    grid-template-columns: 1fr 1.12fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 14px;
-    align-items: end;
     margin-bottom: 22px;
   }
 
-  .champ {
+  .podium-col {
     position: relative;
-    padding: 20px 18px 18px;
-    text-align: center;
+    padding: 14px 16px 12px;
     border: 1px solid var(--line);
     background:
       linear-gradient(180deg, rgba(15, 27, 45, .92), rgba(6, 16, 31, .92));
     overflow: hidden;
   }
 
-  .champ::before {
+  .podium-col::before {
     content: "";
     position: absolute;
     inset: 0;
-    background: radial-gradient(220px 90px at 50% 0%, rgba(200, 170, 110, .12), transparent 70%);
+    background: radial-gradient(220px 90px at 50% 0%, rgba(200, 170, 110, .10), transparent 70%);
     pointer-events: none;
   }
 
-  .champ.first {
-    padding: 30px 18px 24px;
-    border-color: rgba(200, 170, 110, .45);
-    box-shadow: 0 0 60px rgba(200, 170, 110, .12), inset 0 0 40px rgba(200, 170, 110, .04);
+  .podium-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0 0 10px;
   }
+
+  .podium-head h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 12.5px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .podium-head p {
+    margin: 0;
+    font-size: 10px;
+    letter-spacing: .03em;
+    color: var(--muted);
+  }
+
+  .podium-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .champ {
+    position: relative;
+    display: grid;
+    grid-template-columns: 20px 1fr auto;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid var(--line-soft);
+    background: rgba(10, 20, 35, .55);
+    cursor: pointer;
+  }
+
+  .champ.first {
+    padding: 13px 11px;
+    border-color: rgba(200, 170, 110, .45);
+    box-shadow: 0 0 40px rgba(200, 170, 110, .10), inset 0 0 24px rgba(200, 170, 110, .04);
+  }
+
+  .champ:hover { border-color: rgba(200, 170, 110, .62); }
 
   .champ-rank {
     font-family: var(--font-display);
-    font-size: 13px;
+    font-size: 11.5px;
     color: var(--gold-3);
-    letter-spacing: .2em;
+    letter-spacing: .12em;
   }
 
   .champ.first .champ-rank { color: var(--gold); }
 
   .champ h3 {
-    margin: 6px 0 8px;
-    font-size: 18px;
-    letter-spacing: .12em;
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: .08em;
     color: var(--white);
     text-transform: uppercase;
   }
 
-  .champ.first h3 { font-size: 22px; }
+  .champ.first h3 { font-size: 15px; }
 
   .champ-rating {
-    font-family: var(--font-display);
-    font-size: 34px;
+    font-family: var(--font-mono);
+    font-size: 13px;
     color: var(--gold-2);
-    line-height: 1;
-    margin: 10px 0 8px;
   }
 
-  .champ.first .champ-rating { font-size: 44px; }
+  .champ.first .champ-rating { font-size: 17px; }
 
   /* ---------- panels ---------- */
 
@@ -442,6 +449,7 @@
   tbody tr:hover { background: linear-gradient(90deg, rgba(200, 170, 110, .07), transparent 65%); }
 
   tbody tr.podium-row:hover { background: linear-gradient(90deg, rgba(200, 170, 110, .12), transparent 65%); }
+  #standings tbody tr[data-agent], #reliability tbody tr[data-agent] { cursor: pointer; }
 
   tbody tr.prov { opacity: .55; }
 
@@ -696,8 +704,7 @@
 
   @media (max-width: 900px) {
     .summary { grid-template-columns: repeat(2, 1fr); }
-    .podium { grid-template-columns: 1fr; }
-    .champ.first { order: -1; }
+    .podiums { grid-template-columns: 1fr; }
     .panel-head { align-items: flex-start; }
     .page { padding: 18px 14px 30px; }
   }
@@ -723,16 +730,15 @@
     #standings th:nth-child(14), #standings td:nth-child(14),
     #standings th:nth-child(15), #standings td:nth-child(15),
     #standings th:nth-child(16), #standings td:nth-child(16),
-    #allin th:nth-child(4), #allin td:nth-child(4),
-    #allin th:nth-child(5), #allin td:nth-child(5),
-    #allin th:nth-child(12), #allin td:nth-child(12) {
+    #reliability th:nth-child(4), #reliability td:nth-child(4),
+    #reliability th:nth-child(5), #reliability td:nth-child(5),
+    #reliability th:nth-child(9), #reliability td:nth-child(9) {
       display: none;
     }
   }
 
   @media (max-width: 600px) {
     h1 { letter-spacing: .08em; text-indent: .08em; }
-    .eyebrow { letter-spacing: .2em; font-size: 9px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -744,15 +750,12 @@
 <div class="page">
 
   <div class="topbar">
-    <span><b>Inspection Arena</b> · hidden-vulnerability auditing</span>
+    <span><b>Code Audit Benchmark</b> · hidden-vulnerability auditing · <a href="onboarding.html">onboarding</a></span>
     <span id="season-label">No season loaded</span>
   </div>
 
   <header class="masthead">
-    <div class="eyebrow">Two agents · one coin · an audit that has to hold</div>
     <h1>Leaderboard</h1>
-    <div class="ornament"><span>◆</span></div>
-    <p class="tagline">Detection · Defusal · Efficiency</p>
   </header>
 
   <div class="empty-banner" id="empty-banner" hidden>
@@ -762,25 +765,18 @@
 
   <section class="summary" id="summary" aria-label="Season summary"></section>
 
-  <section class="podium" id="podium" aria-label="Top three agents"></section>
+  <section class="podiums" id="podium" aria-label="Top three models by question"></section>
 
   <section class="panel">
     <div class="panel-head">
       <div>
         <h2>Standings</h2>
-        <p class="sub">Every row adds up. <b>⚔</b> is a real round — θ=1, the service had a planted
-        bug; <b>○</b> is a clean round — θ=0, there was nothing to find. In each role the two
-        records sum to that role's record, attack and defence sum to <b>Rounds</b>, and the two
-        role records sum to <b>W–L</b>. <b>Att</b> is the pentest rating, fitted on the ⚔ attack
-        rounds only; <b>Def</b> is the audit rating, fitted on the ⚔ defence rounds only.
-        <b>4F</b> means four own forfeits in that pool, priced as losses. No-shows and forfeits
-        live in the all-in table below. Click a column to re-sort.</p>
       </div>
       <div class="controls">
         <div class="tabs" role="tablist" aria-label="Rating mode">
           <button class="tab active" data-role="overall" role="tab" aria-selected="true">Overall</button>
-          <button class="tab" data-role="att" role="tab" aria-selected="false" title="pentest tab \u00b7 sort the table by the \u03b8=1 attack pool">Attacker</button>
-          <button class="tab" data-role="def" role="tab" aria-selected="false" title="audit tab \u00b7 sort the table by the \u03b8=1 defence pool">Defender</button>
+          <button class="tab" data-role="att" role="tab" aria-selected="false" title="pentest tab \u00b7 sort the table by the attack rating, every round attacked">Attacker</button>
+          <button class="tab" data-role="def" role="tab" aria-selected="false" title="audit tab \u00b7 sort the table by the defence rating, every round defended">Defender</button>
           <button class="tab" data-role="changelog" role="tab" aria-selected="false">Changelog</button>
         </div>
         <input class="search" id="search" type="search" placeholder="Search agent…" aria-label="Search agent">
@@ -792,19 +788,19 @@
     <div class="changelog" id="changelog" hidden></div>
   </section>
 
-  <section class="panel" id="allin-panel">
+  <section class="panel" id="reliability-panel">
     <div class="panel-head">
       <div>
-        <h2>All-in — no-shows and forfeits</h2>
-        <p class="sub">The same field with every refused or failed round priced as a loss.
-        The all-in rating is pure win/loss and opponent-weighted: losing to a stronger model
-        costs less than losing to a weaker one, so a no-show against the top of the field is
-        cheaper than one against the bottom. It answers "who is reliable when it plays",
-        not "who is the best model".</p>
+        <h2>Reliability — no-shows and forfeits</h2>
+        <p class="sub">The record behind the rating. Every non-void round is a game: a played
+        round is a win or a loss, and a no-show or a forfeit is a loss for the side that did not
+        deliver. The rating is opponent-weighted, so a no-show against the top of the field costs
+        less than one against the bottom. This table carries no rating of its own — there is
+        only one.</p>
       </div>
     </div>
     <div class="table-wrap">
-      <table id="allin"></table>
+      <table id="reliability"></table>
     </div>
   </section>
 
@@ -813,10 +809,12 @@
       <div>
         <h2>Match log</h2>
         <p class="sub" id="ledger-sub">Every round, every token, every rating point.</p>
-        <p class="ia-lp-note">League-style <b>running Elo</b> (K=32): the big number is the
-        overall played-only change, the small line is the pool the role fed — <b>ATK</b>/<b>DEF</b>
-        on θ=1, <b>CLEAN</b> on θ=0. A forfeit shows the running all-in change. The standings
-        above are the fitted batch rating, not this trail.</p>
+        <p class="ia-lp-note">One chip per rating, and the number is the change in the
+        <b>fitted</b> rating: the prefix refit before the round vs after it — the same curve the
+        champion account draws. <b>OVR</b> is the overall pool (every non-void round, a forfeit is
+        a loss), <b>ATK</b>/<b>DEF</b> are the θ=1 role pools. On θ=0 the role pools are not priced
+        and the clean diagnostic moves instead, so those chips read —. Hover a chip for
+        before → after and the running Elo (K=32) as a reference line.</p>
       </div>
       <button class="clear" id="clear-filter" hidden>Clear filter ✕</button>
     </div>
@@ -893,6 +891,19 @@
   const FORFEIT_A = new Set(["ABSTAIN_A", "FAILED_A", "FAULT_A"]);
   const FORFEIT_D = new Set(["ABSTAIN_D", "FAILED_D"]);
 
+  // The raw outcome code stays in data-code for the tooltip and the filters;
+  // the cell prints the plain-language meaning so FAILED_A is not read as a
+  // field name and ABSTAIN_A is not read as a harness error.
+  const OUTCOME_LABEL = {
+    ABSTAIN_A: "attacker refused",
+    ABSTAIN_D: "defender refused",
+    FAILED_A: "attacker failed",
+    FAILED_D: "defender failed",
+    FAULT_A: "attacker fault",
+    VOID: "void · replayed"
+  };
+  const outcomeLabel = o => OUTCOME_LABEL[o] || o;
+
   const winFor = (row, agent) => {
     if (row.outcome === "VOID") return null;
     // Forfeits are contest results: a loss for the offender, a win for the
@@ -931,62 +942,88 @@
       .slice(0, 3);
 
   function renderSummary() {
-    // Each round is counted once per side in the rows, so the season totals
-    // are halved. No-shows and forfeits are counted on the offender only.
-    const playedWeight = DATA.rows.reduce((s, r) => s + r.rounds, 0);
-    const played = playedWeight / 2;
-    const voids = DATA.rows.reduce((s, r) => s + r.voids, 0) / 2;
-    const scheduled = DATA.rows.reduce((s, r) => s + r.scheduled, 0) / 2;
-    const noShows = DATA.rows.reduce((s, r) => s + r.no_shows, 0);
-    const forfeits = DATA.rows.reduce((s, r) => s + r.forfeits, 0);
-    const spend = DATA.rows.reduce((s, r) => s + r.cost_total, 0);
-    const brier = playedWeight ? DATA.rows.reduce((s, r) => s + r.brier * r.rounds, 0) / playedWeight : null;
+    const L = DATA.ledger || [];
+    const n = os => L.filter(r => os.includes(r.outcome)).length;
+    const played = n(["TP", "TN", "FP", "FN", "DISCOVERY"]);
+    const attWins = n(["FN", "FP"]);
+    const defWins = n(["TP", "TN", "DISCOVERY"]);
+    const fp = n(["FP"]);
+    const fn = n(["FN"]);
+    const noShowA = n(["ABSTAIN_A"]), noShowD = n(["ABSTAIN_D"]);
+    const failedA = n(["FAILED_A"]), failedD = n(["FAILED_D"]);
+    const faultA = n(["FAULT_A"]);
+    const refusals = noShowA + noShowD + failedA + failedD + faultA;
+
+    const refusalTip = [
+      "refusals \u2014 rounds a model did not deliver",
+      `refused: ${noShowA} as attacker, ${noShowD} as defender \u2014 a clean exit with no artifact and barely any work`,
+      `failed: ${failedA} as attacker, ${failedD} as defender \u2014 budget spent, nothing runnable delivered`,
+      `artifact fault: ${faultA} as attacker \u2014 the attacker's service broke the round`,
+      "each one is a plain loss for the side that did not deliver",
+    ].join(" \u00b7 ");
 
     const stats = [
-      ["Agents", DATA.rows.length],
-      ["Played", played],
-      ["All-in", scheduled],
-      ["No-show", noShows],
-      ["Forfeit", forfeits],
-      ["Void", voids],
-      ["Spend", usd(spend)],
-      ["Mean Brier", brier == null ? "\u2014" : brier.toFixed(3)],
-      ["Ledger", DATA.ledger_sha256 ? "Verified" : "\u2014"],
+      ["Models", DATA.rows.length],
+      ["Games played", played],
+      ["Successful attacks", attWins],
+      ["Successful defences", defWins],
+      ["False alarms", fp],
+      ["Missed bugs", fn],
+      ["Refusals", refusals, refusalTip],
     ];
 
     document.getElementById("summary").innerHTML = stats
-      .map(([k, v]) => {
-        const ok = v === "Verified";
-        return `<div class="stat"><span class="k">${k}</span><span class="v ${ok ? "ok" : ""}">${v}</span></div>`;
-      })
+      .map(([k, v, tip]) => `<div class="stat"><span class="k"${tip ? ` title="${tip}"` : ""}>${k}</span><span class="v">${v}</span></div>`)
       .join("");
   }
 
-  function renderPodium() {
-    const top = topThree();
-    const order = [1, 0, 2];
-    const podium = document.getElementById("podium");
+  // Equal ratings share a rank. The fit can return exact ties — a round-robin
+  // where a forfeit fills in every missing game leaves players with the same
+  // record indistinguishable — and printing 1 and 2 for the same number would
+  // invent an order the data does not have.
+  const ranksFor = (list, key) => {
+    let rank = 0, prev = null;
+    return list.map((a, i) => {
+      const v = a[key];
+      if (prev === null || v !== prev) rank = i + 1;
+      prev = v;
+      return rank;
+    });
+  };
 
-    if (!top.length) {
-      podium.hidden = true;
-      podium.innerHTML = "";
+  // Three questions, three compact podiums: the winner is raised inside its
+  // column, the 2nd and 3rd sit under it. Same shape as the old board, a third
+  // of the height.
+  const TOP3 = [
+    ["Overall", "which model to write and review code with", "rating"],
+    ["Pentest", "which model should attack my code", "rating_att"],
+    ["Audit", "which model should review my code", "rating_def"],
+  ];
+
+  function renderPodium() {
+    const host = document.getElementById("podium");
+    if (!DATA.rows.length) {
+      host.hidden = true;
+      host.innerHTML = "";
       return;
     }
-
-    podium.hidden = false;
-    podium.innerHTML = order
-      .map(i => {
-        const a = top[i];
-        if (!a) return "";
-        const [, tier, cls] = tierOf(a.rating);
-        return `<article class="champ ${i === 0 ? "first" : ""}">
-          <div class="champ-rank">${i + 1}</div>
+    host.hidden = false;
+    host.innerHTML = TOP3.map(([label, question, field]) => {
+      const list = DATA.rows.slice().sort((a, b) => b[field] - a[field]).slice(0, 3);
+      const ranks = ranksFor(list, field);
+      const cards = list.map((a, i) => {
+        const tied = ranks.filter(r => r === ranks[i]).length > 1;
+        return `<article class="champ ${i === 0 ? "first" : ""}" data-agent="${a.agent}" title="${a.model_name || a.agent}">
+          <div class="champ-rank">${tied ? "=" : ""}${ranks[i]}</div>
           <h3>${a.agent}</h3>
-          <div class="champ-tier ${cls}">${tier}</div>
-          <div class="champ-rating">${a.rating.toFixed(1)}</div>
+          <div class="champ-rating" title="${label} rating \u00b7 ${question}">${a[field].toFixed(1)}</div>
         </article>`;
-      })
-      .join("");
+      }).join("");
+      return `<div class="podium-col">
+        <div class="podium-head"><h3>${label}</h3><p>${question}</p></div>
+        <div class="podium-list">${cards}</div>
+      </div>`;
+    }).join("");
   }
 
   const COLUMNS = [
@@ -1008,11 +1045,11 @@
     ["net_chips", "Chips", "net_chips"],
   ];
 
-  // One role cell: the rating and nothing else. The record behind it — the
-  // role's rounds split into ⚔ real (θ=1, a planted bug) and ○ clean (θ=0,
-  // nothing to find), plus the model's own forfeits in that pool — lives in
-  // the hover card, so the table stays a table and the detail is one hover
-  // away.
+  // One role cell: the rating and nothing else. The rating pools every round
+  // the model played in that role, both coins — the coin is the game's
+  // condition, not the role. The record behind it, split into ⚔ real (θ=1, a
+  // planted bug) and ○ clean (θ=0, nothing to find), plus the model's own
+  // forfeits in that pool, lives in the hover card.
   function roleCell(a, kind) {
     const att = kind === "att";
     const role = att ? a.att : a.def;
@@ -1021,30 +1058,28 @@
     const real = `${att ? role.exploit_wins : role.patch_wins}\u2013${att ? role.exploit_losses : role.patch_losses}`;
     const clean = `${role.clean_wins}\u2013${role.clean_losses}`;
     const forf = att ? role.exploit_forfeits : role.patch_forfeits;
-    const played = att ? role.exploit_rounds : role.patch_rounds;
-    const cleanRating = att ? a.rating_clean_att : a.rating_clean_def;
+    const realRounds = att ? role.exploit_rounds : role.patch_rounds;
     const name = att ? "pentest" : "audit";
     const game = att ? "attack" : "defence";
     const title = [
-      `${name} rating`,
-      `${real} in ${played} real ${game} round${played === 1 ? "" : "s"} \u2014 \u2694\uFE0E \u03b8=1, the service had a planted bug`,
-      `${clean} in ${role.clean_rounds} clean ${game} round${role.clean_rounds === 1 ? "" : "s"} \u2014 \u25CB \u03b8=0, nothing to find `
-        + `(a separate diagnostic, rating ${cleanRating.toFixed(1)})`,
-      `${role.rounds} ${game} rounds in total`,
-      forf ? `${forf} own forfeit${forf === 1 ? "" : "s"} in the real pool, priced as a loss at ${DATA.role_forfeit_weight}\u00d7` : "",
+      `${name} rating over every ${game} round, both coins`,
+      `${real} in ${realRounds} real ${game} round${realRounds === 1 ? "" : "s"} \u2014 \u2694\uFE0E \u03b8=1, the service had a planted bug`,
+      `${clean} in ${role.clean_rounds} clean ${game} round${role.clean_rounds === 1 ? "" : "s"} \u2014 \u25CB \u03b8=0, nothing to find`,
+      `${role.rounds} played ${game} rounds in total`,
+      forf ? `${forf} own forfeit${forf === 1 ? "" : "s"} in this pool, priced as a plain loss` : "",
       `95% CI \u00b1${ci.toFixed(0)}`,
-      played ? "" : "no real round played in this pool: the rating is forfeits only",
+      role.rounds ? "" : "no round played in this pool: the rating is forfeits only",
     ].filter(Boolean).join(" \u00b7 ");
-    return `<td class="dim${played ? "" : " thin"}" title="${title}">${rating.toFixed(1)}</td>`;
+    return `<td class="dim${role.rounds ? "" : " thin"}" title="${title}">${rating.toFixed(1)}</td>`;
   }
 
-  function rowHtml(a, rank) {
+  function rowHtml(a, rank, tied) {
     const [, tier, cls] = tierOf(a.rating);
     const total = a.wins + a.losses || 1;
     const wr = (a.wins / total) * 100;
     const rankHtml = rank == null
       ? `<span class="rank">\u2014</span>`
-      : `<span class="rank ${rank <= 3 ? "top" + rank : ""}">${rank}</span>`;
+      : `<span class="rank ${rank <= 3 ? "top" + rank : ""}" title="${tied ? "equal rating: this rank is shared" : ""}">${tied ? "=" : ""}${rank}</span>`;
     const wlTitle = [
       "played record",
       `${a.wins}\u2013${a.losses} over ${a.rounds} rounds`,
@@ -1056,7 +1091,7 @@
         + `\u25CB clean ${a.def.clean_wins}\u2013${a.def.clean_losses})`,
     ].join(" \u00b7 ");
 
-    return `<tr class="${rank && rank <= 3 ? "podium-row" : ""} ${rank == null ? "prov" : ""}">
+    return `<tr class="${rank && rank <= 3 ? "podium-row" : ""} ${rank == null ? "prov" : ""}" data-agent="${a.agent}">
       <td>${rankHtml}</td>
       <td><div class="agent">
         <button class="agent-name" data-agent="${a.agent}">${a.agent}</button>
@@ -1088,7 +1123,10 @@
         + `${sub ? `<em class="hsub">${sub}</em>` : ""}</th>`;
     }).join("")}</tr></thead>`;
 
-    const rows = ranked().map((a, i) => rowHtml(a, i + 1)).join("");
+    const list = ranked();
+    const ranks = ranksFor(list, state.key);
+    const counts = ranks.reduce((m, r) => m.set(r, (m.get(r) || 0) + 1), new Map());
+    const rows = list.map((a, i) => rowHtml(a, ranks[i], counts.get(ranks[i]) > 1)).join("");
 
     const empty = !rows
       ? `<tr><td colspan="16" class="dim">${DATA.rows.length
@@ -1100,15 +1138,11 @@
       head + `<tbody>${rows}${empty}</tbody>`;
   }
 
-  // The all-in table is the second reading of the same season: every refused
-  // or failed round is a loss, and the rating is refitted with those games in
-  // the pool. It answers "what does the field look like when reliability is
-  // part of the score", next to the played-only table above.
-  const ALLIN_COLUMNS = [
-    ["rank", "#", null],
+  // The reliability table is the record behind the headline rating: every
+  // non-void round is a game, and a no-show or a forfeit is a loss for the side
+  // that did not deliver. It carries no rating of its own — there is only one.
+  const REL_COLUMNS = [
     ["agent", "Agent", null],
-    ["rating_contest", "All-in rating", "rating_contest"],
-    ["ci", "\u00b1", null],
     ["scheduled", "Scheduled", "scheduled"],
     ["rounds", "Played", "rounds"],
     ["no_shows", "No-show", "no_shows"],
@@ -1117,23 +1151,18 @@
     ["wl_all", "W\u2013L", null],
     ["wr_all", "Winrate", null],
     ["forfeit_cost", "Forfeit $", "forfeit_cost"],
-    ["delta_contest", "\u0394 vs played", "delta_contest"],
   ];
 
-  const allinState = { key: "rating_contest", dir: -1 };
+  const relState = { key: "wins_all", dir: -1 };
 
-  function allinRowHtml(a, rank) {
+  function relRowHtml(a) {
     const total = a.wins_all + a.losses_all + a.draws_all || 1;
     const wr = (a.wins_all / total) * 100;
-    const d = a.delta_contest;
-    return `<tr>
-      <td><span class="rank ${rank <= 3 ? "top" + rank : ""}">${rank}</span></td>
+    return `<tr data-agent="${a.agent}">
       <td><div class="agent">
         <button class="agent-name" data-agent="${a.agent}">${a.agent}</button>
         ${a.model_name ? `<span class="agent-model">${a.model_name}</span>` : ""}
       </div></td>
-      <td class="rating">${a.rating_contest.toFixed(1)}</td>
-      <td class="dim ci" title="95% confidence \u00b7 \u00b1${a.rating_contest_ci.toFixed(1)} from the fit">\u00b1${a.rating_contest_ci.toFixed(0)}</td>
       <td>${a.scheduled}</td>
       <td>${a.rounds}</td>
       <td class="dim">${a.no_shows}</td>
@@ -1142,23 +1171,80 @@
       <td>${a.wins_all}\u2013${a.losses_all}${a.draws_all ? `\u2013${a.draws_all}` : ""}</td>
       <td><div class="wr"><span class="wr-bar"><i style="width:${wr.toFixed(1)}%"></i></span><em>${wr.toFixed(0)}%</em></div></td>
       <td class="dim" title="forfeit cost \u00b7 real spend ${usd(a.forfeit_spend)} \u00b7 priced fee ${usd(a.forfeit_fee)}">${usd(a.forfeit_cost)}</td>
-      <td class="${d >= 0 ? "pos" : "neg"}">${delta(d)}</td>
     </tr>`;
   }
 
-  function renderAllIn() {
-    const host = document.getElementById("allin");
+  function renderReliability() {
+    const host = document.getElementById("reliability");
     if (!host) return;
-    const head = `<thead><tr>${ALLIN_COLUMNS.map(([, label, key]) => {
-      const sorted = key && key === allinState.key;
-      const arrow = sorted ? (allinState.dir === -1 ? " \u25be" : " \u25b4") : "";
-      return `<th ${key ? `data-allin-key="${key}"` : ""} class="${sorted ? "sorted" : ""}">${label}${arrow}</th>`;
+    const head = `<thead><tr>${REL_COLUMNS.map(([, label, key]) => {
+      const sorted = key && key === relState.key;
+      const arrow = sorted ? (relState.dir === -1 ? " \u25be" : " \u25b4") : "";
+      return `<th ${key ? `data-rel-key="${key}"` : ""} class="${sorted ? "sorted" : ""}">${label}${arrow}</th>`;
     }).join("")}</tr></thead>`;
     const rows = DATA.rows.slice()
-      .sort((a, b) => allinState.dir * (a[allinState.key] - b[allinState.key]) || b.rating_contest - a.rating_contest)
-      .map((a, i) => allinRowHtml(a, i + 1)).join("");
+      .sort((a, b) => relState.dir * ((a[relState.key] ?? 0) - (b[relState.key] ?? 0)) || b.rating - a.rating)
+      .map(a => relRowHtml(a)).join("");
     host.innerHTML = head + `<tbody>${rows}</tbody>`;
   }
+
+  // A no-show or a forfeit is a surrender: it is a loss in the headline rating
+  // and, on θ=1, a weighted loss in the role pool of the side that did not
+  // deliver.
+  const isForfeit = o => FORFEIT_A.has(o) || FORFEIT_D.has(o);
+  // The chip is the change in the FITTED rating — the prefix refit before the
+  // round vs after it, which is the curve the champion account draws. The
+  // running Elo (K=32) is not comparable: it is a fixed-step rule and cannot
+  // move more than 48 points, while a batch estimate can move hundreds. It
+  // stays in the tooltip as a reference line.
+  const fitOf = (r, side) => {
+    const f = (r.fit_delta || {})[side] || {};
+    const role = (r.role_delta || {})[side] || 0;
+    const theta = r.theta === 1;
+    return {
+      overall: f.overall ?? (r.rating_delta || {})[side] ?? 0,
+      attack: f.attack ?? (theta && side === "attacker" ? role : 0),
+      defense: f.defense ?? (theta && side === "defender" ? role : 0),
+    };
+  };
+
+  const eloCell = (r, side) => {
+    if (r.outcome === "VOID") {
+      return `<div class="ia-lp void"><b>\u2014</b><span>VOID</span></div>`;
+    }
+    const e = fitOf(r, side);
+    // rating_after is the fitted prefix value; run_after is the running Elo and
+    // must not be mixed into the fitted before -> after.
+    const ra = (r.rating_after || {})[side] || (r.run_after || {})[side];
+    const now = { overall: ra.overall, attack: ra.att, defense: ra.def };
+    const run = ((r.elo_delta || {})[side]) || {};
+    const own = side === "attacker" ? "attack" : "defense";
+    const offender = side === "attacker" ? FORFEIT_A.has(r.outcome) : FORFEIT_D.has(r.outcome);
+    const ownNote = offender
+      ? `${own === "attack" ? "attack" : "defence"} pool, a forfeit priced as a plain loss`
+      : isForfeit(r.outcome)
+        ? "the opponent forfeited, so this pool was not tested"
+        : `${own === "attack" ? "attack" : "defence"} pool, both coins`;
+    const otherNote = side === "attacker"
+      ? "an attacker never prices its defence rating"
+      : "a defender never prices its attack rating";
+    const chip = (key, label, name, note) => {
+      const v = e[key];
+      const moved = Math.abs(v) >= 0.05;
+      const cls = moved ? (v > 0 ? "up" : "down") : "flat";
+      const rv = run[key] ?? 0;
+      const title = moved
+        ? `${name} ${(now[key] - v).toFixed(1)} \u2192 ${now[key].toFixed(1)} \u00b7 fitted, prefix refit \u00b7 running Elo ${delta(rv)} \u00b7 ${note}`
+        : `${name} did not move this round \u00b7 running Elo ${delta(rv)} \u00b7 ${note}`;
+      return `<span class="ia-elo-chip ${cls}" title="${title}"><i>${label}</i>${moved ? delta(v) : "\u2014"}</span>`;
+    };
+    const chips = [
+      chip("overall", "OVR", "overall rating", "every non-void round, \u03b8=1 and \u03b8=0; a forfeit is a loss"),
+      chip("attack", "ATK", "attack rating", own === "attack" ? ownNote : otherNote),
+      chip("defense", "DEF", "defence rating", own === "defense" ? ownNote : otherNote),
+    ].join("");
+    return `<div class="ia-elo3">${chips}</div>`;
+  };
 
   function renderLedger() {
     const rows = DATA.ledger
@@ -1166,55 +1252,8 @@
       .slice()
       .sort((a, b) => b.ts.localeCompare(a.ts));
 
-    // A played round moves the played-only rating; a forfeit leaves that pool
-    // untouched and moves the all-in contest rating, so the log shows the
-    // delta that actually applies to the row.
-    const isForfeit = o => FORFEIT_A.has(o) || FORFEIT_D.has(o);
-    // The match log follows the running Elo (bounded, League-style), not the
-    // batch fit: the batch fit's per-round attribution is a prefix refit and
-    // moves ±90 on the first round. The headline stays the batch fit.
-    const deltaFor = (r, side) => r.outcome === "VOID" ? 0
-      : isForfeit(r.outcome) ? (r.run_contest_delta || r.contest_delta || r.rating_delta)[side]
-      : (r.run_delta || r.rating_delta)[side];
-
-    // League-style Elo badge: the big number is the rating the round actually
-    // moved (the overall played pool, or all-in for a forfeit); the sub-line is
-    // the pool the role fed — θ=1 attack/defence, or the θ=0 clean diagnostic.
-    // The tooltip carries the before -> after and the fitted value.
-    const eloBadge = (r, side) => {
-      if (r.outcome === "VOID") {
-        return `<div class="ia-lp void"><b>\u2014</b><span>VOID</span></div>`;
-      }
-      const forfeit = isForfeit(r.outcome);
-      const d = deltaFor(r, side);
-      const ra = (r.run_after || r.rating_after)[side];
-      const rd = ((r.run_role_delta || r.role_delta || {})[side]) || 0;
-      const clean = r.role_pool === "clean";
-      const roleName = forfeit ? "ALL-IN" : clean ? "CLEAN" : side === "attacker" ? "ATK" : "DEF";
-      const roleAfter = clean ? (side === "attacker" ? ra.clean_att : ra.clean_def)
-        : side === "attacker" ? ra.att : ra.def;
-      const roleBefore = roleAfter - rd;
-      const genAfter = ra.gen;
-      const genBefore = forfeit ? genAfter : genAfter - d;
-      const allInBefore = ra.contest - ((r.run_contest_delta || r.contest_delta || {})[side] || 0);
-      const fitted = DATA.rows.find(x => x.agent === (side === "attacker" ? r.attacker : r.defender));
-      const fitNote = fitted
-        ? (forfeit ? ` \u00b7 fitted all-in ${fitted.rating_contest.toFixed(1)}`
-          : clean ? ` \u00b7 fitted clean ${(side === "attacker" ? fitted.rating_clean_att : fitted.rating_clean_def).toFixed(1)}`
-            : ` \u00b7 fitted ${(side === "attacker" ? fitted.rating_att : fitted.rating_def).toFixed(1)}`)
-        : "";
-      const title = (forfeit
-        ? `running Elo \u00b7 played-only ${genAfter.toFixed(1)} (no change) \u00b7 all-in ${allInBefore.toFixed(1)} \u2192 ${ra.contest.toFixed(1)}`
-        : `running Elo ${genBefore.toFixed(1)} \u2192 ${genAfter.toFixed(1)} \u00b7 ${roleName} ${roleBefore.toFixed(1)} \u2192 ${roleAfter.toFixed(1)}`) + fitNote;
-      return `<div class="ia-lp ${d >= 0 ? "up" : "down"}" title="${title}">
-        <b>${delta(d)}</b>
-        <span>${forfeit ? "ALL-IN" : `${roleName} ${delta(rd)}`}</span>
-      </div>`;
-    };
-
     // A match is one round in this season, but the log can hold several
-    // rounds per match; the tooltip gives the sum the match gave each side in
-    // both pools.
+    // rounds per match; the tooltip gives the sum the match gave each side.
     const matchSum = (r, side, key) => DATA.ledger
       .filter(x => x.match_id === r.match_id && x.outcome !== "VOID")
       .reduce((s, x) => s + ((x[key] || {})[side] || 0), 0);
@@ -1222,40 +1261,57 @@
     const head = `<thead><tr>
       <th>Round</th><th>Match</th><th>Attacker</th><th>Defender</th><th>\u03b8</th>
       <th>Outcome</th><th>Cost A</th><th>Cost D</th>
-      <th title="League-style Elo: the overall played pool, or all-in for a forfeit. The sub-line is the pool the role fed (ATK/DEF on θ=1, CLEAN on θ=0).">Elo A</th>
-      <th title="League-style Elo: the overall played pool, or all-in for a forfeit. The sub-line is the pool the role fed (ATK/DEF on θ=1, CLEAN on θ=0).">Elo D</th>
+      <th title="Change in the FITTED rating the round gave the attacker, one chip per headline pool: OVR = overall (every non-void round, a forfeit is a loss), ATK = θ=1 attack, DEF = θ=1 defence. The number is the prefix refit before vs after the round — the curve the champion account draws. An attacker never prices its defence rating and θ=0 moves the clean diagnostic pool instead, so those chips read —. Hover a chip for before → after and the running Elo.">Elo A</th>
+      <th title="Change in the FITTED rating the round gave the defender, one chip per headline pool: OVR = overall (every non-void round, a forfeit is a loss), ATK = θ=1 attack, DEF = θ=1 defence. The number is the prefix refit before vs after the round — the curve the champion account draws. A defender never prices its attack rating and θ=0 moves the clean diagnostic pool instead, so those chips read —. Hover a chip for before → after and the running Elo.">Elo D</th>
       <th>Chips A</th><th>Chips D</th>
     </tr></thead>`;
 
     const body = rows.length
       ? rows.map(r => {
-        const mA = matchSum(r, "attacker", "run_delta"), mD = matchSum(r, "defender", "run_delta");
-        const cA = matchSum(r, "attacker", "run_contest_delta"), cD = matchSum(r, "defender", "run_contest_delta");
-        return `<tr>
+        const mA = matchSum(r, "attacker", "rating_delta"), mD = matchSum(r, "defender", "rating_delta");
+        return `<tr data-round="${r.round_id}" data-match="${r.match_id}" data-theta="${r.theta}" data-challenge="${r.task_id || ""}" data-attacker="${r.attacker}" data-defender="${r.defender}" data-outcome="${r.outcome}">
       <td class="mono">${r.round_id}</td>
-      <td class="mono dim" title="match total \u00b7 played A ${delta(mA)} / D ${delta(mD)} \u00b7 all-in A ${delta(cA)} / D ${delta(cD)}">${r.match_id}</td>
+      <td class="mono dim" title="match total \u00b7 fitted A ${delta(mA)} / D ${delta(mD)}">${r.match_id}</td>
       <td><button class="agent-name small" data-agent="${r.attacker}">${r.attacker}</button>${modelName(r.attacker) ? `<span class="log-model">${modelName(r.attacker)}</span>` : ""}</td>
       <td><button class="agent-name small" data-agent="${r.defender}">${r.defender}</button>${modelName(r.defender) ? `<span class="log-model">${modelName(r.defender)}</span>` : ""}</td>
       <td><span class="coin ${r.theta ? "h" : "t"}" title="${r.theta ? "Heads \u2014 exploit required" : "Tails \u2014 clean service"}">${r.theta ? "H" : "T"}</span></td>
-      <td><span class="outcome ${r.outcome.toLowerCase()}">${r.outcome}</span></td>
+      <td><span class="outcome ${r.outcome.toLowerCase()}" data-code="${r.outcome}">${outcomeLabel(r.outcome)}</span></td>
       <td>${usd(r.cost.attacker)}</td>
       <td>${usd(r.cost.defender)}</td>
-      <td>${eloBadge(r, "attacker")}</td>
-      <td>${eloBadge(r, "defender")}</td>
+      <td>${eloCell(r, "attacker")}</td>
+      <td>${eloCell(r, "defender")}</td>
       <td class="${r.chips.attacker >= 0 ? "pos" : "neg"}">${usdSigned(r.chips.attacker)}</td>
       <td class="${r.chips.defender >= 0 ? "pos" : "neg"}">${usdSigned(r.chips.defender)}</td>
     </tr>`;
       }).join("")
-      : `<tr><td colspan="12" class="dim">No rounds recorded.</td></tr>`;
+      : `<tr><td colspan="20" class="dim">No rounds recorded.</td></tr>`;
 
-    document.getElementById("ledger").innerHTML = head + `<tbody>${body}</tbody>`;
+    const filterEmpty = rows.length
+      ? `<tr class="ia-filter-empty" hidden><td colspan="20" class="dim">No rounds match these filters.</td></tr>`
+      : "";
+    document.getElementById("ledger").innerHTML = head + `<tbody>${body}${filterEmpty}</tbody>`;
+    document.getElementById("ledger").dataset.agentFilter = state.agent || "";
 
     document.getElementById("ledger-sub").textContent = state.agent
       ? `Filtered to ${state.agent} \u00b7 ${rows.length} rounds`
       : `Every round, every token, every rating point \u00b7 ${rows.length} rounds`;
 
-    document.getElementById("clear-filter").hidden = !state.agent;
+    document.dispatchEvent(new CustomEvent("ia:ledger", {
+      detail: { agent: state.agent || "" }
+    }));
   }
+
+  // The model filter is a <select>, so it needs a way to drive the same
+  // state.agent filter that clicking an agent name already uses.
+  window.iaLedger = {
+    setAgent(agent) { state.agent = agent || null; renderLedger(); },
+    getAgent() { return state.agent; }
+  };
+
+  // The match-log cell is the only place that knows how the three headline
+  // pools are priced per round, so the dossier reuses it instead of repeating
+  // the arithmetic.
+  window.iaElo = { cell: eloCell };
 
   // The changelog tab swaps the standings table for CHANGELOG.md, rendered
   // from the arena-data payload. Keep it plain: headings, bullets, code.
@@ -1264,6 +1320,10 @@
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
 
+  // The changelog is hand-written markdown and its bullets wrap, so a bold
+  // span can open on one line and close on the next. Parse it as blocks: a
+  // bullet keeps absorbing its continuation lines, then the inline pass sees
+  // the whole sentence.
   function renderChangelog() {
     const host = document.getElementById("changelog");
     const md = DATA.changelog || "";
@@ -1271,32 +1331,39 @@
       host.innerHTML = `<p class="dim">No changelog recorded.</p>`;
       return;
     }
-    const out = [];
-    let list = false;
+
+    const blocks = [];
+    let open = null;
     md.split(/\r?\n/).forEach(line => {
       const t = line.trim();
-      if (!t) {
-        if (list) { out.push("</ul>"); list = false; }
-        return;
-      }
-      if (t.startsWith("# ")) return; // page title, the panel already has one
-      if (t.startsWith("### ")) {
-        if (list) { out.push("</ul>"); list = false; }
-        out.push(`<h4>${mdInline(t.slice(4))}</h4>`);
-        return;
-      }
-      if (t.startsWith("## ")) {
-        if (list) { out.push("</ul>"); list = false; }
-        out.push(`<h3>${mdInline(t.slice(3))}</h3>`);
-        return;
-      }
+      if (!t) { open = null; return; }
+      if (t.startsWith("# ")) { open = null; return; } // page title
+      if (t.startsWith("### ")) { open = null; blocks.push({ type: "h4", text: t.slice(4) }); return; }
+      if (t.startsWith("## ")) { open = null; blocks.push({ type: "h3", text: t.slice(3) }); return; }
       if (/^[-*]\s+/.test(t)) {
+        const b = { type: "li", text: t.replace(/^[-*]\s+/, "") };
+        blocks.push(b);
+        open = b;
+        return;
+      }
+      if (open) { open.text += " " + t; return; }
+      const b = { type: "p", text: t };
+      blocks.push(b);
+      open = b;
+    });
+
+    const out = [];
+    let list = false;
+    blocks.forEach(b => {
+      if (b.type === "li") {
         if (!list) { out.push("<ul>"); list = true; }
-        out.push(`<li>${mdInline(t.replace(/^[-*]\s+/, ""))}</li>`);
+        out.push(`<li>${mdInline(b.text)}</li>`);
         return;
       }
       if (list) { out.push("</ul>"); list = false; }
-      out.push(`<p>${mdInline(t)}</p>`);
+      if (b.type === "h4") out.push(`<h4>${mdInline(b.text)}</h4>`);
+      else if (b.type === "h3") out.push(`<h3>${mdInline(b.text)}</h3>`);
+      else out.push(`<p>${mdInline(b.text)}</p>`);
     });
     if (list) out.push("</ul>");
     host.innerHTML = out.join("");
@@ -1325,16 +1392,20 @@
     if (agent) {
       state.agent = agent.dataset.agent;
       renderLedger();
-      document.getElementById("ledger-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+      if (!agent.closest("#ia-log-popup") && window.iaAccount) {
+        window.iaAccount.open(state.agent);
+      } else if (!window.iaAccount) {
+        document.getElementById("ledger-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
       return;
     }
 
-    const ath = event.target.closest("th[data-allin-key]");
-    if (ath) {
-      const key = ath.dataset.allinKey;
-      allinState.dir = allinState.key === key ? -allinState.dir : -1;
-      allinState.key = key;
-      renderAllIn();
+    const rth = event.target.closest("th[data-rel-key]");
+    if (rth) {
+      const key = rth.dataset.relKey;
+      relState.dir = relState.key === key ? -relState.dir : -1;
+      relState.key = key;
+      renderReliability();
       return;
     }
 
@@ -1366,11 +1437,17 @@
   renderSummary();
   renderPodium();
   renderStandings();
-  renderAllIn();
+  renderReliability();
   renderLedger();
 
+  // s-YYYY-NN is the NNth season of that year, not a month: s-2026-01 and
+  // s-2026-02 both ran in October 2026. Print it as a sequence so it cannot be
+  // read as February.
+  const seasonMatch = /^s-(\d{4})-(\d{2})$/.exec(DATA.season_id || "");
   document.getElementById("season-label").textContent = DATA.season_id
-    ? `Season ${DATA.season_id.toUpperCase()} \u00b7 scoring v${DATA.scoring_version}`
+    ? (seasonMatch
+      ? `Season ${seasonMatch[1]} \u00b7 #${Number(seasonMatch[2])} \u00b7 scoring v${DATA.scoring_version}`
+      : `Season ${DATA.season_id.toUpperCase()} \u00b7 scoring v${DATA.scoring_version}`)
     : `No season \u00b7 scoring v${DATA.scoring_version}`;
   document.getElementById("scoring-label").textContent = `Scoring v${DATA.scoring_version}`;
   document.getElementById("gen").textContent = DATA.generated_at

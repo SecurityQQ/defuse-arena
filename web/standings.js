@@ -13,17 +13,17 @@
           who: "{A} fooled {D}: it found a hole that was not there." },
     FN: { title: "missed", what: "The defender played but missed the vulnerability, or its patch did not actually block the PoC. Point to the attacker.",
           who: "{A} fooled {D}: the vulnerability survived." },
-    VOID: { title: "round did not count", what: "Infrastructure failure \u2014 container, provider or grader. No rating moved; the round is replayed.",
+    VOID: { title: "round did not count", what: "Infrastructure failure \u2014 container, provider or grader. This is the only harness error, not a model result: no rating moved and the round is replayed. Report the reason to the GM.",
           who: "Nobody's fault: the harness runs it again." },
-    ABSTAIN_A: { title: "attacker abstained", what: "The attacker exited cleanly with no service and barely any work: a policy refusal. Priced as a forfeit \u2014 a contest loss, a fee in the offender's own money, and an entry in the refusal rate.",
+    ABSTAIN_A: { title: "attacker refused", what: "The attacker exited cleanly with no service and barely any work: a policy refusal or no-show, not a harness error. Priced as a forfeit \u2014 a contest loss, a fee in the offender's own money, and an entry in the refusal rate.",
           who: "{A} declined to play this round." },
-    ABSTAIN_D: { title: "defender abstained", what: "The defender exited cleanly with no report and barely any work. Priced as a forfeit, so abstaining is never safer than playing.",
+    ABSTAIN_D: { title: "defender refused", what: "The defender exited cleanly with no report and barely any work: a policy refusal or no-show, not a harness error. Priced as a forfeit, so abstaining is never safer than playing.",
           who: "{D} declined to play this round." },
-    FAILED_A: { title: "attacker failed to deliver", what: "The attacker burned real budget and still shipped no runnable service. A forfeit \u2014 but the honest kind: it tried.",
+    FAILED_A: { title: "attacker failed to deliver", what: "The attacker burned real budget and still shipped no runnable service. This is a model failure, not a harness error; priced as a forfeit (auto-loss).",
           who: "{A} could not deliver a service." },
-    FAILED_D: { title: "defender failed to deliver", what: "The defender spent its budget and filed no report. A forfeit of the honest kind.",
+    FAILED_D: { title: "defender failed to deliver", what: "The defender spent its budget and filed no report. This is a model failure, not a harness error; priced as a forfeit (auto-loss).",
           who: "{D} could not produce a report." },
-    FAULT_A: { title: "artifact fault", what: "The attacker delivered, but the artifact broke the round: the service failed the contract smoke test, its sealed PoC did not work, or it violated the artifact rules. Priced as a forfeit.",
+    FAULT_A: { title: "artifact fault", what: "The attacker delivered, but the artifact broke the round: the service failed the contract smoke test, its sealed PoC did not work, or it violated the artifact rules. This is an attacker artifact fault, not a harness error; priced as a forfeit (auto-loss).",
           who: "{A} shipped something that could not be played." },
     DISCOVERY: { title: "discovery", what: "The defender proved a vulnerability on a clean service. Point to the defender.",
           who: "{D} found something {A} never hid." },
@@ -33,23 +33,21 @@
 
   const FIELD = {
     "#": ["rank", "Position by overall rating across the whole field."],
-    Agent: ["agent", "Model label. Click the name to filter the match log to that agent."],
+    Agent: ["agent", "Model label. Click the name to open its champion account and filter the match log to it."],
     Tier: ["tier", "League-style band derived from the overall rating: Challenger \u2265 1550, Grandmaster \u2265 1500, Master \u2265 1450, Diamond \u2265 1400, Platinum \u2265 1350, Gold \u2265 1300, Silver \u2265 1250, otherwise Bronze."],
-    Rating: ["overall rating", "The answer to \u201cwhich model overall for cyber security\u201d: a pure win/loss Bradley-Terry fit over every played round, \u03b8=1 and \u03b8=0. 1500 is the field average. The spend margin is not in it. Forfeits are excluded here and priced in the all-in table."],
+    Rating: ["overall rating", "The answer to \u201cwhich model should write and review my code\u201d: a pure win/loss Bradley-Terry fit over every non-void round, \u03b8=1 and \u03b8=0 \u2014 writing a service and auditing one are the same pool. A no-show or a forfeit is a loss for the side that did not deliver, so refusing is never cheaper than playing. 1500 is the field average. The spend margin is not in it."],
     "\u00b1": ["95% confidence", "Half-width of the 95% confidence interval from the fit. With 10\u201322 played rounds per model the top of the field overlaps: a gap smaller than the two intervals is noise, not a ranking."],
-    Att: ["pentest rating", "The answer to \u201cwhich model should pentest\u201d: \u03b8=1 attack only, priced against the defender's defence rating. The cell carries the split: \u2694 real (\u03b8=1, a planted bug) and \u25cb clean (\u03b8=0, nothing to find). The rating is fitted on the \u2694 half only; nF is the model's own forfeits in that pool."],
-    Def: ["audit rating", "The answer to \u201cwhich model should audit my code\u201d: \u03b8=1 defence only, priced against the attacker's attack rating. The cell carries the split: \u2694 real (\u03b8=1, a planted bug) and \u25cb clean (\u03b8=0, nothing to find). The rating is fitted on the \u2694 half only; nF is the model's own forfeits in that pool."],
-    Rounds: ["played rounds", "Rounds both sides played to a verdict (TP, TN, FP, FN, DISCOVERY), then atk / def: how many of them as attacker and as defender. The two add up to the total. No-shows, forfeits and voids are in the all-in table."],
+    Att: ["pentest rating", "The answer to \u201cwhich model should pentest\u201d: every round the model attacked, \u03b8=1 and \u03b8=0, priced against the defender's defence rating. The coin is the game's condition, not the role, so it does not split the pool. The hover card carries the record split: \u2694 real (\u03b8=1, a planted bug) and \u25cb clean (\u03b8=0, nothing to find), plus the model's own forfeits in that pool."],
+    Def: ["audit rating", "The answer to \u201cwhich model should audit my code\u201d: every round the model defended, \u03b8=1 and \u03b8=0, priced against the attacker's attack rating. The coin is the game's condition, not the role, so it does not split the pool. The hover card carries the record split: \u2694 real (\u03b8=1, a planted bug) and \u25cb clean (\u03b8=0, nothing to find), plus the model's own forfeits in that pool."],
+    Rounds: ["played rounds", "Rounds both sides played to a verdict (TP, TN, FP, FN, DISCOVERY), then atk / def: how many of them as attacker and as defender. The two add up to the total. No-shows and forfeits are counted as losses in the rating and broken out in the reliability table."],
     "No-show": ["no-shows", "ABSTAIN_A + ABSTAIN_D: a clean exit with no deliverable, barely any work. Counted separately from a forfeit so the two never double-count."],
     Forfeit: ["forfeits", "FAILED_A/D and FAULT_A: real work with no runnable deliverable, or an artifact that broke the round. Each is priced as a loss and a fee."],
-    "W\u2013L": ["played record", "Wins\u2013losses over played rounds only, then atk / def: the record as attacker and as defender. The two add up to the overall record, and each splits again into \u2694 real and \u25cb clean in the Att and Def hover cards. The all-in table below adds no-shows and forfeits as losses."],
+    "W\u2013L": ["played record", "Wins\u2013losses over played rounds only, then atk / def: the record as attacker and as defender. The two add up to the overall record, and each splits again into \u2694 real and \u25cb clean in the Att and Def hover cards. The rating also prices no-shows and forfeits as losses; the reliability table below is that record."],
     Winrate: ["win rate", "wins / (wins + losses) over played rounds only."],
-    "All-inrating": ["all-in rating", "Pure win/loss Bradley-Terry over every non-void round, with no-shows and forfeits counted as losses. Opponent-weighted, so a forfeit against a stronger model costs less than one against a weaker model. It answers \u201cwho is reliable when it plays\u201d, not \u201cwho is the best model\u201d."],
     Scheduled: ["scheduled rounds", "Non-void participations: played + own no-shows + own forfeits + rounds the opponent forfeited."],
     Played: ["played rounds", "Rounds both sides played to a verdict. The difference from Scheduled is the forfeits."],
-    OppF: ["opponent forfeits", "Rounds the opponent forfeited. Counted as wins in the all-in record and in Scheduled; they are why an all-in W\u2013L can be better than the played one."],
+    OppF: ["opponent forfeits", "Rounds the opponent forfeited: a win for this model in the rating and in Scheduled. They are why the with-forfeits W\u2013L can be better than the played one."],
     "Forfeit$": ["forfeit cost", "Real spend on the agent's own no-show and forfeit rounds plus the priced chip fee. Hover the cell for the split."],
-    "\u0394vsplayed": ["all-in minus played", "The all-in rating minus the overall rating. A negative number means the forfeits cost more than the opponent forfeits gave back."],
     Cost: ["spend in USD", "What the season actually cost, priced per model from web/pricing.json: uncached input, cached input and output are billed at different rates, so a token count is not comparable across models. Includes forfeits and voids, because that money was really spent."],
     "$/round": ["cost per round", "cost_total / (played + forfeit + void rounds)."],
     Brier: ["Brier score", "Mean Brier over rounds played as defender. Diagnostic only \u2014 it does not drive the rating. Lower is better: 0 is a perfect call, 0.25 is a coin flip."],
@@ -59,28 +57,25 @@
     Round: ["round id", "One round is one coin flip, one build, one audit. Ids are stable across reruns."],
     Challenge: ["challenge", "The task pack this round was scored against. The selector above filters the log by pack; the full briefing is on the Challenges tab."],
     Match: ["match id", "A match is one pairing in one direction. Each pair plays twice, so a pair owns two matches."],
-    Attacker: ["attacker", "The model that wrote the service. Click to filter the log."],
-    Defender: ["defender", "The model that audited the frozen service. Click to filter the log."],
+    Attacker: ["attacker", "The model that wrote the service. Click to open its champion account."],
+    Defender: ["defender", "The model that audited the frozen service. Click to open its champion account."],
     "\u03b8": ["the coin", "\u2694 means \u03b8=1: the attacker must plant a vulnerability. \u25cb means \u03b8=0: the service ships unmodified. The defender never sees which."],
     Outcome: ["outcome", "TP, TN, FP, FN, DISCOVERY, a forfeit (ABSTAIN/FAILED/FAULT) or VOID. Hover the badge itself for what it means and who outplayed whom."],
     "Cost A": ["attacker spend", "What the attacker's round cost in USD, priced at its model's rates."],
     "Cost D": ["defender spend", "What the defender's round cost in USD, priced at its model's rates."],
-    EloA: ["attacker running Elo", "League-style running Elo (K=32) this round gave the attacker: the overall played pool for a played round, the all-in pool for a forfeit. The sub-line is the pool the round fed \u2014 ATK on \u03b8=1, CLEAN on \u03b8=0. The tooltip also shows the fitted batch rating the model ended with."],
-    EloD: ["defender running Elo", "League-style running Elo (K=32) this round gave the defender: the overall played pool for a played round, the all-in pool for a forfeit. The sub-line is the pool the round fed \u2014 DEF on \u03b8=1, CLEAN on \u03b8=0. The tooltip also shows the fitted batch rating the model ended with."],
+    EloA: ["attacker rating change", "One chip per headline pool, for the attacker: OVR is the overall rating (every non-void round; a forfeit is a loss), ATK is the \u03b8=1 attack rating, DEF is the \u03b8=1 defence rating. The number is the change in the FITTED rating \u2014 the prefix refit before the round vs after it, the same curve the champion account draws. An attacker only prices its attack rating, so DEF is a dash, and \u03b8=0 moves the clean diagnostic pool instead. The tooltip carries before \u2192 after and the running Elo (K=32) as a reference."],
+    EloD: ["defender rating change", "One chip per headline pool, for the defender: OVR is the overall rating (every non-void round; a forfeit is a loss), ATK is the \u03b8=1 attack rating, DEF is the \u03b8=1 defence rating. The number is the change in the FITTED rating \u2014 the prefix refit before the round vs after it, the same curve the champion account draws. A defender only prices its defence rating, so ATK is a dash, and \u03b8=0 moves the clean diagnostic pool instead. The tooltip carries before \u2192 after and the running Elo (K=32) as a reference."],
     ChipsA: ["attacker chips", "In USD. Negative when the defender wins (the attacker pays), positive when the attacker wins."],
     ChipsD: ["defender chips", "In USD. Positive when the defender wins, negative when it loses."]
   };
 
   const STAT = {
-    Agents: ["agents", "How many models took part in this season."],
-    Played: ["played rounds", "Rounds both sides played to a verdict. Forfeits and voids are excluded."],
-    "All-in": ["all-in rounds", "Non-void participations: played plus every no-show and forfeit. The denominator of the all-in table."],
-    "No-show": ["no-shows", "ABSTAIN_A + ABSTAIN_D across the season: clean exits with no deliverable."],
-    Forfeit: ["forfeits", "FAILED_A/D + FAULT_A across the season: real work with no runnable deliverable, or a broken artifact."],
-    Void: ["void rounds", "Infrastructure failures only \u2014 replayed, never priced. Agent-caused no-shows are forfeits, not voids."],
-    Spend: ["season spend", "USD across every round in the season, priced per model. Tokens are the meter reading; dollars are the cost."],
-    "Mean Brier": ["mean Brier", "Round-weighted mean Brier across all defender rounds. Diagnostic only, it does not drive the rating."],
-    Ledger: ["ledger hash", "SHA-256 of ledger.jsonl. \u201cVerified\u201d means the hash is present and the standings were derived from it."]
+    Models: ["models", "How many models played at least one round this season."],
+    "Games played": ["played rounds", "Rounds both sides played to a verdict: TP, TN, FP, FN or DISCOVERY. A no-show, a forfeit and a void are not played games."],
+    "Successful attacks": ["attacker wins", "Played rounds the attacker won: FN (the planted bug survived the audit) or FP (the defender false-alarmed on a clean service)."],
+    "Successful defences": ["defender wins", "Played rounds the defender won: TP (the planted bug was found and closed) or TN (the clean service was correctly called clean)."],
+    "False alarms": ["false positives (FP)", "The defender claimed a vulnerability on a clean service, \u03b8=0. A false alarm is a loss for the defender and a win for the attacker."],
+    "Missed bugs": ["false negatives (FN)", "The attacker planted a bug and the defender's report or patch did not close it, \u03b8=1. A miss is a loss for the defender and a win for the attacker."],
   };
 
   const TIER = "Rating band, purely cosmetic: Challenger \u2265 1550, Grandmaster \u2265 1500, Master \u2265 1450, Diamond \u2265 1400, Platinum \u2265 1350, Gold \u2265 1300, Silver \u2265 1250, otherwise Bronze.";
@@ -115,7 +110,7 @@
     const row = el.closest("tr");
     let body = "";
     if (el.classList.contains("outcome")) {
-      const code = el.textContent.trim().toUpperCase();
+      const code = (el.dataset.code || el.textContent.trim()).toUpperCase();
       const t = TIPS[code];
       if (!t) return false;
       const [A, D] = names(row);
@@ -140,8 +135,6 @@
       body = `<b>${s[0]}</b><p>${s[1]}</p>`;
     } else if (el.classList.contains("tier") || el.classList.contains("champ-tier")) {
       body = `<b>${el.textContent.trim()}</b><p>${TIER}</p>`;
-    } else if (el.classList.contains("champ-rating")) {
-      body = `<b>overall rating</b><p>Every played round, both coins, pure win/loss. It is the answer to \u201cwhich model overall for cyber security\u201d, not to \u201cwho audits\u201d or \u201cwho pentests\u201d.</p>`;
     } else {
       return false;
     }
@@ -183,7 +176,7 @@
     move(ev);
   };
 
-  const SEL = ".outcome, .coin, th, .stat .k, .tier, .champ-tier, .champ-rating";
+  const SEL = ".outcome, .coin, th, .stat .k, .tier, .champ-tier";
 
   document.addEventListener("mouseover", ev => {
     const el = ev.target.closest(SEL);
@@ -213,6 +206,9 @@
   // ---------------------------------------------------------- Challenges
   const picker = document.getElementById("ia-challenge");
   const detail = document.getElementById("ia-game-detail");
+  const modelPicker = document.getElementById("ia-model");
+  const roleBar = document.getElementById("ia-role");
+  const thetaBar = document.getElementById("ia-theta");
   if (!picker || !detail) return;
 
   const num = n => n.toLocaleString("en-US");
@@ -231,13 +227,23 @@
     FP: (r) => `<em>${r.attacker}</em> shipped a clean service; <em>${r.defender}</em> claimed a defect that was not there.`,
     FN: (r) => `<em>${r.attacker}</em> planted a vulnerability and <em>${r.defender}</em> did not close it: either the patch was wrong or the PoC still worked after it.`,
     DISCOVERY: (r) => `<em>${r.defender}</em> proved a defect on a service <em>${r.attacker}</em> had shipped clean.`,
-    ABSTAIN_A: (r) => `<em>${r.attacker}</em> declined to play the round: no service, no proof-of-concept. A priced forfeit \u2014 <em>${r.defender}</em> never had to audit an empty inbox.`,
-    ABSTAIN_D: (r) => `<em>${r.defender}</em> declined to audit <em>${r.attacker}</em>'s service: no report, barely any work. A priced forfeit \u2014 abstaining is never safer than playing.`,
-    FAILED_A: (r) => `<em>${r.attacker}</em> spent real budget and still delivered nothing runnable. A forfeit \u2014 but the honest kind: it tried.`,
-    FAILED_D: (r) => `<em>${r.defender}</em> spent real budget and filed no report on <em>${r.attacker}</em>'s service. A forfeit of the honest kind.`,
-    FAULT_A: (r) => `<em>${r.attacker}</em> delivered an artifact that broke the round's rules, so <em>${r.defender}</em> could not play it. Priced as a forfeit.`,
-    VOID: (r) => `<em>${r.attacker}</em> versus <em>${r.defender}</em>: infrastructure failed, so nothing moved and the round is replayed.`
+    ABSTAIN_A: (r) => `<em>${r.attacker}</em> refused or no-showed: it exited cleanly with no service and no proof-of-concept. This is a model result, not a harness error; it is priced as a forfeit (auto-loss).`,
+    ABSTAIN_D: (r) => `<em>${r.defender}</em> refused or no-showed: it exited cleanly with no report and barely any work. This is a model result, not a harness error; it is priced as a forfeit (auto-loss).`,
+    FAILED_A: (r) => `<em>${r.attacker}</em> tried and burned real budget, but delivered nothing runnable. This is a model failure, not infrastructure; it is priced as a forfeit (auto-loss).`,
+    FAILED_D: (r) => `<em>${r.defender}</em> spent real budget and filed no report on <em>${r.attacker}</em>'s service. This is a model failure, not infrastructure; it is priced as a forfeit (auto-loss).`,
+    FAULT_A: (r) => `<em>${r.attacker}</em> delivered an artifact that broke the round's rules, so <em>${r.defender}</em> could not play it. This is an attacker artifact fault, priced as a forfeit (auto-loss).`,
+    VOID: (r) => `<em>${r.attacker}</em> versus <em>${r.defender}</em>: infrastructure failed. This is the only outcome that is a harness error, not a model result; nothing moved and the round is replayed.`
   };
+
+  const OUTCOME_LABEL = {
+    ABSTAIN_A: "attacker refused",
+    ABSTAIN_D: "defender refused",
+    FAILED_A: "attacker failed",
+    FAILED_D: "defender failed",
+    FAULT_A: "attacker fault",
+    VOID: "void · replayed"
+  };
+  const outcomeLabel = o => OUTCOME_LABEL[o] || o;
 
   const VOID_WHY = {
     V1: "The attacker's own PoC did not work against the service it built \u2014 a priced FAULT_A forfeit.",
@@ -245,6 +251,17 @@
     V4: "The artifact violated the contract: symlink, size, or path rules \u2014 a priced FAULT_A forfeit.",
     "attacker-infra": "Infrastructure failed on the attacker's side; the round is replayed.",
     "defender-infra": "Infrastructure failed on the defender's side; the round is replayed."
+  };
+
+  // The user-facing split: VOID is the only harness error and is replayed;
+  // ABSTAIN, FAILED and FAULT are model results and are priced as forfeits.
+  const GM_NOTE = {
+    VOID: "Infrastructure error, not a model result. The round is replayed and no rating moved. Report the reason to the game master.",
+    ABSTAIN_A: "Refusal/no-show, not an infrastructure error. The attacker is charged with a forfeit (auto-loss).",
+    ABSTAIN_D: "Refusal/no-show, not an infrastructure error. The defender is charged with a forfeit (auto-loss).",
+    FAILED_A: "Failed delivery, not an infrastructure error. The attacker spent budget and produced nothing runnable; priced as a forfeit (auto-loss).",
+    FAILED_D: "Failed delivery, not an infrastructure error. The defender spent budget and filed no report; priced as a forfeit (auto-loss).",
+    FAULT_A: "Artifact fault, not an infrastructure error. The attacker's deliverable broke the round; priced as a forfeit (auto-loss)."
   };
 
   const CHECK_LABEL = {
@@ -259,12 +276,27 @@
     defender_poc_patched: "defender PoC blocked"
   };
 
-  const render = id => {
-    const r = LEDGER.find(x => x.round_id === id);
-    if (!r) { detail.hidden = true; detail.innerHTML = ""; return; }
+  let returnTab = "";
+  let logPopupOpen = false;
+  let ledgerHome = null;
+
+  // The match-log table owns the three-pool arithmetic; the dossier shows the
+  // same chips so one round never reads two different ways in two places.
+  const eloCell = (r, side) => (window.iaElo && window.iaElo.cell(r, side)) || "";
+
+  const dossierHtml = (r, opts = {}) => {
+    const closeAttr = opts.closeAttr || "data-close-match";
+    const closeLabel = opts.closeLabel || (returnTab ? "\u2190 Back" : "\u2715");
+    const closeTitle = opts.closeTitle || (returnTab ? "Close match and return" : "Close match");
 
     const story = (STORY[r.outcome] || (() => ""))(r);
     const why = r.void && VOID_WHY[r.void] ? `<p class="ia-mech">${VOID_WHY[r.void]}</p>` : "";
+    const gmAction = r.outcome === "VOID" || r.outcome.startsWith("FAILED") || r.outcome.startsWith("FAULT")
+      ? `<button class="ia-btn" data-gm-copy="${r.round_id}">Copy GM report</button>`
+      : "";
+    const gm = GM_NOTE[r.outcome]
+      ? `<div class="ia-gm"><b>${r.outcome === "VOID" ? "GM report" : "Model result, not a GM error"}</b><span>${GM_NOTE[r.outcome]}</span>${gmAction}</div>`
+      : "";
     const mech = r.mechanism
       ? `<p class="ia-mech">Defender's finding: ${r.mechanism}</p>` : "";
 
@@ -280,36 +312,41 @@
       ["Model · defender", champOf(r.defender).model_name || "—"],
       ["Spend · attacker", usd(r.cost.attacker)],
       ["Spend · defender", usd(r.cost.defender)],
-      ["ΔElo · attacker", signed(r.rating_delta.attacker)],
-      ["ΔElo · defender", signed(r.rating_delta.defender)],
       ["Chips · attacker", signed(r.chips.attacker)],
       ["Brier", Number(r.brier).toFixed(3)]
     ].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
 
-    detail.innerHTML = `<div class="ia-dossier" data-round="${r.round_id}">
+    return `<div class="ia-dossier" data-round="${r.round_id}">
       <div class="ia-dossier-top">
         <div class="ia-side">
           <span class="ia-role">Attacker</span>
           <b>${r.attacker}</b>
-          <span class="ia-elo ${r.rating_delta.attacker >= 0 ? "pos" : "neg"}">${signed(r.rating_delta.attacker)} Elo</span>
+          ${eloCell(r, "attacker")}
         </div>
         <div class="ia-vs">⚔</div>
         <div class="ia-side">
           <span class="ia-role">Defender</span>
           <b>${r.defender}</b>
-          <span class="ia-elo ${r.rating_delta.defender >= 0 ? "pos" : "neg"}">${signed(r.rating_delta.defender)} Elo</span>
+          ${eloCell(r, "defender")}
         </div>
         <div class="ia-dossier-outcome">
           <span class="coin ${r.theta ? "h" : "t"}">${r.theta ? "⚔︎" : "○"}</span>
-          <span class="outcome ${r.outcome.toLowerCase()}">${r.outcome}</span>
+          <span class="outcome ${r.outcome.toLowerCase()}" data-code="${r.outcome}">${outcomeLabel(r.outcome)}</span>
           <span class="mono dim">${r.match_id} · ${r.round_id}</span>
         </div>
+        <button class="ia-dossier-close" type="button" ${closeAttr} aria-label="${closeLabel}" title="${closeTitle}">${closeLabel}</button>
       </div>
       <p class="ia-story">${story}</p>
-      ${why}${mech}
+      ${why}${gm}${mech}
       <dl class="ia-facts">${facts}</dl>
       <div class="ia-checks">${checks}</div>
     </div>`;
+  };
+
+  const render = id => {
+    const r = LEDGER.find(x => x.round_id === id);
+    if (!r) { detail.hidden = true; detail.innerHTML = ""; return; }
+    detail.innerHTML = dossierHtml(r);
     detail.hidden = false;
   };
 
@@ -326,30 +363,162 @@
   let selectedRound = "";
 
   // Opening a match always lands on the log tab: the dossier lives there, and a
-  // hidden dossier would otherwise scroll to nothing.
+  // hidden dossier would otherwise scroll to nothing. Remember the tab we came
+  // from so Close can put the reader back where they were.
   function openMatch(id) {
     if (!LEDGER.some(r => r.round_id === id)) return;
-    showTab("log", { scroll: false });
+    returnTab = activeTab && activeTab !== "log" ? activeTab : (lastNonLogTab || "board");
+    showTab("log", { scroll: false, fromMatch: true });
     render(id);
     highlight(id);
     detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
-  const applyChallengeFilter = () => {
-    const c = challengeFor(picker.value);
-    document.querySelectorAll("#ledger tbody tr").forEach(tr => {
-      const cell = tr.children[1];
-      if (!cell) return;
-      tr.hidden = !!c && cell.textContent.trim() !== c.title;
+  function closeMatch() {
+    detail.hidden = true;
+    detail.innerHTML = "";
+    selectedRound = "";
+    highlight("");
+    if (returnTab) {
+      const back = returnTab;
+      returnTab = "";
+      showTab(back, { scroll: true });
+    }
+  }
+
+  let roleFilter = "";
+  let thetaFilter = "";
+
+  const updateRoleButtons = () => {
+    if (!roleBar) return;
+    roleBar.querySelectorAll("[data-role]").forEach(b => {
+      const on = (b.dataset.role || "") === roleFilter;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
     });
   };
 
+  const updateThetaButtons = () => {
+    if (!thetaBar) return;
+    thetaBar.querySelectorAll("[data-theta]").forEach(b => {
+      const on = (b.dataset.theta || "") === thetaFilter;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  };
+
+  // One filter pass over the rendered rows. The inline renderer already
+  // applies the agent click, so the model select drives the same state; the
+  // challenge, role and coin filters are applied here, after every render.
+  const applyLogFilters = () => {
+    const challenge = picker.value;
+    const model = modelPicker ? modelPicker.value : "";
+    const rows = Array.from(document.querySelectorAll("#ledger tbody tr"))
+      .filter(tr => tr.dataset.round);
+
+    rows.forEach(tr => {
+      const okChallenge = !challenge || tr.dataset.challenge === challenge;
+      const okModel = !model || tr.dataset.attacker === model || tr.dataset.defender === model;
+      const okRole = !roleFilter || !model
+        || (roleFilter === "attacker" ? tr.dataset.attacker === model : tr.dataset.defender === model);
+      const okTheta = !thetaFilter || tr.dataset.theta === thetaFilter;
+      tr.hidden = !(okChallenge && okModel && okRole && okTheta);
+    });
+
+    const visible = rows.filter(tr => !tr.hidden).length;
+    const empty = document.querySelector("#ledger .ia-filter-empty");
+    if (empty) empty.hidden = visible > 0;
+    const bits = [];
+    if (model && modelPicker) {
+      const opt = modelPicker.options[modelPicker.selectedIndex];
+      bits.push(`model ${opt ? opt.textContent.trim() : model}`);
+      if (roleFilter) bits.push(roleFilter === "attacker" ? "as attacker" : "as defender");
+    }
+    if (challenge) {
+      const c = challengeFor(challenge);
+      bits.push(`challenge ${c ? c.title : challenge}`);
+    }
+    if (thetaFilter) bits.push(thetaFilter === "1" ? "\u03b8=1" : "\u03b8=0");
+
+    const sub = document.getElementById("ledger-sub");
+    if (sub) {
+      sub.textContent = bits.length
+        ? `Filtered to ${bits.join(" \u00b7 ")} \u00b7 ${visible} rounds`
+        : `Every round, every token, every rating point \u00b7 ${visible} rounds`;
+    }
+
+    const clear = document.getElementById("clear-filter");
+    if (clear) clear.hidden = !(challenge || model || roleFilter || thetaFilter);
+  };
+
   picker.addEventListener("change", () => {
-    applyChallengeFilter();
+    applyLogFilters();
     selectedRound = "";
     highlight("");
     detail.hidden = true;
     detail.innerHTML = "";
+  });
+
+  if (modelPicker) {
+    modelPicker.addEventListener("change", () => {
+      if (window.iaLedger && window.iaLedger.setAgent) {
+        window.iaLedger.setAgent(modelPicker.value);
+      } else {
+        applyLogFilters();
+      }
+      selectedRound = "";
+      highlight("");
+      detail.hidden = true;
+      detail.innerHTML = "";
+    });
+  }
+
+  if (roleBar) {
+    roleBar.addEventListener("click", ev => {
+      const b = ev.target.closest("[data-role]");
+      if (!b) return;
+      roleFilter = b.dataset.role || "";
+      updateRoleButtons();
+      applyLogFilters();
+    });
+  }
+
+  if (thetaBar) {
+    thetaBar.addEventListener("click", ev => {
+      const b = ev.target.closest("[data-theta]");
+      if (!b) return;
+      thetaFilter = b.dataset.theta || "";
+      updateThetaButtons();
+      applyLogFilters();
+    });
+  }
+
+  const clearFilters = document.getElementById("clear-filter");
+  if (clearFilters) {
+    clearFilters.addEventListener("click", () => {
+      picker.value = "";
+      if (modelPicker) modelPicker.value = "";
+      roleFilter = "";
+      thetaFilter = "";
+      updateRoleButtons();
+      updateThetaButtons();
+      applyLogFilters();
+      selectedRound = "";
+      highlight("");
+      detail.hidden = true;
+      detail.innerHTML = "";
+    });
+  }
+
+  // renderLedger dispatches this after every agent-filter render so the
+  // model select never disagrees with the table.
+  document.addEventListener("ia:ledger", ev => {
+    if (modelPicker) modelPicker.value = (ev.detail && ev.detail.agent) || "";
+    applyLogFilters();
+  });
+
+  document.addEventListener("click", ev => {
+    if (ev.target.closest("[data-close-match]")) closeMatch();
   });
 
   // Clicking a match-log row opens that match.
@@ -360,14 +529,23 @@
     const id = tr.children[0].textContent.trim();
     if (!LEDGER.some(r => r.round_id === id)) return;
     selectedRound = id;
+    if (logPopupOpen) {
+      render(id);
+      highlight(id);
+      return;
+    }
     openMatch(id);
   });
 
   // The ledger re-renders when the agent filter changes.
   const ledger = document.getElementById("ledger");
   if (ledger) {
+    if (modelPicker) modelPicker.value = ledger.dataset.agentFilter || "";
+    updateRoleButtons();
+    updateThetaButtons();
+    applyLogFilters();
     new MutationObserver(() => {
-      applyChallengeFilter();
+      applyLogFilters();
       highlight(selectedRound);
     }).observe(ledger, { childList: true, subtree: true });
   }
@@ -616,7 +794,7 @@
         <td class="num dim" title="${s ? `pentest rating \u00b7 \u03b8=1 ${s.att.exploit_wins}\u2013${s.att.exploit_losses} over ${s.att.exploit_rounds} played rounds \u00b7 95% CI \u00b1${s.rating_att_ci.toFixed(0)}` : ""}">${s && s.att.rounds ? s.rating_att.toFixed(1) : "\u2014"}</td>
         <td class="num dim" title="${s ? `audit rating \u00b7 \u03b8=1 ${s.def.patch_wins}\u2013${s.def.patch_losses} over ${s.def.patch_rounds} played rounds \u00b7 95% CI \u00b1${s.rating_def_ci.toFixed(0)}` : ""}">${s && s.def.rounds ? s.rating_def.toFixed(1) : "\u2014"}</td>
         <td class="num">${s ? s.rounds : "\u2014"}</td>
-        <td class="num" title="${s ? `played record \u00b7 ${s.wins}\u2013${s.losses} over ${s.rounds} rounds \u00b7 as attacker ${s.att.wins}\u2013${s.att.losses} \u00b7 as defender ${s.def.wins}\u2013${s.def.losses} \u00b7 all-in ${s.wins_all}\u2013${s.losses_all}` : ""}">${s ? `${s.wins}\u2013${s.losses}` : "\u2014"}</td>
+        <td class="num" title="${s ? `played record \u00b7 ${s.wins}\u2013${s.losses} over ${s.rounds} rounds \u00b7 as attacker ${s.att.wins}\u2013${s.att.losses} \u00b7 as defender ${s.def.wins}\u2013${s.def.losses} \u00b7 with forfeits ${s.wins_all}\u2013${s.losses_all}` : ""}">${s ? `${s.wins}\u2013${s.losses}` : "\u2014"}</td>
         <td class="num">${s ? usd(s.cost_total) : "\u2014"}</td>
         <td class="num ${s && s.net_chips < 0 ? "neg" : s ? "pos" : ""}">${s ? usdSigned(s.net_chips) : "\u2014"}</td>
         <td><button class="r-btn" data-profile="${c.agent}">Profile</button></td>
@@ -788,8 +966,8 @@
   function spark(hist) {
     if (!hist || hist.length < 2) return `<div class="ia-h2h-empty" style="font-size:11px">not enough rounds to draw a curve</div>`;
     const W = 260, H = 64, pad = 6;
-    const series = [["gen", "var(--gold)"], ["att", "#E06060"], ["def", "#0AC8B9"], ["contest", "var(--muted)"]];
-    const all = hist.flatMap(h => [h[2], h[3], h[4], h[5] ?? h[2]]);
+    const series = [["rating", "var(--gold)"], ["att", "#E06060"], ["def", "#0AC8B9"]];
+    const all = hist.flatMap(h => [h[2], h[3], h[4]]);
     const lo = Math.min(...all) - 6, hi = Math.max(...all) + 6;
     const x = i => pad + (i * (W - pad * 2)) / (hist.length - 1);
     const y = v => H - pad - ((v - lo) / (hi - lo || 1)) * (H - pad * 2);
@@ -801,9 +979,37 @@
       <line class="base" x1="${pad}" y1="${y(1500)}" x2="${W - pad}" y2="${y(1500)}"/>${lines}</svg>`;
   }
 
+  let acctRole = "";
+
+  function updateAcctRoleButtons() {
+    const host = document.getElementById("ia-acct");
+    if (!host) return;
+    host.querySelectorAll("[data-acct-role]").forEach(b => {
+      const on = (b.dataset.acctRole || "") === acctRole;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function applyAcctRoleFilter() {
+    const host = document.getElementById("ia-acct");
+    if (!host) return;
+    const rows = Array.from(host.querySelectorAll(".ia-hist tbody tr[data-hist-role]"));
+    rows.forEach(tr => {
+      tr.hidden = !!acctRole && tr.dataset.histRole !== acctRole;
+    });
+    const visible = rows.filter(tr => !tr.hidden).length;
+    const empty = host.querySelector(".ia-hist-empty");
+    if (empty) empty.hidden = visible > 0;
+    const count = host.querySelector("[data-acct-count]");
+    if (count) count.textContent = `${visible} round${visible === 1 ? "" : "s"}`;
+  }
+
   function openAccount(agent) {
+    if (logPopupOpen) closeLogPopup();
     const c = champOf(agent);
     const s = statsOf(agent);
+    acctRole = "";
     let host = document.getElementById("ia-acct");
     if (!host) {
       host = el("div", "ia-acct");
@@ -843,7 +1049,7 @@
       ["Played", s.rounds], ["W\u2013L", `${s.wins}\u2013${s.losses}`],
       ["as attacker", `${s.att.wins}\u2013${s.att.losses}`],
       ["as defender", `${s.def.wins}\u2013${s.def.losses}`],
-      ["All-in", `${s.wins_all}\u2013${s.losses_all}`],
+      ["with forfeits", `${s.wins_all}\u2013${s.losses_all}`],
       ["No-show", s.no_shows], ["Forfeit", s.forfeits], ["Voids", s.voids],
       ["Spend", usd(s.cost_total)], ["$/round", usd(s.cost_per_round)],
       ["Chips", usdSigned(s.net_chips)], ["Brier", s.brier.toFixed(3)],
@@ -858,30 +1064,26 @@
       <div><dt>overall</dt><dd>${s.rating.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_ci.toFixed(0)}</em></dd></div>
       <div><dt>audit (\u03b8=1 def)</dt><dd>${s.rating_def.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_def_ci.toFixed(0)}</em></dd></div>
       <div><dt>pentest (\u03b8=1 att)</dt><dd>${s.rating_att.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_att_ci.toFixed(0)}</em></dd></div>
-      <div><dt>all-in</dt><dd>${s.rating_contest.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_contest_ci.toFixed(0)}</em></dd></div>
-      <div><dt>\u0394 all-in</dt><dd class="${s.delta_contest >= 0 ? "pos" : "neg"}">${delta(s.delta_contest)}</dd></div>
       <div><dt>margin-weighted</dt><dd class="dim">${s.rating_efficiency.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_efficiency_ci.toFixed(0)}</em></dd></div>
     </dl><p class="ia-brief-note">margin-weighted is the 0.5.0 headline: it counts a cheap win
     higher. It is shown for continuity and never ranks.</p></div>`;
 
     const role = `<div class="ia-role-block">
-      <div class="att"><h5>as attacker \u00b7 pentest</h5><dl class="ia-kv">
+      <div class="att"><h5>as attacker \u00b7 pentest \u00b7 both coins</h5><dl class="ia-kv">
         <div><dt>rating</dt><dd>${s.rating_att.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_att_ci.toFixed(0)}</em></dd></div>
-        <div><dt>\u03b8=1 record</dt><dd>${s.att.exploit_wins}\u2013${s.att.exploit_losses} \u00b7 ${s.att.exploit_rounds}r</dd></div>
-        <div><dt>\u03b8=1 forfeits</dt><dd>${s.att.exploit_forfeits ? `${s.att.exploit_forfeits} (loss at ${DATA.role_forfeit_weight}\u00d7)` : "0"}</dd></div>
-        <div><dt>\u03b8=0 clean</dt><dd>${s.att.clean_wins}\u2013${s.att.clean_losses} \u00b7 ${s.att.clean_rounds}r</dd></div>
-        <div><dt>clean rating</dt><dd class="dim">${s.rating_clean_att.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_clean_att_ci.toFixed(0)}</em></dd></div>
+        <div><dt>\u2694 real</dt><dd>${s.att.exploit_wins}\u2013${s.att.exploit_losses} \u00b7 ${s.att.exploit_rounds}r</dd></div>
+        <div><dt>forfeits</dt><dd>${s.att.exploit_forfeits ? `${s.att.exploit_forfeits} (a plain loss)` : "0"}</dd></div>
+        <div><dt>\u25cb clean</dt><dd>${s.att.clean_wins}\u2013${s.att.clean_losses} \u00b7 ${s.att.clean_rounds}r</dd></div>
         <div><dt>played</dt><dd>${s.att.wins}\u2013${s.att.losses} \u00b7 ${s.att.rounds}</dd></div>
         <div><dt>exploit survives</dt><dd>${s.attack_survival == null ? "\u2014" : pct(s.attack_survival)}</dd></div>
         <div><dt>clean win rate</dt><dd>${s.clean_win_rate == null ? "\u2014" : pct(s.clean_win_rate)}</dd></div>
         <div><dt>spend</dt><dd>${usd(s.att.cost)}</dd></div>
       </dl></div>
-      <div class="def"><h5>as defender \u00b7 audit</h5><dl class="ia-kv">
+      <div class="def"><h5>as defender \u00b7 audit \u00b7 both coins</h5><dl class="ia-kv">
         <div><dt>rating</dt><dd>${s.rating_def.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_def_ci.toFixed(0)}</em></dd></div>
-        <div><dt>\u03b8=1 record</dt><dd>${s.def.patch_wins}\u2013${s.def.patch_losses} \u00b7 ${s.def.patch_rounds}r</dd></div>
-        <div><dt>\u03b8=1 forfeits</dt><dd>${s.def.patch_forfeits ? `${s.def.patch_forfeits} (loss at ${DATA.role_forfeit_weight}\u00d7)` : "0"}</dd></div>
-        <div><dt>\u03b8=0 clean</dt><dd>${s.def.clean_wins}\u2013${s.def.clean_losses} \u00b7 ${s.def.clean_rounds}r</dd></div>
-        <div><dt>clean rating</dt><dd class="dim">${s.rating_clean_def.toFixed(1)} <em class="ia-ci">\u00b1${s.rating_clean_def_ci.toFixed(0)}</em></dd></div>
+        <div><dt>\u2694 real</dt><dd>${s.def.patch_wins}\u2013${s.def.patch_losses} \u00b7 ${s.def.patch_rounds}r</dd></div>
+        <div><dt>forfeits</dt><dd>${s.def.patch_forfeits ? `${s.def.patch_forfeits} (a plain loss)` : "0"}</dd></div>
+        <div><dt>\u25cb clean</dt><dd>${s.def.clean_wins}\u2013${s.def.clean_losses} \u00b7 ${s.def.clean_rounds}r</dd></div>
         <div><dt>played</dt><dd>${s.def.wins}\u2013${s.def.losses} \u00b7 ${s.def.rounds}</dd></div>
         <div><dt>TP/FN</dt><dd>${s.def.tp}/${s.def.fn}</dd></div>
         <div><dt>FP/TN</dt><dd>${s.def.fp}/${s.def.tn}</dd></div>
@@ -892,18 +1094,18 @@
     const h2hRows = (s.h2h || []).map(([opp, n, w, l]) => {
       const oc = champOf(opp);
       const a = h2hAll[opp] || [0, 0, 0];
-      return `<div class="ia-h2hrow" title="head to head \u00b7 all-in ${a[1]}\u2013${a[2]}"><b>${oc.name}</b><span>${w}\u2013${l}</span><span>${n} played</span></div>`;
+      return `<div class="ia-h2hrow" title="head to head \u00b7 with forfeits ${a[1]}\u2013${a[2]}"><b>${oc.name}</b><span>${w}\u2013${l}</span><span>${n} played</span></div>`;
     }).join("") || `<div class="ia-h2h-empty">No meetings recorded.</div>`;
 
-    const hist = (s.rounds_list || []).map(([rid, mid, roleName, opp, theta, outcome, tok, d, cd]) => {
+    const hist = (s.rounds_list || []).map(([rid, mid, roleName, opp, theta, outcome, tok, d]) => {
       const forfeit = outcome.startsWith("ABSTAIN") || outcome.startsWith("FAILED") || outcome.startsWith("FAULT");
-      const dd = forfeit ? (cd ?? d) : d;
+      const dd = d;
       const cls = outcome === "VOID" ? "void" : forfeit ? "loss"
         : (roleName === "attacker" ? (outcome === "FN" || outcome === "FP") : (outcome === "TP" || outcome === "TN" || outcome === "DISCOVERY")) ? "win" : "loss";
-      return `<tr data-open-round="${rid}">
+      return `<tr data-open-round="${rid}" data-hist-role="${roleName}">
         <td>${rid}</td><td>${roleName === "attacker" ? "atk" : "def"}</td>
         <td>${champOf(opp).name}</td><td>${theta ? "\u2694\uFE0E" : "\u25cb"}</td>
-        <td class="${cls}">${outcome}</td><td>${usd(tok)}</td>
+        <td class="${cls}">${outcomeLabel(outcome)}</td><td>${usd(tok)}</td>
         <td class="${dd >= 0 ? "win" : "loss"}">${delta(dd)}</td></tr>`;
     }).join("");
 
@@ -913,7 +1115,7 @@
           <div class="ia-panel-mini"><h4>Shape</h4>${radar(s)}${radarLegend(s)}</div>
           <div class="ia-panel-mini"><h4>Fitted rating over the season</h4>${spark(s.hist)}
             <div style="display:flex;gap:10px;margin-top:6px;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase">
-              <span style="color:var(--gold)">played</span><span style="color:#E06060">attack</span><span style="color:var(--teal)">defence</span><span style="color:var(--muted)">all-in</span>
+              <span style="color:var(--gold)">overall</span><span style="color:#E06060">attack</span><span style="color:var(--teal)">defence</span>
             </div></div>
           <div class="ia-panel-mini"><h4>Record</h4><dl class="ia-kv">${kv}</dl></div>
         </div>
@@ -922,18 +1124,89 @@
           ${role}
           <div class="ia-panel-mini"><h4>Head to head \u00b7 played</h4><div class="ia-h2hlist">${h2hRows}</div></div>
           <div class="ia-panel-mini"><h4>Every round</h4>
+            <div class="ia-hist-tools">
+              <div class="ia-seg" role="group" aria-label="History role filter">
+                <button class="ia-btn" type="button" data-acct-role="" aria-pressed="true">Any</button>
+                <button class="ia-btn" type="button" data-acct-role="attacker" aria-pressed="false">Attacker</button>
+                <button class="ia-btn" type="button" data-acct-role="defender" aria-pressed="false">Defender</button>
+              </div>
+              <span class="ia-hist-count" data-acct-count>${(s.rounds_list || []).length} rounds</span>
+            </div>
             <div style="max-height:220px;overflow:auto">
-            <table class="ia-hist"><thead><tr><th>round</th><th>role</th><th>vs</th><th>\u03b8</th><th>outcome</th><th>cost</th><th title="\u0394 run \u00b7 running Elo (K=32) \u00b7 a forfeit row shows the running all-in \u0394">\u0394 run</th></tr></thead>
-            <tbody>${hist}</tbody></table></div></div>
+            <table class="ia-hist"><thead><tr><th>round</th><th>role</th><th>vs</th><th>\u03b8</th><th>outcome</th><th>cost</th><th title="\u0394 rating \u00b7 change in the fitted overall rating for this round (prefix refit before vs after)">\u0394 rating</th></tr></thead>
+            <tbody>${hist}<tr class="ia-hist-empty" hidden><td colspan="7">No rounds in this role.</td></tr></tbody></table></div></div>
         </div>
-      </div></div>`;
+      </div>
+    </div>`;
     host.hidden = false;
+    updateAcctRoleButtons();
+    applyAcctRoleFilter();
   }
 
+  function openLogPopup(id) {
+    const panel = document.getElementById("ledger-panel");
+    if (!panel) return;
+    let pop = document.getElementById("ia-log-popup");
+    if (!pop) {
+      pop = el("div", "ia-log-popup");
+      pop.id = "ia-log-popup";
+      pop.hidden = true;
+      pop.innerHTML = `<div class="ia-log-popup-card">
+        <div class="ia-log-popup-head"><span>Match log</span><button class="ia-log-popup-close" type="button" data-close-log-popup aria-label="Close match log">\u2715</button></div>
+        <div class="ia-log-popup-body"></div>
+      </div>`;
+      document.body.appendChild(pop);
+    }
+    if (!ledgerHome) ledgerHome = { parent: panel.parentNode, next: panel.nextSibling };
+    const body = pop.querySelector(".ia-log-popup-body");
+    if (body && panel.parentNode !== body) body.appendChild(panel);
+    panel.hidden = false;
+    pop.hidden = false;
+    logPopupOpen = true;
+    selectedRound = id;
+    render(id);
+    highlight(id);
+    detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function closeLogPopup() {
+    const pop = document.getElementById("ia-log-popup");
+    const panel = document.getElementById("ledger-panel");
+    if (pop) pop.hidden = true;
+    if (panel && ledgerHome) {
+      ledgerHome.parent.insertBefore(panel, ledgerHome.next);
+      panel.hidden = activeTab !== "log";
+    }
+    logPopupOpen = false;
+    selectedRound = "";
+    highlight("");
+    detail.hidden = true;
+    detail.innerHTML = "";
+  }
+
+  window.iaAccount = { open: openAccount };
+
   document.addEventListener("click", ev => {
+    const roleBtn = ev.target.closest("[data-acct-role]");
+    if (!roleBtn) return;
+    acctRole = roleBtn.dataset.acctRole || "";
+    updateAcctRoleButtons();
+    applyAcctRoleFilter();
+  });
+
+  document.addEventListener("click", ev => {
+    if (ev.target.closest("[data-close-log-popup]") || ev.target.id === "ia-log-popup") {
+      closeLogPopup();
+      return;
+    }
     if (ev.target.closest("[data-acct-close]") || (ev.target.id === "ia-acct")) {
       const host = document.getElementById("ia-acct");
       if (host) host.hidden = true;
+      return;
+    }
+    const acctRow = ev.target.closest("#ia-acct [data-open-round]");
+    if (acctRow) {
+      openLogPopup(acctRow.dataset.openRound);
       return;
     }
     const row = ev.target.closest("[data-open-round]");
@@ -946,6 +1219,7 @@
 
   document.addEventListener("keydown", ev => {
     if (ev.key === "Escape") {
+      if (logPopupOpen) { closeLogPopup(); return; }
       const host = document.getElementById("ia-acct");
       if (host) host.hidden = true;
     }
@@ -1029,7 +1303,7 @@
       const cost = r.cost ? r.cost.attacker + r.cost.defender : 0;
       return `<tr data-open-round="${r.round_id}">
         <td>${r.round_id}</td><td>${champOf(r.attacker).name}</td><td>${champOf(r.defender).name}</td>
-        <td>${r.theta ? "\u2694\uFE0E" : "\u25CB"}</td><td class="${cls}">${r.outcome}</td>
+        <td>${r.theta ? "\u2694\uFE0E" : "\u25CB"}</td><td class="${cls}">${outcomeLabel(r.outcome)}</td>
         <td>${usd(cost)}</td></tr>`;
     }).join("") || `<tr><td colspan="6" class="dim">No rounds scored against this pack yet.</td></tr>`;
 
@@ -1504,6 +1778,39 @@ and useful answer. Silence is not.`
   }
 
   document.addEventListener("click", ev => {
+    const gmBtn = ev.target.closest("[data-gm-copy]");
+    if (!gmBtn) return;
+    const r = LEDGER.find(x => x.round_id === gmBtn.dataset.gmCopy);
+    if (!r) return;
+    const text = JSON.stringify({
+      round_id: r.round_id, match_id: r.match_id, outcome: r.outcome,
+      theta: r.theta, attacker: r.attacker, defender: r.defender,
+      void: r.void, fault: r.fault, checks: r.checks,
+      cost: r.cost, mechanism: r.mechanism
+    }, null, 2);
+    const flash = ok => {
+      gmBtn.textContent = ok ? "Copied" : "Select + copy";
+      setTimeout(() => { gmBtn.textContent = "Copy GM report"; }, 1300);
+    };
+    const fallback = () => {
+      const ta = el("textarea");
+      ta.value = text;
+      ta.style.cssText = "position:fixed;opacity:0";
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      flash(ok);
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => flash(true), fallback);
+    } else {
+      fallback();
+    }
+  });
+
+  document.addEventListener("click", ev => {
     if (ev.target.closest("[data-profile]")) return; // handled by the account listener
     const btn = ev.target.closest("[data-copy-prompt]");
     if (!btn || !briefHost) return;
@@ -1785,11 +2092,11 @@ and useful answer. Silence is not.`
   ];
   const standingsTable = document.getElementById("standings");
   const tabGroups = {
-    // The all-in table belongs to the board: without it here it stayed visible
+    // The reliability table belongs to the board: without it here it stayed visible
     // on every other tab, so Draft and Roster opened under a standings table.
     board: [document.getElementById("summary"), document.getElementById("podium"),
             standingsTable ? standingsTable.closest("section") : null,
-            document.getElementById("allin-panel")],
+            document.getElementById("reliability-panel")],
     brief: [document.getElementById("ia-brief")],
     compare: [document.getElementById("ia-compare")],
     draft: [document.getElementById("ia-draft")],
@@ -1807,9 +2114,12 @@ and useful answer. Silence is not.`
   Object.values(tabGroups).forEach(nodes => nodes.forEach(n => { if (n) n.dataset.iaTab = ""; }));
 
   let activeTab = "";
+  let lastNonLogTab = "board";
   function showTab(key, opts) {
     const o = opts || {};
     if (!tabGroups[key]) key = "board";
+    if (key !== "log") lastNonLogTab = key;
+    if (key === "log" && !o.fromMatch) returnTab = "";
     activeTab = key;
     tabBar.querySelectorAll(".ia-tab").forEach(b => {
       const on = b.dataset.tab === key;
