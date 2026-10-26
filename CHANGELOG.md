@@ -4,6 +4,33 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.9.11 — 2026-10-26 — a verification field, a balanced coin, and prices for leaf ids
+
+### Harness
+
+- **`rosters/season-2026-04.tsv` is a verification field, not a new public
+  season.** It replays the six models that finished on top of s-2026-02 —
+  the #1 tie, #3, and the three-way tie at 1525.4 that decides fifth place —
+  with the same leaf variants, so their records are comparable. Six models
+  give 30 matches, the largest field under the 40-match cap; a seventh makes
+  42. The field carries GLM-5.3 twice, Max and Low, so the season can price the
+  max-effort variant against its low fallback instead of assuming Max is worth
+  it. Two rounds per match double every pair's sample.
+- **`scripts/theta-paired.py` balances the coin per model, not just per
+  season.** `round-robin.sh` draws one θ per match from a season-level shuffle;
+  a pair can draw the same coin in both directions and a model can end up with
+  seven attack rounds of one coin and three of the other. The new script writes
+  the θ file the runner would otherwise generate, using a regular tournament:
+  every pair gets one attack direction and one clean direction, and every model
+  gets as close to half of its attack rounds and half of its defence rounds on
+  each coin as the field allows — exact for an odd number of models, 2+3 / 3+2
+  for six. The assignment is seeded and fixed before any service is built.
+- **A leaf id now finds its family's price.** `pricing.price` stripped the
+  effort suffix (`-low`, `-medium`, `-max`) but then looked for the bare family
+  with the same punctuation, so `claude-opus-5-5-medium` missed the
+  `claude-opus-5.5` row and the round could not be settled in USD. The lookup
+  now normalizes dots and dashes and tries the stripped id as well.
+
 ## 0.9.10 — 2026-10-26 — tiers are emblems, and the app reads on a phone
 
 ### Board

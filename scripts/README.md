@@ -53,6 +53,31 @@ ROSTER_FILE=rosters/season-2026-02.tsv JOBS=4 scripts/round-robin.sh
 DRY_RUN=1 scripts/round-robin.sh
 ```
 
+## A balanced coin for a verification season
+
+`round-robin.sh` draws one θ per match from a season-level shuffle. That keeps
+the season at half attack / half clean, but a pair can draw the same coin in
+both directions and a model can end up with seven attack rounds of one coin and
+three of the other. For a season whose job is to compare a handful of models,
+that is the difference between testing a role and testing a coin.
+
+`scripts/theta-paired.py` writes the θ file the runner would otherwise
+generate. It gives every pair one attack direction and one clean direction and
+gives every model as close to half of its attack rounds and half of its defence
+rounds on each coin as the field allows — exact for an odd number of models,
+2+3 / 3+2 for six — using a regular tournament with a seeded permutation:
+
+```bash
+python3 scripts/theta-paired.py rosters/season-2026-04.tsv \
+  seasons/s-2026-04/theta.tsv 20261026
+SEASON=s-2026-04 ROSTER_FILE=rosters/season-2026-04.tsv ROUNDS=2 JOBS=4 \
+  scripts/round-robin.sh
+```
+
+The runner leaves an existing `theta.tsv` alone, so the pre-written file is the
+one the rounds use. The assignment is still random and is fixed before any
+service is built.
+
 Environment:
 
 | Variable | Default | Meaning |

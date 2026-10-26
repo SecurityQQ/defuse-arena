@@ -20,15 +20,19 @@ EFFORT = ("-none", "-low", "-medium", "-high", "-xhigh", "-max",
           "-low-fast", "-medium-fast", "-high-fast", "-xhigh-fast", "-max-fast")
 
 _table = None
+_normalized = None
 
 
 def table():
-    global _table
+    global _table, _normalized
     if _table is None:
         try:
             _table = json.load(open(PRICING)).get("models", {})
         except Exception:
             _table = {}
+        # One family can be written with dots or dashes (gpt-6.1-sol vs
+        # gpt-6-1-sol); the effort suffix is not part of the price.
+        _normalized = {k.replace(".", "-"): v for k, v in _table.items()}
     return _table
 
 
@@ -37,15 +41,17 @@ def price(model_id):
     t = table()
     if not model_id:
         return None
-    if model_id in t:
-        return t[model_id]
+    names = [model_id]
     for suffix in EFFORT:
-        if model_id.endswith(suffix) and model_id[: -len(suffix)] in t:
-            return t[model_id[: -len(suffix)]]
-    # tolerate the underscore style some ids use for dots
-    alt = model_id.replace(".", "-")
-    if alt in t:
-        return t[alt]
+        if model_id.endswith(suffix):
+            names.append(model_id[: -len(suffix)])
+            break
+    for name in names:
+        if name in t:
+            return t[name]
+        alt = name.replace(".", "-")
+        if alt in _normalized:
+            return _normalized[alt]
     return None
 
 

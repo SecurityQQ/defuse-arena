@@ -1,0 +1,27 @@
+# Season s-2026-04 roster: the top six of s-2026-02, replayed.
+#
+# The six models that finished on top of s-2026-02: the #1 tie, #3, and the
+# three-way tie at 1525.4 that decides who is "fifth". They replay the same
+# leaf variants they ran there, so their records are comparable. Six models
+# give 30 matches (N(N-1)), which is the largest field under the 40-match cap;
+# a seventh model would make 42.
+#
+# GLM-5.3 is deliberately in the field twice: Max and Low. Max is the only
+# max-effort entry here, and the pair answers the question directly — if Max
+# does not fit the context or output budget, Low is the fallback, and the
+# season shows what the fallback costs in rating and in dollars.
+#
+# The point of the season is the doubt, not the crown: in s-2026-02 almost
+# every pair among the top six split 1-1, the #3 model was 10-10 in played
+# rounds (four of its wins were opponent no-shows), and three models tied
+# exactly at 1525.4 because a balanced round-robin makes the rating a
+# function of the all-in record. Two rounds per match double each pair's
+# sample.
+#
+# Format: label|model-id. Leaf variants only (AGENTS.md).
+grok-4.7|grok-4-7-xhigh
+opus-5.5|claude-opus-5-5-medium
+glm-5.3-max|glm-5-3-max
+gemini-4-argon|gemini-4-argon-high
+glm-5.3|glm-5-3-low
+gpt-6.1|gpt-6-1-sol-low
