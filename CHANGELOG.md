@@ -4,6 +4,32 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.9.12 — 2026-10-26 — the verification games are folded into the season
+
+### Board
+
+- **`standings.py --extra-season <id>` folds another season's rounds into the
+  table.** Round and match ids get a 2000-per-season offset, so histories,
+  head-to-head and the match log stay unique; the combined ledger is written to
+  `seasons/<primary>+<extra>/`, never over the primary season's own files. The
+  published board now merges s-2026-02 (156 rounds) and s-2026-04 (60 rounds):
+  **216 rounds, 13 models**, and the label reads
+  `Season 2026 · #2 + verification · 216 rounds`.
+- **The top six now carry 44 scheduled rounds** (29–38 played) instead of 24,
+  and their 95% intervals narrow from ±187 to ±166. The rest of the field still
+  has 24. The fit is therefore over an unbalanced schedule: the rating is no
+  longer a pure function of the all-in record, and the top six are measured
+  against each other far more often than against the bottom seven.
+- The extra season used the paired coin (one attack direction and one clean
+  direction per pair); the primary season used a season-level shuffle. The
+  ledger records θ per round, so the difference is visible rather than assumed.
+
+### Scoring
+
+- No change to the scoring formula. A provider block, a runner crash and a
+  grader fault are still priced as forfeits in the published table; the
+  separate analysis that voids them is not the board's rule yet.
+
 ## 0.9.11 — 2026-10-26 — a verification field, a balanced coin, and prices for leaf ids
 
 ### Harness

@@ -1421,11 +1421,11 @@
   // s-2026-02 both ran in October 2026. Print it as a sequence so it cannot be
   // read as February.
   const seasonMatch = /^s-(\d{4})-(\d{2})$/.exec(DATA.season_id || "");
-  document.getElementById("season-label").textContent = DATA.season_id
+  document.getElementById("season-label").textContent = DATA.season_label || (DATA.season_id
     ? (seasonMatch
       ? `Season ${seasonMatch[1]} \u00b7 #${Number(seasonMatch[2])} \u00b7 scoring v${DATA.scoring_version}`
       : `Season ${DATA.season_id.toUpperCase()} \u00b7 scoring v${DATA.scoring_version}`)
-    : `No season \u00b7 scoring v${DATA.scoring_version}`;
+    : `No season \u00b7 scoring v${DATA.scoring_version}`);
   document.getElementById("scoring-label").textContent = `Scoring v${DATA.scoring_version}`;
   document.getElementById("gen").textContent = DATA.generated_at
     ? new Date(DATA.generated_at).toISOString().replace(".000Z", "Z")

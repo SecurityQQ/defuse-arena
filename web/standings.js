@@ -554,6 +554,9 @@
     try { return JSON.parse(document.getElementById("arena-data").textContent); }
     catch (e) { return {}; }
   })();
+
+  // A merged board is not one season: name it as a board, not as s-YYYY-NN.
+  const seasonRef = DATA.combined ? "this board" : (DATA.season_id || "this season");
   const fmtK = n => {
     const abs = Math.abs(n);
     if (abs >= 1e6) return (n / 1e6).toFixed(2) + "M";
@@ -1037,7 +1040,7 @@
         <div class="ia-panel-mini" style="margin-top:18px">
           <h4>No rounds yet</h4>
           <div class="ia-h2h-empty">This champion is on the roster but has not played a round in
-          ${DATA.season_id || "this season"}, so there is no rating to show. Run a match with
+          ${seasonRef}, so there is no rating to show. Run a match with
           <code>${c.model || agent}</code> to put a number here.</div>
         </div></div>`;
       host.hidden = false;
@@ -1488,7 +1491,7 @@
     const r = stackRow(s);
     if (!r) {
       return `<div class="ia-stack-card"><div class="ia-stack-head"><b>${s.name}</b>
-        <em>did not play in ${DATA.season_id || "this season"}</em></div>
+        <em>did not play in ${seasonRef}</em></div>
         <div class="ia-h2h-empty">No rounds, no numbers. The cards below apply to whatever did play.</div></div>`;
     }
     const c = champOf(r.agent);
@@ -1522,7 +1525,7 @@
       .sort((a, b) => b.rating_def - a.rating_def);
     if (!glm.length) {
       return `<div class="ia-glm"><h3>Can GLM defend me?</h3>
-        <div class="ia-h2h-empty">No GLM model played in ${DATA.season_id || "this season"}, so the question stays open until one does.</div></div>`;
+        <div class="ia-h2h-empty">No GLM model played in ${seasonRef}, so the question stays open until one does.</div></div>`;
     }
     const priceOf = r => (r.def.rounds ? r.def.cost / r.def.rounds : null);
     const nameOf = r => champOf(r.agent).name;
@@ -1684,7 +1687,7 @@ Paste all three outputs. If any step fails, the defect is still open.`
     },
     {
       t: "Measure the reviewer's false-alarm rate",
-      why: `In ${DATA.season_id || "this season"}, ${S.alarms} of ${S.alarms + S.clear} clean services still drew a vulnerability claim. Noise has a price; measure yours before trusting the signal.`,
+      why: `${DATA.combined ? "On" : "In"} ${seasonRef}, ${S.alarms} of ${S.alarms + S.clear} clean services still drew a vulnerability claim. Noise has a price; measure yours before trusting the signal.`,
       p: `Once a sprint, run your standard audit prompt on three modules you know are
 clean and human-reviewed. Record how many draw a "vulnerability found" claim.
 
@@ -1782,7 +1785,7 @@ and useful answer. Silence is not.`
       </div>
     </div>
     <div class="ia-brief-stats">
-      ${stat(caughtTxt, "planted bugs closed", `${S.caught} of ${S.planted} found AND patched by the season's AI auditors`)}
+      ${stat(caughtTxt, "planted bugs closed", `${S.caught} of ${S.planted} found AND patched by the board's AI auditors`)}
       ${stat(alarmTxt, "false alarms on clean code", `${S.alarms} of ${S.alarms + S.clear} clean services drew a vulnerability claim`)}
       ${stat(medTxt, "median cost of one audit", "a full adversarial audit, defender side, priced per model")}
       ${stat(S.refused, "rounds a model refused", `${S.refusedAtt} as attacker, ${S.refusedDef} as defender \u2014 each priced as a loss`)}
@@ -1793,7 +1796,7 @@ and useful answer. Silence is not.`
       median audit costs ${medTxt}. So do not buy the verdict \u2014 buy the loop: probability,
       proof, patch, re-run, with a human at the gate.</p>
 
-    <h3 class="ia-brief-sec">Your stack, in this season's numbers</h3>
+    <h3 class="ia-brief-sec">Your stack, in this board's numbers</h3>
     <p class="ia-brief-sub">Most teams run Claude Opus or GPT and nothing else. Each card is both faces of
       that model on this board: the coder whose output you ship, and the reviewer you trust to catch it.</p>
     <div class="ia-stack-grid">${STACK.map(s => stackCard(s)).join("")}</div>
@@ -1801,13 +1804,13 @@ and useful answer. Silence is not.`
     ${glmBlock()}
 
     <h3 class="ia-brief-sec">Who should review your code</h3>
-    <p class="ia-brief-sub">Every defender that played this season, as a hiring table: of the planted bugs
+    <p class="ia-brief-sub">Every defender that played on this board, as a hiring table: of the planted bugs
       it faced, how many did it actually close \u2014 and how often did it cry wolf on clean code.</p>
     ${hireTable()}
 
     <h3 class="ia-brief-sec">Ten prompts that transfer the arena to your company</h3>
     <p class="ia-brief-sub">The defender contract the rounds were scored under, rewritten as copy-paste
-      prompts for your own PRs. Grounded in what the season actually measured \u2014 not in vibes.</p>
+      prompts for your own PRs. Grounded in what the board actually measured \u2014 not in vibes.</p>
     <div class="ia-prompts">${promptCards}</div>
 
     <h3 class="ia-brief-sec">What each thing is at your company</h3>
@@ -1816,7 +1819,7 @@ and useful answer. Silence is not.`
 
     <div class="ia-caveats"><b>Read the numbers honestly</b>
       <ul>
-        <li>One season, one field, ${S.played} played rounds \u2014 a handful of planted bugs per
+        <li>${DATA.combined ? "One board, one field" : "One season, one field"}, ${S.played} played rounds \u2014 a handful of planted bugs per
           defender. Direction, not procurement.</li>
         <li>Labels resolve to effort variants (the name printed under each one). Family slugs run at
           the family default \u2014 an all-high roster can read differently.</li>
@@ -2078,7 +2081,7 @@ and useful answer. Silence is not.`
     if (!CHAMPS.length) {
       cmpHost.innerHTML = `<div class="ia-cmp-head"><div>
         <div class="ia-vault-title">Compare</div>
-        <div class="ia-vault-sub">No champion has played in ${DATA.season_id || "this season"} yet, so there is nothing to plot. Run a match first.</div>
+        <div class="ia-vault-sub">No champion has played in ${seasonRef} yet, so there is nothing to plot. Run a match first.</div>
       </div></div>`;
       return;
     }
@@ -2094,7 +2097,7 @@ and useful answer. Silence is not.`
           <div class="ia-vault-sub">${def.sub}</div>
         </div></div>
         <div class="ia-cmp-bar">${chips}</div>
-        <div class="ia-h2h-empty" style="margin-top:14px">No champion in ${DATA.season_id || "this season"} has both a ${def.x.name} and a ${def.y.name} to plot.</div>`;
+        <div class="ia-h2h-empty" style="margin-top:14px">No champion in ${seasonRef} has both a ${def.x.name} and a ${def.y.name} to plot.</div>`;
       return;
     }
 

@@ -57,10 +57,23 @@ if "--publish" in _args:
     PUBLISH = Path(_args[_i + 1]).resolve()
     del _args[_i:_i + 2]
 
+# --extra-season <id> folds another season's rounds into this table. The
+# rounds keep their models and outcomes; their ids get a 2000-per-season
+# offset so histories, h2h and the match log stay unique. The combined
+# ledger is written to a derived directory, never over the primary season.
+EXTRA = []
+while "--extra-season" in _args:
+    _i = _args.index("--extra-season")
+    if _i + 1 >= len(_args):
+        sys.exit("--extra-season needs a season id")
+    EXTRA.append(_args[_i + 1])
+    del _args[_i:_i + 2]
+
 SEASON = _args[0] if len(_args) > 0 else "s-2026-01"
 RANKED_AT = int(_args[1]) if len(_args) > 1 else 20
 RENDER_RANKED_AT = int(_args[2]) if len(_args) > 2 else RANKED_AT
 SDIR = ROOT / "seasons" / SEASON
+OUTDIR = SDIR if not EXTRA else ROOT / "seasons" / (SEASON + "+" + "+".join(EXTRA))
 
 # Outcome sets. A played round moves every pool. A forfeit is a surrender: it
 # is a loss in the headline rating and, on θ=1, a plain loss in the role
@@ -280,8 +293,16 @@ def battle_stages(theta, outcome, checks, report_present, confidence, freeze_has
 # ---------------------------------------------------------------- ledger (§10.2)
 raw = []
 battles = {}
-for gpath in sorted(SDIR.glob("matches/*/rounds/*/grader/grade.json")):
+sources = [(p, 0) for p in sorted(SDIR.glob("matches/*/rounds/*/grader/grade.json"))]
+for k, extra in enumerate(EXTRA):
+    sources += [(p, 2000 * (k + 1)) for p in sorted(
+        (ROOT / "seasons" / extra).glob("matches/*/rounds/*/grader/grade.json"))]
+for gpath, offset in sources:
     g = json.load(open(gpath))
+    round_id, match_id = g["round_id"], g["match_id"]
+    if offset:
+        round_id = f"r-{int(round_id.split('-')[1]) + offset:04d}"
+        match_id = f"m-{int(match_id.split('-')[1]) + offset:04d}"
     spend = json.load(open(gpath.parent / "spend.json"))
     manifest = json.load(open(gpath.parent.parent / "manifest.json"))
     try:
@@ -311,7 +332,7 @@ for gpath in sorted(SDIR.glob("matches/*/rounds/*/grader/grade.json")):
     rdir = gpath.parent.parent
     att_b = battle_side(rdir / "grader" / "logs" / "attacker.export.json", a_model)
     def_b = battle_side(rdir / "grader" / "logs" / "defender.export.json", d_model)
-    battles[g["round_id"]] = {
+    battles[round_id] = {
         "att": att_b,
         "def": def_b,
         "stages": battle_stages(
@@ -322,7 +343,7 @@ for gpath in sorted(SDIR.glob("matches/*/rounds/*/grader/grade.json")):
     }
 
     raw.append({
-        "round_id": g["round_id"], "match_id": g["match_id"],
+        "round_id": round_id, "match_id": match_id,
         "season_id": g["season_id"], "ts": g["ts"],
         "attacker": g["attacker"], "defender": g["defender"],
         "theta": g["theta"], "outcome": g["outcome"],
@@ -996,11 +1017,20 @@ for agent, v in acc.items():
 rows.sort(key=lambda r: (-r["rating"], r["agent"]))
 
 season_sha = hashlib.sha256(
-    "".join(sorted(p.read_text() for p in SDIR.glob("matches/*/rounds/*/grader/grade.json"))).encode()
+    "".join(sorted(p.read_text() for p, _ in sources)).encode()
 ).hexdigest()
+
+season_label = None
+if EXTRA:
+    _m = re.match(r"^s-(\d{4})-(\d{2})$", SEASON)
+    _base = f"Season {_m.group(1)} \u00b7 #{int(_m.group(2))}" if _m else SEASON.upper()
+    season_label = f"{_base} + verification \u00b7 {len(ledger)} rounds \u00b7 scoring v0.9.0"
 
 standings = {
     "season_id": SEASON,
+    "extra_seasons": EXTRA,
+    "season_label": season_label,
+    "combined": bool(EXTRA),
     "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
     "scoring_version": "0.9.0",
     "rating_method": "bradley-terry",
@@ -1013,8 +1043,9 @@ standings = {
     "rows": rows,
 }
 
-(SDIR / "ledger.jsonl").write_text(ledger_jsonl)
-(SDIR / "standings.json").write_text(json.dumps(standings, indent=2, sort_keys=True) + "\n")
+OUTDIR.mkdir(parents=True, exist_ok=True)
+(OUTDIR / "ledger.jsonl").write_text(ledger_jsonl)
+(OUTDIR / "standings.json").write_text(json.dumps(standings, indent=2, sort_keys=True) + "\n")
 
 # ------------------------------------------------ challenges (one per pack)
 challenges = {}
@@ -1079,6 +1110,9 @@ changelog_md = changelog_path.read_text() if changelog_path.exists() else ""
 
 payload = {
     "season_id": SEASON,
+    "extra_seasons": EXTRA,
+    "season_label": season_label,
+    "combined": bool(EXTRA),
     "generated_at": standings["generated_at"],
     "scoring_version": "0.9.0",
     "rating_method": standings["rating_method"],
@@ -1234,14 +1268,15 @@ assert SECTION_OLD in rendered, "ledger panel not found"
 rendered = rendered.replace(SECTION_OLD, SECTION_NEW, 1)
 
 
-(SDIR / "standings.html").write_text(rendered)
+OUTDIR.mkdir(parents=True, exist_ok=True)
+(OUTDIR / "standings.html").write_text(rendered)
 if PUBLISH:
     PUBLISH.parent.mkdir(parents=True, exist_ok=True)
     PUBLISH.write_text(rendered)
 
 print(f"ledger rows : {len(ledger)}")
-print(f"standings   : {SDIR/'standings.json'}")
-print(f"render      : {SDIR/'standings.html'} ({len(rendered):,} bytes)")
+print(f"standings   : {OUTDIR/'standings.json'}")
+print(f"render      : {OUTDIR/'standings.html'} ({len(rendered):,} bytes)")
 if PUBLISH:
     print(f"published   : {PUBLISH} ({len(rendered):,} bytes)")
 print(f"roster      : {len(roster)} champions, {len(played)} played")

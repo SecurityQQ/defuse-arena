@@ -338,7 +338,18 @@ recomputed `rating_delta`, keeping the recorded outcome and checks untouched.
 python3 scripts/standings.py s-2026-01          # ranked at 20 eligible rounds
 python3 scripts/standings.py s-2026-01 20 1     # preview: relax to 1 round
 python3 scripts/standings.py s-2026-01 20 1 --publish web/index.html
+
+# fold a verification season into the table: 156 + 60 rounds, 13 models
+python3 scripts/standings.py s-2026-02 20 20 \
+  --extra-season s-2026-04 --publish web/index.html
 ```
+
+`--extra-season` appends another season's rounds to the fit and to the match
+log. Round and match ids get a 2000-per-season offset so they stay unique; the
+combined ledger, standings and rendered page are written to
+`seasons/<primary>+<extra>/`, and the primary season's own files are left
+alone. The header says `+ verification` so a merged table is not mistaken for a
+single-season run.
 
 `--publish` writes a second copy of the rendered page outside the season
 directory. That copy is `index.html`, the default document every static host
