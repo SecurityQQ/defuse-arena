@@ -4,6 +4,41 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.11.0 — 2026-10-26 — answers first, and a badge on every model
+
+### Board
+
+- **The board opens on an Answers screen, and the seven tabs are now three.**
+  The default landing is one card per question a team shipping AI-written code
+  asks — who to review with, who cries wolf on clean code, best skill per
+  dollar, cheapest seat that still plays, and so on — each answered by the model
+  a metric picks, with that model's badge, the number behind it, and a click
+  through to the champion account. A closing card names what the board does
+  **not** measure yet (real-world bugs, full bug-class coverage, long-context
+  decay), so it is not read as more than it is. The old tab bar — Board,
+  Founder Brief, Compare, Draft, Roster, Match log, Explore Challenges — folds
+  into **Answers** (with the founder brief), **Leaderboard** (standings,
+  compare and draft) and **Explore** (roster, challenges and the match log).
+  Old hashes and the match-click deep link still resolve, so `#board`,
+  `#brief` and a clicked round all land in the right place.
+- **Every model carries the achievements it earned.** Ten badges, awarded by a
+  rule over the season rows so the holders recompute from the data and are
+  never hand-written: Champion (top overall), Gatekeeper (top audit), the
+  Sniper (lowest Brier), Best Value (top efficiency rating), Featherweight
+  (cheapest seat), Never Folds (near-zero refusals and strong), the Infiltrator
+  (strongest red team — read as a risk), the Panicker (highest false-alarm
+  rate), the Flake (highest refusal rate) and the Locksmith (every patch
+  defused the proof-of-concept). The champion account shows a model's badges
+  under its name; a holder on a provisional rating is marked.
+
+### Render
+
+- **New payload field `achievements`**, and a per-row `badges` list, both built
+  by `scripts/achievements.py` from the standings rows at render time. Badge
+  art lives in `web/badges/<key>.svg` and the page loads it with `<img>`, so
+  the DOM stays light and the files stay editable. No scoring semantics change;
+  `scoring_version` is unchanged.
+
 ## 0.10.7 — 2026-10-26 — twelve more rounds for muse
 
 ### Data

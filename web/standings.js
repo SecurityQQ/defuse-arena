@@ -596,6 +596,80 @@
   const ROSTER = DATA.roster || [];
   const CHAMPS = DATA.champions || [];
   const BATTLES = DATA.battles || {};
+
+  // ------------------------------------------------------------- badges
+  // Achievements are computed in standings.py and shipped in the payload:
+  // one metric rule per badge, the holders, and the inline (id-namespaced)
+  // SVG art. The Answers screen and the champion account read them here.
+  const ACH = DATA.achievements || [];
+  const escp = t => String(t).replace(/[&<>"]/g,
+    c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  // Badge art is referenced, not inlined: one <img> per badge, which the
+  // browser rasterises once (light DOM, no gradient-id collisions). The path
+  // is relative, so it resolves next to the page on a host and on file://.
+  const badgeArt = key => `<img class="ia-badge-img" src="badges/${encodeURIComponent(key)}.svg" alt="" loading="lazy" draggable="false">`;
+  const achievementsOf = agent => ACH.filter(a => (a.holders || []).some(h => h.agent === agent));
+  function accountBadges(agent) {
+    const held = achievementsOf(agent);
+    if (!held.length) return "";
+    return `<div class="ia-acct-badges" aria-label="Achievements">` + held.map(a =>
+      `<span class="ia-badge tone-${a.tone}" tabindex="0" role="img"
+         aria-label="${escp(a.name)}: ${escp(a.tagline)}"
+         title="${escp(a.name)} — ${escp(a.tagline)}">${badgeArt(a.key)}</span>`).join("") + `</div>`;
+  }
+
+  function answerCard(a) {
+    const holders = (a.holders || []);
+    const who = holders.length
+      ? holders.map(h => `<span class="ia-ans-who">${escp(h.model_name || h.agent)}` +
+          (h.provisional ? ` <i class="ia-ans-prov" title="provisional — few rounds, treat as a hint">prov</i>` : "") +
+          `</span>`).join(`<span class="ia-ans-amp">+</span>`)
+      : `<span class="ia-ans-who dim">—</span>`;
+    const stat = holders.map(h => h.stat).filter(Boolean).join(" / ");
+    const agent = holders[0] ? holders[0].agent : "";
+    return `<button type="button" class="ia-ans-card tone-${a.tone}" data-ans-agent="${escp(agent)}">
+      <span class="ia-ans-emblem">${badgeArt(a.key)}</span>
+      <span class="ia-ans-body">
+        <span class="ia-ans-q">${escp(a.question)}</span>
+        <span class="ia-ans-answer">${who}</span>
+        <span class="ia-ans-meta"><b>${escp(a.name)}</b>${stat ? ` · ${escp(stat)}` : ""}</span>
+        <span class="ia-ans-tag">${escp(a.tagline)}</span>
+      </span>
+    </button>`;
+  }
+
+  function renderAnswers() {
+    const host = document.getElementById("ia-answers");
+    if (!host) return;
+    const nRounds = (DATA.ledger || []).length;
+    const nModels = (DATA.rows || []).filter(r => (r.rounds || 0) > 0).length;
+    const cards = ACH.map(answerCard).join("");
+    const gaps = `<div class="ia-ans-gaps">
+      <h3>What this board does <b>not</b> measure yet</h3>
+      <ul>
+        <li><b>Real-world bugs.</b> Every service is written minutes earlier from a fixed
+          scaffold, so this is an audit-loop signal — not a proxy for legacy code,
+          dependencies, secrets or supply chain.</li>
+        <li><b>Full bug-class coverage.</b> The packs declare which bug classes they plant;
+          a model can top the board and still be blind to a class we don’t test.</li>
+        <li><b>Long-context / high-effort decay.</b> We time each seat, but not how quality
+          holds up on a large diff at maximum reasoning effort.</li>
+      </ul>
+    </div>`;
+    host.innerHTML = `<div class="ia-ans-head">
+        <h2>Answers</h2>
+        <p>The questions a team shipping AI-written code asks — answered from
+        <b>${nRounds}</b> rounds across <b>${nModels}</b> models on ${seasonRef}. One model per
+        answer, chosen by the metric. Click a card to open that model’s account.</p>
+      </div>
+      <div class="ia-ans-grid">${cards}</div>
+      ${gaps}`;
+    host.querySelectorAll("[data-ans-agent]").forEach(btn => {
+      const agent = btn.getAttribute("data-ans-agent");
+      if (agent) btn.addEventListener("click", () => openAccount(agent));
+      else btn.disabled = true;
+    });
+  }
   const champOf = a =>
     ROSTER.find(c => c.agent === a) ||
     { agent: a, name: a, glyph: a.slice(0, 2).toUpperCase(), accent: "#C8AA6E", title: "", house: "", model: "" };
@@ -1215,6 +1289,7 @@
         <h3 class="agent-line">${c.name}${s ? tierIcon(s.rating_theta1) : ""}</h3>
         <span class="ia-acct-title">${c.title || ""}${c.house ? ` · ${c.house}` : ""}</span>
         <span class="ia-acct-model">${c.model_name ? `${c.model_name} · ${c.model}` : (c.model || agent)}</span>
+        ${accountBadges(agent)}
       </div>
       <div class="ia-acct-rating" data-acct-big>
         <b>—</b><span>unplayed</span>
@@ -2412,26 +2487,33 @@ and useful answer. Silence is not.`
   setTimeout(markAll, 300);
 
   // ---------------------------------------------------------------- tabs
+  // Three top-level tabs. Answers is the default landing; Leaderboard holds
+  // the table plus compare and draft; Explore holds roster, challenges and the
+  // match log. The old seven keys still resolve through TAB_ALIAS so existing
+  // hashes, deep links and the match-click path ("log") keep working, and
+  // "log" stays its own group so a clicked match focuses just the log.
   const TAB_DEFS = [
-    ["board", "Board"],
-    ["brief", "Founder Brief"],
-    ["compare", "Compare"],
-    ["draft", "Draft"],
-    ["roster", "Roster"],
-    ["log", "Match log"],
-    ["challenges", "Explore Challenges"]
+    ["answers", "Answers"],
+    ["leaderboard", "Leaderboard"],
+    ["explore", "Explore"]
   ];
   const standingsTable = document.getElementById("standings");
+  const ledgerPanel = document.getElementById("ledger-panel");
   const tabGroups = {
-    board: [document.getElementById("summary"), document.getElementById("podium"),
-            standingsTable ? standingsTable.closest("section") : null],
-    brief: [document.getElementById("ia-brief")],
-    compare: [document.getElementById("ia-compare")],
-    draft: [document.getElementById("ia-draft")],
-    roster: [document.getElementById("ia-roster")],
-    log: [document.getElementById("ledger-panel")],
-    challenges: [chHost]
+    answers: [document.getElementById("ia-answers"), document.getElementById("ia-brief")],
+    leaderboard: [document.getElementById("summary"), document.getElementById("podium"),
+            standingsTable ? standingsTable.closest("section") : null,
+            document.getElementById("ia-compare"), document.getElementById("ia-draft")],
+    explore: [document.getElementById("ia-roster"), chHost, ledgerPanel],
+    log: [ledgerPanel]
   };
+  const TAB_ALIAS = {
+    board: "leaderboard", brief: "answers", compare: "leaderboard",
+    draft: "leaderboard", roster: "explore", challenges: "explore"
+  };
+  const resolveTab = k => (tabGroups[k] ? k : (TAB_ALIAS[k] || "answers"));
+  const allTabNodes = Array.from(new Set(
+    Object.values(tabGroups).flat().filter(Boolean)));
   const tabBar = el("nav", "ia-tabs");
   tabBar.setAttribute("role", "tablist");
   tabBar.setAttribute("aria-label", "Page sections");
@@ -2443,24 +2525,28 @@ and useful answer. Silence is not.`
 
   let activeTab = "";
   let lastNonLogTab = "board";
+  const BTN_FOR = { log: "explore" };
   function showTab(key, opts) {
     const o = opts || {};
-    if (!tabGroups[key]) key = "board";
-    if (key !== "log") lastNonLogTab = key;
-    if (key === "log" && !o.fromMatch) returnTab = "";
+    const raw = key;
+    key = resolveTab(key);
+    if (raw !== "log") lastNonLogTab = key;
+    if (raw === "log" && !o.fromMatch) returnTab = "";
     activeTab = key;
+    const btnKey = BTN_FOR[key] || key;
     tabBar.querySelectorAll(".ia-tab").forEach(b => {
-      const on = b.dataset.tab === key;
+      const on = b.dataset.tab === btnKey;
       b.classList.toggle("on", on);
       b.setAttribute("aria-selected", on ? "true" : "false");
     });
-    Object.entries(tabGroups).forEach(([k, nodes]) =>
-      nodes.forEach(n => { if (n) n.hidden = k !== key; }));
+    const active = new Set((tabGroups[key] || []).filter(Boolean));
+    allTabNodes.forEach(n => { n.hidden = !active.has(n); });
     if (o.hash !== false) {
       try { history.replaceState(null, "", "#" + key); } catch (e) { /* file:// */ }
     }
     if (o.scroll) {
-      const y = tabBar.getBoundingClientRect().top + window.scrollY - 14;
+      const target = (raw === "log" && ledgerPanel) ? ledgerPanel : tabBar;
+      const y = target.getBoundingClientRect().top + window.scrollY - 14;
       window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
     }
   }
@@ -2470,13 +2556,16 @@ and useful answer. Silence is not.`
     if (b) showTab(b.dataset.tab, { scroll: true });
   });
   window.addEventListener("hashchange", () => {
-    const k = (location.hash || "").replace("#", "");
+    const raw = (location.hash || "").replace("#", "");
+    if (!raw) return;
+    const k = resolveTab(raw);
     if (tabGroups[k] && k !== activeTab) showTab(k);
   });
 
   renderChallenges();
-  const initialTab = (location.hash || "").replace("#", "");
-  showTab(tabGroups[initialTab] ? initialTab : "board", { hash: false });
+  renderAnswers();
+  const initialRaw = (location.hash || "").replace("#", "");
+  showTab(initialRaw ? resolveTab(initialRaw) : "answers", { hash: false });
 
   renderDraft();
 

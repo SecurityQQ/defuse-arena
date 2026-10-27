@@ -49,6 +49,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import pricing  # noqa: E402  (sibling module, resolved from this file)
+import achievements  # noqa: E402  (sibling module: data-driven model badges)
 
 ROOT = Path(__file__).resolve().parent.parent
 # Usage: standings.py <season> [ranked_at] [render_ranked_at] [--publish <path>]
@@ -1251,6 +1252,12 @@ for a in sorted(played - known):
 changelog_path = ROOT / "CHANGELOG.md"
 changelog_md = changelog_path.read_text() if changelog_path.exists() else ""
 
+# --------------------------------------------------- achievements (badges)
+# Render rows carry a provisional flag; the badge rules read it, and compute()
+# annotates each render row with the badge keys that model holds.
+render_rows = [dict(r, provisional=r["eligible"] < RENDER_RANKED_AT) for r in rows]
+ACHIEVEMENTS = achievements.compute(render_rows, ROOT / "web" / "badges")
+
 payload = {
     "season_id": SEASON,
     "extra_seasons": EXTRA,
@@ -1264,11 +1271,12 @@ payload = {
     "margin_clip": standings["margin_clip"],
     "defense_advantage": standings["defense_advantage"],
     "ledger_sha256": ledger_sha,
-    "rows": [dict(r, provisional=r["eligible"] < RENDER_RANKED_AT) for r in rows],
+    "rows": render_rows,
+    "achievements": ACHIEVEMENTS,
     "ledger": ledger,
     "challenges": challenge_list,
     "battles": battles,
-    "champions": rows,
+    "champions": render_rows,
     "rank_trail": RANK_TRAIL,
     "roster": roster,
     "changelog": changelog_md,
@@ -1337,6 +1345,12 @@ BRIEF = '<section class="ia-brief" id="ia-brief"></section>'
 # vs price with a Pareto frontier, and the applied trade-off views. Same
 # contract: numbers from the payload, host injected around the template.
 COMPARE = '<section class="ia-compare" id="ia-compare"></section>'
+
+# Answers: the default landing. One card per question a team shipping
+# AI-written code asks, each answered by the model a metric rule picks, with
+# that model's achievement badge. Host injected above the summary so the
+# default view sits at the top; all numbers come from the payload.
+ANSWERS = '<section class="ia-answers" id="ia-answers"></section>'
 GAME_DETAIL = '<div id="ia-game-detail" hidden></div>'
 
 # Page styles and behaviour live next to the template in web/, so this file
@@ -1362,6 +1376,12 @@ rendered = rendered.replace(
 )
 rendered = rendered.replace("</head>", EXTRA_HEAD + "</head>", 1)
 rendered = rendered.replace("</body>", EXTRA_JS + "</body>", 1)
+
+# Answers is the default tab: inject its host above the season summary so the
+# landing view reads top to bottom.
+ANSWERS_ANCHOR = '<section class="summary" id="summary"'
+assert ANSWERS_ANCHOR in rendered, "summary section not found"
+rendered = rendered.replace(ANSWERS_ANCHOR, ANSWERS + "\n\n  " + ANSWERS_ANCHOR, 1)
 
 # Be explicit when the render relaxes the ranking threshold: SPEC 10.3 needs
 # RANKED_AT eligible rounds, and a short season would otherwise look like a
