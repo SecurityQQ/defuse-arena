@@ -2493,25 +2493,27 @@ and useful answer. Silence is not.`
   // hashes, deep links and the match-click path ("log") keep working, and
   // "log" stays its own group so a clicked match focuses just the log.
   const TAB_DEFS = [
-    ["answers", "Answers"],
     ["leaderboard", "Leaderboard"],
+    ["answers", "Answers"],
+    ["challenges", "Explore Challenges"],
     ["explore", "Explore"]
   ];
   const standingsTable = document.getElementById("standings");
   const ledgerPanel = document.getElementById("ledger-panel");
   const tabGroups = {
-    answers: [document.getElementById("ia-answers"), document.getElementById("ia-brief")],
     leaderboard: [document.getElementById("summary"), document.getElementById("podium"),
             standingsTable ? standingsTable.closest("section") : null,
             document.getElementById("ia-compare"), document.getElementById("ia-draft")],
-    explore: [document.getElementById("ia-roster"), chHost, ledgerPanel],
+    answers: [document.getElementById("ia-answers"), document.getElementById("ia-brief")],
+    challenges: [chHost],
+    explore: [document.getElementById("ia-roster"), ledgerPanel],
     log: [ledgerPanel]
   };
   const TAB_ALIAS = {
     board: "leaderboard", brief: "answers", compare: "leaderboard",
-    draft: "leaderboard", roster: "explore", challenges: "explore"
+    draft: "leaderboard", roster: "explore"
   };
-  const resolveTab = k => (tabGroups[k] ? k : (TAB_ALIAS[k] || "answers"));
+  const resolveTab = k => (tabGroups[k] ? k : (TAB_ALIAS[k] || "leaderboard"));
   const allTabNodes = Array.from(new Set(
     Object.values(tabGroups).flat().filter(Boolean)));
   const tabBar = el("nav", "ia-tabs");
@@ -2565,7 +2567,7 @@ and useful answer. Silence is not.`
   renderChallenges();
   renderAnswers();
   const initialRaw = (location.hash || "").replace("#", "");
-  showTab(initialRaw ? resolveTab(initialRaw) : "answers", { hash: false });
+  showTab(initialRaw ? resolveTab(initialRaw) : "leaderboard", { hash: false });
 
   renderDraft();
 
