@@ -13,6 +13,16 @@
       "lane": "attacker"
     },
     {
+      "agent": "deepseek-flash",
+      "model": "deepseek-v4.1-flash",
+      "name": "DeepSeek V4.1 Flash",
+      "title": "The Quick Vein",
+      "house": "The Abyssal Reach",
+      "glyph": "DF",
+      "accent": "#B49CF5",
+      "lane": "defender"
+    },
+    {
       "agent": "glm-5.2",
       "model": "glm-5.2",
       "name": "GLM-5.2",

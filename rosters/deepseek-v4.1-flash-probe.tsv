@@ -1,0 +1,19 @@
+# Probe roster: DeepSeek V4.1 Flash against the five champions of s-2026-01.
+#
+#   ROSTER_FILE=rosters/deepseek-v4.1-flash-probe.tsv ONLY=deepseek-flash \
+#     scripts/round-robin.sh
+#
+# Six models give 15 unordered pairs, and every pair plays both coins in both
+# directions: 60 matches at ROUNDS=1. Flash is cheap enough that the bill is
+# almost entirely the champion it plays — a 29-round flash probe in s-2026-01
+# cost $12.44, of which flash's own side was $1.04.
+#
+# opus-5.5 and gpt-6.1 refuse the attack prompt and the defender's exploit work
+# on provider policy (content_filter); their matches settle as ABSTAIN_* and
+# give no comparison. Drop them from this file for a probe that plays out.
+deepseek|deepseek-v4-pro
+deepseek-flash|deepseek-v4.1-flash
+glm-5.2|glm-5.2
+glm-5.3|glm-5.3
+opus-5.5|claude-opus-5.5
+gpt-6.1|gpt-6.1-sol

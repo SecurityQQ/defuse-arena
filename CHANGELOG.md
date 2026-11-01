@@ -4,6 +4,31 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.12.0 — 2026-10-30 — a filtered run cannot reach another match, and Flash joins the pool
+
+### Harness
+
+- **A match id belongs to the schedule, not to the selection.** `ONLY=<label>`
+  used to number the matches it selected from `m-0001`, so a filtered run wrote
+  into the folders of finished matches — a `ONLY=` probe could truncate a graded
+  match's `result.tsv` and overwrite its manifest, run record and results. The
+  pair's four matches (both sides x both coins) are now numbered before the
+  filter, so `m-0010` is the same match whether or not the rest of the season
+  runs. The coin lines in `theta.tsv` are written for the whole schedule for the
+  same reason: a filtered run no longer leaves the season's coins incomplete.
+
+### Roster
+
+- **DeepSeek V4.1 Flash** joins the pool as `deepseek-flash`
+  (`deepseek-v4.1-flash`, $0.22 / $0.01 / $0.66 per 1M): the flash-tier probe,
+  cheap enough to play every champion on both sides. Six models make 15 pairs
+  and 60 matches; the entry is appended so ids of a season in flight do not
+  shift. `rosters/deepseek-v4.1-flash-probe.tsv` runs it against the five
+  s-2026-01 champions.
+- The champion is declared, not yet rated: its 29 probe rounds were played in
+  `s-2026-01`, which is not the season the board publishes, so the board shows
+  it as unplayed until a wave runs in the published field.
+
 ## 0.11.0 — 2026-10-26 — answers first, and a badge on every model
 
 ### Board

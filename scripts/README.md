@@ -12,16 +12,22 @@ using the prompts in `prompts/`. Each round is frozen, graded, and recorded.
 
 | Label | Model id | Notes |
 |---|---|---|
-| `deepseek` | `deepseek-v4-pro` | strong variant; `deepseek-v4.1-flash` is newer but flash-tier |
+| `deepseek` | `deepseek-v4-pro` | strong variant |
+| `deepseek-flash` | `deepseek-v4.1-flash` | flash-tier probe, $0.22 / $0.01 / $0.66 per 1M |
 | `glm-5.2` | `glm-5.2` | |
 | `glm-5.3` | `glm-5.3` | |
 | `opus-5.5` | `claude-opus-5.5` | |
 | `gpt-6.1` | `gpt-6.1-sol` | the only 6.1 variant |
 
-Five models give 10 unordered pairs and 40 matches. A season can use a larger
+Six models give 15 unordered pairs and 60 matches. A season can use a larger
 field with `ROSTER_FILE`; `N` models give `2N(N-1)` matches, because every pair
 plays both directions and every direction plays both coins.
-`rosters/season-2026-02.tsv` is the eleven-model field.
+`rosters/season-2026-02.tsv` is the eleven-model field,
+`rosters/deepseek-v4.1-flash-probe.tsv` the flash probe.
+
+A match id is a property of the schedule, not of the selection: `ONLY=<label>`
+runs a subset but keeps every match in the folder it would have had in the full
+season, so a filtered run never writes into another match's result.
 
 ## Requirements
 
@@ -163,6 +169,14 @@ Billable is `(prompt − cached) + completion`; gross includes cached prompt
 tokens. A 40-match round robin (both coins per pair, five models) at
 `ROUNDS=1` is therefore roughly **3.2–3.8M billable** and **58–68M gross**.
 At `ROUNDS=4`, multiply by four.
+
+Money, not tokens: a 29-round DeepSeek V4.1 Flash probe against `deepseek`,
+`glm-5.2` and `glm-5.3` cost **$12.44**, about **$0.43 a round**. Flash's own
+side was $1.04 of that ($0.036 a round) — the bill is the champion it plays,
+not the flash model. `opus-5.5` and `gpt-6.1` refuse the attack prompt and the
+defender's exploit work on provider policy (`content_filter`), so their matches
+settle as `ABSTAIN_*` and buy no comparison; a probe that has to finish under a
+budget should leave them out.
 
 ## Caveats
 

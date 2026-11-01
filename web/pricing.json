@@ -6,6 +6,7 @@
   "note": "Prices are per 1M tokens as published for this account: [input, cached input, output]. Effort variants of one family share the same price, so the id the runner passes is enough. Refresh with `devin models list` and update this file when a price changes; a round is priced at grading time, so an old season keeps the prices it was graded with.",
   "models": {
     "deepseek-v4-pro": [1.32, 0.04, 3.96],
+    "deepseek-v4.1-flash": [0.22, 0.01, 0.66],
     "glm-5.2": [1.4, 0.26, 4.4],
     "glm-5.3": [1.4, 0.26, 4.4],
     "claude-opus-5.5": [4.0, 0.2, 20.0],

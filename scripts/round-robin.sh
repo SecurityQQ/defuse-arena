@@ -33,13 +33,16 @@ export BUDGET BAND DRY_RUN DEVIN AGENT_TIMEOUT
 
 # label|model-id. The CLI resolves these to high-effort variants automatically
 # (the export reports names like deepseek-v4-pro-high).
-# deepseek-v4.1-flash is newer but flash-tier; v4-pro is the strong one.
+# deepseek-v4.1-flash is the flash-tier probe: $0.22 / $0.01 / $0.66 per 1M,
+# cheap enough to put on both sides of every champion. It is appended last so
+# the match ids of a season already in flight do not shift.
 MODELS=(
   "deepseek|deepseek-v4-pro"
   "glm-5.2|glm-5.2"
   "glm-5.3|glm-5.3"
   "opus-5.5|claude-opus-5.5"
   "gpt-6.1|gpt-6.1-sol"
+  "deepseek-flash|deepseek-v4.1-flash"
 )
 
 log() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*"; }
@@ -71,10 +74,12 @@ mkdir -p "$SEASON_DIR/matches"
 SPECS=()
 THETA_LINES=()
 match_no=0
+pair_no=0
 n=${#MODELS[@]}
 
 for ((i = 0; i < n; i++)); do
   for ((j = i + 1; j < n; j++)); do
+    pair_no=$((pair_no + 1))
     for side in 0 1; do
       if [[ $side -eq 0 ]]; then a=$i; d=$j; else a=$j; d=$i; fi
 
@@ -83,19 +88,29 @@ for ((i = 0; i < n; i++)); do
       d_label="${MODELS[$d]%%|*}"
       d_model="${MODELS[$d]##*|}"
 
+      # Both coins on every ordered pair: theta=1 (vulnerability) and theta=0
+      # (clean control). No draw, no seed — the schedule itself fixes the coin
+      # before any service is built. The coin is recorded for every match in
+      # the schedule, including ones SKIP_DONE or ONLY would skip, so theta.tsv
+      # is complete whatever subset is actually (re)run.
+      #
+      # A match id is a property of the schedule, not of the selection: the
+      # pair's four matches (both sides x both coins) are numbered before the
+      # ONLY filter, so m-0010 is the same match whether or not the rest of the
+      # season runs. Numbering the selection instead let a filtered run start
+      # at m-0001 and write into another match's folder.
+      first_match=$(( (pair_no - 1) * 4 + side * 2 + 1 ))
+      for coin in 1 0; do
+        THETA_LINES+=("$(printf 'm-%04d' $((first_match + (coin == 1 ? 0 : 1))))"$'\t'"$coin")
+      done
+
       if [[ -n "$ONLY" && "$a_label" != "$ONLY" && "$d_label" != "$ONLY" ]]; then
         continue
       fi
 
-      # Both coins on every ordered pair: theta=1 (vulnerability) and theta=0
-      # (clean control). No draw, no seed — the schedule itself fixes the coin
-      # before any service is built. The coin is recorded for every match in
-      # the schedule, including ones SKIP_DONE would skip, so theta.tsv is
-      # complete whatever subset is actually (re)run.
       for coin in 1 0; do
-        match_no=$((match_no + 1))
+        match_no=$((first_match + (coin == 1 ? 0 : 1)))
         match_id=$(printf 'm-%04d' "$match_no")
-        THETA_LINES+=("$match_id"$'\t'"$coin")
 
         if [[ "$SKIP_DONE" == "1" && -s "$SEASON_DIR/matches/$match_id/result.tsv" ]]; then
           log "skip $match_id (already has result.tsv)"
