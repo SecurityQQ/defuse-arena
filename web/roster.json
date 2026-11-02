@@ -14,7 +14,7 @@
     },
     {
       "agent": "deepseek-flash",
-      "model": "deepseek-v4.1-flash",
+      "model": "deepseek-v4-1-flash-1017-high",
       "name": "DeepSeek V4.1 Flash",
       "title": "The Quick Vein",
       "house": "The Abyssal Reach",

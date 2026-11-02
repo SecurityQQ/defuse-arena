@@ -3,6 +3,10 @@
 #   ROSTER_FILE=rosters/deepseek-v4.1-flash-probe.tsv ONLY=deepseek-flash \
 #     scripts/round-robin.sh
 #
+# Every id is a leaf variant from `devin models list`, all at High effort, so
+# the field is like-for-like (AGENTS.md): a family slug resolves to whatever
+# effort that family defaults to, which differs per family.
+#
 # Six models give 15 unordered pairs, and every pair plays both coins in both
 # directions: 60 matches at ROUNDS=1. Flash is cheap enough that the bill is
 # almost entirely the champion it plays — a 29-round flash probe in s-2026-01
@@ -11,9 +15,9 @@
 # opus-5.5 and gpt-6.1 refuse the attack prompt and the defender's exploit work
 # on provider policy (content_filter); their matches settle as ABSTAIN_* and
 # give no comparison. Drop them from this file for a probe that plays out.
-deepseek|deepseek-v4-pro
-deepseek-flash|deepseek-v4.1-flash
-glm-5.2|glm-5.2
-glm-5.3|glm-5.3
-opus-5.5|claude-opus-5.5
-gpt-6.1|gpt-6.1-sol
+deepseek|deepseek-v4-pro-high
+deepseek-flash|deepseek-v4-1-flash-1017-high
+glm-5.2|glm-5-2
+glm-5.3|glm-5-3-high
+opus-5.5|claude-opus-5-5-high
+gpt-6.1|gpt-6-1-sol-high

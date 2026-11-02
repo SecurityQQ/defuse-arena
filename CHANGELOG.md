@@ -4,6 +4,12 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## Unreleased — 2026-11-01 — review: why attackers almost never win, and three directions with a larger attack surface
+
+### Review
+
+- **`REVIEW-2026-11.md` audits the published 258-round board and proposes three successor designs.** No scoring, prompt, or harness behaviour changes. The audit's headline numbers: played attack rounds survive at 5 of 82 (6.1%), detection itself missed 0 of 82 (every surviving attack is a patch-gate failure, not an unfound bug), 68 of 82 planted bugs are the one header-trust class against the one canary endpoint, and 40 of 138 scheduled attack rounds (29.0%) never played because the attacker refused — so the current game measures patch mechanics on a single 300-line file more than it measures hiding or finding bugs. The three directions — many bugs against many secrets, a buried bug in a real multi-file codebase, and a bounded patch-bypass second move — each carry the datapoint that motivates them, pros and cons, a pilot cost at the current $0.99 mean per played round, and pre-registered gates (15–35% survival, refusal and false-alarm rates no worse than today's) that a pilot must pass before any season is scored under new rules.
+
 ## 0.12.0 — 2026-10-30 — a filtered run cannot reach another match, and Flash joins the pool
 
 ### Harness
@@ -20,11 +26,12 @@ plain markdown — no HTML, no links to local files.
 ### Roster
 
 - **DeepSeek V4.1 Flash** joins the pool as `deepseek-flash`
-  (`deepseek-v4.1-flash`, $0.22 / $0.01 / $0.66 per 1M): the flash-tier probe,
-  cheap enough to play every champion on both sides. Six models make 15 pairs
-  and 60 matches; the entry is appended so ids of a season in flight do not
-  shift. `rosters/deepseek-v4.1-flash-probe.tsv` runs it against the five
-  s-2026-01 champions.
+  (`deepseek-v4-1-flash-1017-high`, $0.22 / $0.01 / $0.66 per 1M): the flash-tier
+  probe, cheap enough to play every champion on both sides.
+  `rosters/deepseek-v4.1-flash-probe.tsv` runs it against the five s-2026-01
+  champions, all at High effort and all named by leaf id — a family slug would
+  resolve to a different effort per family. The legacy default field in
+  `round-robin.sh` is left as it was, so seasons already played stay comparable.
 - The champion is declared, not yet rated: its 29 probe rounds were played in
   `s-2026-01`, which is not the season the board publishes, so the board shows
   it as unplayed until a wave runs in the published field.

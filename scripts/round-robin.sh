@@ -31,18 +31,16 @@ ROSTER_FILE="${ROSTER_FILE:-}"
 
 export BUDGET BAND DRY_RUN DEVIN AGENT_TIMEOUT
 
-# label|model-id. The CLI resolves these to high-effort variants automatically
-# (the export reports names like deepseek-v4-pro-high).
-# deepseek-v4.1-flash is the flash-tier probe: $0.22 / $0.01 / $0.66 per 1M,
-# cheap enough to put on both sides of every champion. It is appended last so
-# the match ids of a season already in flight do not shift.
+# label|model-id. This is the legacy default field, kept as it was written so
+# its seasons stay comparable; a season proper is defined by
+# `ROSTER_FILE=rosters/<season>.tsv` with explicit leaf ids (AGENTS.md), and
+# `web/pricing.json` prices whichever id the roster names.
 MODELS=(
   "deepseek|deepseek-v4-pro"
   "glm-5.2|glm-5.2"
   "glm-5.3|glm-5.3"
   "opus-5.5|claude-opus-5.5"
   "gpt-6.1|gpt-6.1-sol"
-  "deepseek-flash|deepseek-v4.1-flash"
 )
 
 log() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*"; }

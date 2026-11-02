@@ -12,18 +12,21 @@ using the prompts in `prompts/`. Each round is frozen, graded, and recorded.
 
 | Label | Model id | Notes |
 |---|---|---|
-| `deepseek` | `deepseek-v4-pro` | strong variant |
-| `deepseek-flash` | `deepseek-v4.1-flash` | flash-tier probe, $0.22 / $0.01 / $0.66 per 1M |
-| `glm-5.2` | `glm-5.2` | |
-| `glm-5.3` | `glm-5.3` | |
-| `opus-5.5` | `claude-opus-5.5` | |
-| `gpt-6.1` | `gpt-6.1-sol` | the only 6.1 variant |
+| `deepseek` | `deepseek-v4-pro` | legacy slug: resolves to High |
+| `glm-5.2` | `glm-5.2` | this slug is the High variant |
+| `glm-5.3` | `glm-5.3` | legacy slug: resolves to Low |
+| `opus-5.5` | `claude-opus-5.5` | legacy slug: resolves to Medium |
+| `gpt-6.1` | `gpt-6.1-sol` | legacy slug: resolves to Low Thinking |
 
-Six models give 15 unordered pairs and 60 matches. A season can use a larger
-field with `ROSTER_FILE`; `N` models give `2N(N-1)` matches, because every pair
-plays both directions and every direction plays both coins.
-`rosters/season-2026-02.tsv` is the eleven-model field,
-`rosters/deepseek-v4.1-flash-probe.tsv` the flash probe.
+This is the legacy default field, kept as written so its seasons stay
+comparable. A season proper names explicit leaf variants in
+`rosters/<season>.tsv`, because a family slug resolves to that family's own
+default effort and the defaults differ (AGENTS.md). `N` models give `2N(N-1)`
+matches: every pair plays both directions, and every direction plays both
+coins. `rosters/season-2026-02.tsv` is the eleven-model field;
+`rosters/deepseek-v4.1-flash-probe.tsv` puts DeepSeek V4.1 Flash
+(`deepseek-v4-1-flash-1017-high`, $0.22 / $0.01 / $0.66 per 1M) on both sides
+of the five s-2026-01 champions.
 
 A match id is a property of the schedule, not of the selection: `ONLY=<label>`
 runs a subset but keeps every match in the folder it would have had in the full
