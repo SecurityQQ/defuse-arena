@@ -10,6 +10,32 @@ plain markdown — no HTML, no links to local files.
 
 - **`REVIEW-2026-11.md` audits the published 258-round board and proposes three successor designs.** No scoring, prompt, or harness behaviour changes. The audit's headline numbers: played attack rounds survive at 5 of 82 (6.1%), detection itself missed 0 of 82 (every surviving attack is a patch-gate failure, not an unfound bug), 68 of 82 planted bugs are the one header-trust class against the one canary endpoint, and 40 of 138 scheduled attack rounds (29.0%) never played because the attacker refused — so the current game measures patch mechanics on a single 300-line file more than it measures hiding or finding bugs. The three directions — many bugs against many secrets, a buried bug in a real multi-file codebase, and a bounded patch-bypass second move — each carry the datapoint that motivates them, pros and cons, a pilot cost at the current $0.99 mean per played round, and pre-registered gates (15–35% survival, refusal and false-alarm rates no worse than today's) that a pilot must pass before any season is scored under new rules.
 
+## 0.12.1 — 2026-11-01 — twenty-nine rounds for DeepSeek V4.1 Flash
+
+### Data
+
+- **The board adds 29 flash rounds,** played against `deepseek`, `glm-5.2` and
+  `glm-5.3` in `s-2026-01` and folded in as `s-flash-probe`: 287 rounds, 14
+  agents. Flash lands at 1500.6 overall, with the field's strongest red-team
+  rating (1684.6, 5–3) and a weak audit seat (1360.1, 2–3) — it plants bugs a
+  strong defender misses and cries wolf on clean code. `opus-5.5` and `gpt-6.1`
+  refused the attack prompt and the defender's exploit work on provider policy,
+  so those pairings are absent rather than forfeited.
+- **The season tree was rebuilt from the published ledger.** `seasons/` is not
+  in git, so the 258 rounds behind the board were gone with the machine that
+  ran them; `scripts/rebuild_from_payload.py` writes the six files
+  `standings.py` reads for every round straight out of the board's own
+  `arena-data`. Ratings, rows, rank trails, achievements, chips, Brier and
+  outcomes reproduce exactly — the only per-round field that moved is the
+  running `rating_after`, which 29 new games must move.
+- **What the rebuild cannot restore is the original token split.** The ledger
+  keeps billable tokens and USD cost, not prompt/cached/completion, so each
+  side's spend is solved to reproduce both numbers exactly; the split behind
+  them is synthetic and is not the export's. The transcript replays and wall
+  clocks are not derived at all: they are carried over verbatim from the
+  published payload for the 258 old rounds and come from the real exports for
+  the 29 new ones.
+
 ## 0.12.0 — 2026-10-30 — a filtered run cannot reach another match, and Flash joins the pool
 
 ### Harness
