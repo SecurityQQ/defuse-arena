@@ -4,6 +4,55 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.12.3 — 2026-11-02 — every model named, provisional rows marked, and a render the scripts can reproduce
+
+### Board
+
+- **Provisional rows are marked again, and the "Preview ranking" banner is
+  gone.** The 0.12.1 board was rendered with the ranking threshold relaxed to
+  1 round, so it marked no row provisional and opened the standings with
+  "Preview ranking … this is a preview, not a ranking". It now renders at the
+  SPEC's 20 eligible rounds: `gpt-6-astra` (15), `glm-5.3-flash` (19) and
+  `sonnet-5.5` (10) are provisional, and the Sniper and Flake holders say so.
+- **Every row carries its resolved model name.** Eight rows (`grok-4.7`,
+  `glm-5.3-max`, `gpt-6-astra`, `gemini-4-argon`, `glm-5.3-flash`,
+  `muse-wonder`, `kimi-k3`, `sonnet-5.5`) showed no model name, and `glm-5.3`
+  showed **GLM-5.3 Max**, taken from its 8 probe seats, although 43 of its
+  seats ran Low. The replays of the 258 old rounds had been added to the page
+  after the render, so names were resolved from the 29 probe exports alone.
+  All 14 rows are named now and `glm-5.3` reads **GLM-5.3 Low**. The row
+  still pools 4 High seats from s-2026-02 and the 8 Max probe seats.
+- **Seat speeds are back.** The median wall clock on the role hover cards and
+  the Compare speed map was empty for the eight rows above and came from probe
+  rounds only for the other six. It is computed from every played round again;
+  the eight rows that never met the probe match the 258-round board exactly.
+- **`ledger_sha256` hashes the ledger the page serves.** The 0.12.1 value was
+  the hash of the ledger with the old rounds' wall clocks set to zero.
+- **The board is called Inspection Arena.** The page title, the top bar and
+  the masthead replace "Code Audit Benchmark — Leaderboard"; the onboarding
+  page title reads "Inspection Arena · Onboarding".
+- No rating, interval, outcome, cost, token count, Brier score or chip
+  changes. The board was rebuilt from the published 0.12.1 page, the 258
+  ranked rounds as `s-2026-02` and the 29 probe rounds as `s-flash-probe`, and
+  rendered with `standings.py s-2026-02 --extra-season s-flash-probe --publish
+  web/index.html`.
+
+### Scripts
+
+- **A rebuilt round keeps its replay.** `rebuild_from_payload.py` also writes
+  each round's published replay to `battle.json`, and `standings.py` uses it
+  when the round has no agent exports. Rebuilding from a published board now
+  restores the transcript replays, wall clocks, model names and seat speeds,
+  not just the ledger, so the render needs no manual step after `--publish`.
+
+### Data
+
+- **Correction to 0.12.1:** besides `rating_after`, which moved in the attack
+  and audit pools only (at most 11.8 points; the overall pool is unchanged),
+  `role_delta` and the role half of `fit_delta` moved too (at most 3.1 points)
+  in the 258 old rounds. The cause is the 14th agent entering the role fit,
+  not the 29 new games, which come after every old round.
+
 ## 0.12.2 — 2026-11-02 — a public data pack, an MIT license, and a truthful safety section
 
 ### Docs

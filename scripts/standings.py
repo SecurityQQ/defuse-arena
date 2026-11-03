@@ -349,6 +349,11 @@ for gpath, offset in sources:
             manifest.get("freeze_hash"), manifest.get("poc_hash"), def_b["steps"],
         ),
     }
+    carried = rdir / "battle.json"
+    if not (att_b["steps"] or def_b["steps"]) and carried.exists():
+        # rebuilt from a published payload: no exports, so reuse the published replay
+        battles[round_id] = json.load(open(carried))
+        att_b, def_b = battles[round_id]["att"], battles[round_id]["def"]
 
     raw.append({
         "round_id": round_id, "match_id": match_id,

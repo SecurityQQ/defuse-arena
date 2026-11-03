@@ -5,7 +5,8 @@ The seasons/ tree is runtime data and is not in git; when the tree is gone but
 the published board is not, the board's ledger is the surviving record. This
 writes the six files standings.py reads for every round, solving the spend split
 so that the recomputed USD cost and billable tokens land exactly on the recorded
-ones.
+ones, plus the round's published replay as battle.json, which standings.py uses
+when the round has no agent exports.
 
 usage: rebuild_from_payload.py <payload-html> <out-season-dir>
 """
@@ -112,6 +113,11 @@ def main(html, outdir):
         (rd / "defender" / "out" / "report.json").write_text(json.dumps({
             "mechanism": r["mechanism"], "exploit_present": None,
         }, indent=2, sort_keys=True))
+        # The replay, wall clocks and resolved model names live only in the
+        # payload's battles; keep them next to the round so standings.py sees them.
+        b = payload.get("battles", {}).get(r["round_id"])
+        if b:
+            (rd / "battle.json").write_text(json.dumps(b, sort_keys=True))
 
     print(f"rounds written: {len(payload['ledger'])}  unsolved: {len(bad)}")
     for b in bad[:10]:
