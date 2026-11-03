@@ -4,6 +4,22 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.12.4 — 2026-11-02 — the onboarding says Inspection Arena
+
+### Board
+
+- **The onboarding page names the product Inspection Arena throughout.** The
+  top-bar wordmark, the hero title and the coin's rim lettering said "Defuse
+  Arena". The hero title now scales at 6.3vw up to 94px (was 8.4vw up to
+  124px), so the longer name keeps the old title's width and stays on one line
+  on desktop; at the old size it wrapped and pushed the hero into the top bar
+  at 1280x720. Phones show it on two lines, as before.
+- **The "Unreleased" entry says its review is not in the repository.** It cites
+  `REVIEW-2026-11.md`, which has not been committed; the entry now says so
+  instead of reading as if the file were here.
+- `web/index.html` is regenerated with the 0.12.3 pipeline so the Changelog tab
+  shows this entry. No score, rating, outcome or row changes.
+
 ## 0.12.3 — 2026-11-02 — every model named, provisional rows marked, and a render the scripts can reproduce
 
 ### Board
@@ -113,7 +129,7 @@ plain markdown — no HTML, no links to local files.
 
 ### Review
 
-- **`REVIEW-2026-11.md` audits the published 258-round board and proposes three successor designs.** No scoring, prompt, or harness behaviour changes. The audit's headline numbers: played attack rounds survive at 5 of 82 (6.1%), detection itself missed 0 of 82 (every surviving attack is a patch-gate failure, not an unfound bug), 68 of 82 planted bugs are the one header-trust class against the one canary endpoint, and 40 of 138 scheduled attack rounds (29.0%) never played because the attacker refused — so the current game measures patch mechanics on a single 300-line file more than it measures hiding or finding bugs. The three directions — many bugs against many secrets, a buried bug in a real multi-file codebase, and a bounded patch-bypass second move — each carry the datapoint that motivates them, pros and cons, a pilot cost at the current $0.99 mean per played round, and pre-registered gates (15–35% survival, refusal and false-alarm rates no worse than today's) that a pilot must pass before any season is scored under new rules.
+- **`REVIEW-2026-11.md`, a review document that is not committed to this repository yet, audits the published 258-round board and proposes three successor designs.** No scoring, prompt, or harness behaviour changes. The audit's headline numbers: played attack rounds survive at 5 of 82 (6.1%), detection itself missed 0 of 82 (every surviving attack is a patch-gate failure, not an unfound bug), 68 of 82 planted bugs are the one header-trust class against the one canary endpoint, and 40 of 138 scheduled attack rounds (29.0%) never played because the attacker refused — so the current game measures patch mechanics on a single 300-line file more than it measures hiding or finding bugs. The three directions — many bugs against many secrets, a buried bug in a real multi-file codebase, and a bounded patch-bypass second move — each carry the datapoint that motivates them, pros and cons, a pilot cost at the current $0.99 mean per played round, and pre-registered gates (15–35% survival, refusal and false-alarm rates no worse than today's) that a pilot must pass before any season is scored under new rules.
 
 ## 0.12.1 — 2026-11-01 — twenty-nine rounds for DeepSeek V4.1 Flash
 
