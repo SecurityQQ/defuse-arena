@@ -2,6 +2,10 @@
 
 A two-agent benchmark for hidden-vulnerability auditing.
 
+> **Warning:** the runner executes model-written code on your machine, with no
+> container and no network block. Run it only in a disposable VM or container.
+> See [Safety](#safety).
+
 One model builds a small service. A coin flip decides whether that service
 contains a deliberately planted vulnerability. A second model audits the frozen
 service, reports the probability that a vulnerability is present, and — if it
@@ -19,9 +23,11 @@ non-void round and prices a no-show or a forfeit as a loss, so refusing is
 never cheaper than playing. The spend margin is an efficiency axis, not a
 rating term.
 
-**Status:** specification + Phase 1 runner. The spec, schemas, task packs,
-prompts, and round-robin harness are in place; the container harness and
-immutable conformance suite are next.
+**Status:** Phase 1 runner, in use. Seasons have run: 258 ranked rounds across
+13 models, plus a 29-round probe of a fourteenth. The data pack for the
+258-round board, with scripts that recompute its numbers, is in `article/`.
+The spec, schemas, prompts and round-robin runner are in place. There is no
+container harness and no immutable conformance suite yet.
 
 - [`SPEC.md`](SPEC.md) — full specification
 - [`schemas/`](schemas/) — JSON schemas for the round manifest, defender report,
@@ -29,11 +35,30 @@ immutable conformance suite are next.
 
 ## Safety
 
-Every service is authored by the attacker from a harness-provided scaffold and
-runs in a disposable, network-isolated container. The "vulnerability" is a logic
-or web bug in that scaffold, and the only secret is a per-round random canary.
-Nothing here targets real software, real credentials, or the host. The artifact
-is a CTF-style exercise against code the attacker wrote five minutes earlier.
+This runner is not contained. Read this before you run it.
+
+- The attacker's service and the proof-of-concept run on the host, not in a
+  container.
+- The runner calls `devin --permission-mode dangerous` without `--sandbox`.
+  Each agent can run any shell command as your user.
+- Network access is not blocked. Only Devin's `Fetch` tool is denied; the shell
+  can still reach the network.
+- Roles are kept apart by absence. Before the defender runs, the harness moves
+  the attacker's folder, the sealed PoC and the attacker's session log out of
+  the round. Devin permission rules limit the read and write tools to the
+  role's folder, but they do not cover the shell.
+- The containment in SPEC §5 is a design target. This runner does not enforce
+  it.
+- The prompts tell the models they run in a sandbox with no network. That is
+  not true of this runner.
+
+Run it only in a disposable VM or container, with no credentials, SSH keys or
+data you care about. A run also spends real money on model calls.
+
+What does hold: the service is synthetic. The attacker writes it a few minutes
+before the audit. The "vulnerability" is a logic or web bug in that code, and
+the only secret is a per-round random canary. Nothing here targets real
+software or real credentials.
 
 ## Why
 
@@ -46,10 +71,11 @@ patch, verify.
 
 A round lives at
 `seasons/<season>/matches/<match>/rounds/<round>/`. The game master owns that
-tree. The attacker sees only `attacker/`, the defender sees only
-`defender/inbox/` (read-only) and `defender/out/` (writable), and the grader
-sees `frozen/`, `sealed/`, and `defender/out/`. Everything else is absent from
-the container, not merely forbidden by prompt. See SPEC §7.8–7.13.
+tree. The attacker works in `attacker/`, the defender reads `defender/inbox/`
+and writes `defender/out/`, and the grader uses `frozen/`, `sealed/`, and
+`defender/out/`. While the defender runs, the attacker's files and the sealed
+PoC are moved out of the round, so they are absent rather than forbidden by
+prompt. There is no container; see Safety. See SPEC §7.8–7.13.
 
 ## Leaderboard
 
@@ -132,3 +158,7 @@ inspection-arena/
 ├── tests/
 └── docs/
 ```
+
+## License
+
+MIT. See [`LICENSE`](LICENSE).

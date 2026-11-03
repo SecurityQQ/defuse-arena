@@ -6,7 +6,7 @@ status: upcoming
 domain: security
 tags: [ai-control, vulnerability-detection, code-audit, multi-agent, elo]
 compute: cpu
-compute_details: Two CPU-only containers per round; no GPU is required.
+compute_details: CPU only; no GPU is required. The Phase 1 runner has no container; it runs everything on the host.
 deadline: rolling
 prizes: recognition only
 organizer:
@@ -54,7 +54,7 @@ submit:
   how: pull-request
   path: submissions/<handle>/
   format: SUBMISSION.md plus the agent config and a sealed season export.
-  requirements: [Docker, Python 3.12]
+  requirements: [Devin CLI and account, Python 3.12, bash, rsync, a disposable VM or container]
   verification: CI re-runs the scorer from the sealed round logs; a maintainer reviews the config.
   eligibility: Open to everyone.
   cost: free
@@ -62,6 +62,7 @@ submit:
   attribution: State the model and harness in SUBMISSION.md; keep Co-Authored-By trailers.
 
 quickstart: |
+  # Warning: runs model-written code on the host, with no container and no network block. Use a disposable VM or container.
   git clone https://github.com/SecurityQQ/inspection-arena && cd inspection-arena
   DRY_RUN=1 scripts/round-robin.sh
   JOBS=2 ROUNDS=1 scripts/round-robin.sh
@@ -124,6 +125,8 @@ config and the round logs are part of every submission.
 
 ## Status
 
-The harness is at Phase 1: the spec, schemas, and task-pack manifest exist; the
-runner, grader, and season export are in progress. Track baselines are set, but
-no season has been run yet.
+The harness is at Phase 1. The runner, grader and board are in use, and seasons
+have run: 258 ranked rounds across 13 models, plus a 29-round probe of a
+fourteenth. The data pack for the 258-round board is in `article/`. There is no
+container harness and no immutable conformance suite yet. The runner is
+not contained: see Safety in `README.md` before you run it.

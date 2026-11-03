@@ -8,3 +8,11 @@ __pycache__/
 .DS_Store
 .vercel
 .env*
+
+# Local research archives and runbooks: may hold credentials, never publish
+*.tgz
+crack-bench-*
+RESUME-*.md
+
+# The owner's internal article drafts: seat, invoice and GPU details, never publish
+article/internal/

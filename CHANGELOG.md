@@ -4,6 +4,62 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.12.2 — 2026-11-02 — a public data pack, an MIT license, and a truthful safety section
+
+### Docs
+
+- **`article/` holds the public data pack for the 258-round board.**
+  `article/README.md` describes the benchmark, the files, the headline numbers,
+  the field and the caveats. `article/per-model.md` is the per-model ledger
+  (rating, effort, spend, tokens, Brier, patch validity, attack survival,
+  insight per $100, false alarms and lost spend). `article/harness.md` records
+  the Devin CLI version, the three role prompts, the grading and forfeit
+  taxonomy, and what the runner did and did not isolate. `article/rounds.csv`
+  is the 258-row ledger with no canary values. `tokens.csv`, `prices.csv`,
+  `audits.csv`, `no_shows.csv` and `ratings.csv` carry the token split, the
+  list prices, every scored audit, every no-show and the published ratings.
+  The pack is derived from the combined s-2026-02+s-2026-04+s-2026-05+s-2026-06
+  board; no scoring semantics change.
+- **The numbers are corrected, and a script recomputes them.**
+  `article/verify.py` uses only the standard library, reads only the CSVs and
+  runs 88 checks against the headline numbers; all pass. The pack's
+  corrections table lists the 21 claims of the earlier internal draft that
+  changed. The largest: 29 of the 33 false alarms cite the default admin token
+  `dev-admin-token` that the build prompts mandate, so without them the
+  false-alarm rate is 4 of 84 (4.8%), not 29.2%. All 82 planted bugs that
+  reached a reviewer were detected, and the 5 misses are patches that failed.
+  41 of the 46 no-shows are provider filters that spent zero tokens, not model
+  refusals.
+- **The DeepSeek V4.1 Flash probe has its own page.** `article/flash-probe.md`,
+  `article/flash-probe-rounds.csv` and `article/verify_flash.py` (28 checks)
+  cover the 29 probe rounds, which are not part of the 258.
+- **The owner's internal drafts stay out of git.** The earlier `article/` files
+  hold billing and account details. They are kept locally under
+  `article/internal/`, which `.gitignore` excludes.
+
+### Safety
+
+- **README and PROBLEM.md now say what the runner does.** The old Safety
+  section said every service runs in a disposable, network-isolated container.
+  The runner has no container: the service and the PoC run on the host, `devin`
+  runs with `--permission-mode dangerous` and without `--sandbox`, and network
+  access is not blocked. Roles are kept apart only by moving the attacker's
+  files and the sealed PoC out of the round. The containment in SPEC §5 is a
+  design target that this runner does not enforce. The README opens with a
+  warning to run it only in a disposable VM or container, and the PROBLEM.md
+  quickstart carries the same warning. PROBLEM.md `compute_details` and
+  `requirements` no longer name containers or Docker.
+- The README and PROBLEM.md status sections now say that seasons have run, and
+  point to the data pack in `article/`.
+
+### Repository
+
+- **`LICENSE` is MIT.** The README says so.
+- **`.gitignore` keeps local material out of git:** `*.tgz` archives, local
+  runbooks (`RESUME-*.md`) and `article/internal/`.
+- `web/index.html` is not regenerated in this change. The board's Changelog tab
+  shows this entry after the next publish.
+
 ## Unreleased — 2026-11-01 — review: why attackers almost never win, and three directions with a larger attack surface
 
 ### Review
