@@ -4,6 +4,7 @@
     <loc>https://defuse-arena.vercel.app/</loc>
     <lastmod>2026-11-06</lastmod>
     <priority>1.0</priority>
+    <image:image><image:loc>https://defuse-arena.vercel.app/social/og-champions.png</image:loc></image:image>
     <image:image><image:loc>https://defuse-arena.vercel.app/social/10-read-more.png</image:loc></image:image>
     <image:image><image:loc>https://defuse-arena.vercel.app/social/01-false-alarms.png</image:loc></image:image>
     <image:image><image:loc>https://defuse-arena.vercel.app/social/01-alt-false-alarms.png</image:loc></image:image>
