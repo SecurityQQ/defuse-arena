@@ -377,6 +377,9 @@ document.documentElement.classList.add("js");
   if (BOARD.includes(tab) || /[?&]tour=/.test(location.search)) location.replace("/board" + location.search + location.hash);
 })();
 </script>
+<!-- Vercel Web Analytics: page views, no cookies -->
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
+<script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 <div class="hexveil" aria-hidden="true"></div>
@@ -886,6 +889,23 @@ const burn = () => {
   }
 };
 addEventListener("scroll", burn, { passive: true }); burn();
+</script>
+<script>
+"use strict";
+// Vercel Web Analytics custom events: what readers do with the article
+document.addEventListener("click", e => {
+  const champ = e.target.closest("#wick button, #lumen button");
+  if (champ) return va("event", { name: "Champion", data: { champ: champ.parentElement.id } });
+  const a = e.target.closest("a"); if (!a) return;
+  const href = a.getAttribute("href") || "";
+  let m;
+  if ((m = href.match(/^social\/(.+)\.(png|mp4)$/))) va("event", { name: m[2] === "mp4" ? "Card video" : "Card image", data: { card: m[1] } });
+  else if (href.includes("github.com")) va("event", { name: "GitHub", data: { from: a.closest("footer, .top, article")?.tagName.toLowerCase() || "page" } });
+  else if (href.includes("x.com/")) va("event", { name: "X profile" });
+  else if (href === "/board" || href.startsWith("/board#")) va("event", { name: "Open leaderboard", data: { from: a.className || "link" } });
+  else if (href === "/onboarding") va("event", { name: "Open onboarding" });
+}, { capture: true });
+document.getElementById("copy")?.addEventListener("click", () => va("event", { name: "Copy citation" }));
 </script>
 </body>
 </html>

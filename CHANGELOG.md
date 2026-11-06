@@ -8,6 +8,14 @@ plain markdown — no HTML, no links to local files.
 
 ### Launch: search, answer engines and link previews
 
+- **Vercel Web Analytics on every public page.** The article, the board (template
+  and published copy), the onboarding and the model report load
+  `/_vercel/insights/script.js`: page views, referrers and countries, no
+  cookies. It is enabled on the `defuse-arena` project. The chart embeds do not
+  load it, so one article visit counts once. The article also sends custom
+  events: `Card image` and `Card video` (with the card), `GitHub` (with where on
+  the page), `X profile`, `Open leaderboard`, `Open onboarding`, `Copy citation`
+  and `Champion` (Wick or Lumen).
 - **Every public page has a link preview.** The article, `/board`,
   `/onboarding` and `/analysis` carry a description, a canonical URL on
   `defuse-arena.vercel.app`, Open Graph and Twitter large-image cards and the

@@ -1112,6 +1112,9 @@ def build_page(standings: dict, ledger: list[dict], models: list[Model], n_total
 <meta name="twitter:description" content="Charts and tables on how each AI model defends, attacks and spends in Defuse Arena: audit ratings, false alarms, exploits that beat the patch, and cost per round.">
 <meta name="twitter:image" content="https://defuse-arena.vercel.app/social/06-price.png">
 <style>{CSS}</style>
+<!-- Vercel Web Analytics: page views, no cookies -->
+<script>window.va=window.va||function(){{(window.vaq=window.vaq||[]).push(arguments)}};</script>
+<script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 <div class="wrap">
