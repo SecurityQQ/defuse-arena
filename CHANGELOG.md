@@ -6,6 +6,53 @@ plain markdown — no HTML, no links to local files.
 
 ## Unreleased — 2026-11-06 — Defuse Arena, and an llm.txt
 
+### Article charts
+
+- **`scripts/article_charts.py` writes six embeddable pages to
+  `web/charts/`**, in the board's look and motion (the Compare panel's frame,
+  fonts, tooltip, pop-in dots and drawn frontier): ratings with 95% intervals
+  (Vulnerability or Control, Overall, Attack or Defence, rows re-sorting on
+  every switch), false alarms on clean code, audit rating against price with
+  the Pareto frontier, catch against noise, and which model is the most
+  dangerous. Every number comes from the season's `standings.json` and
+  `ledger.jsonl` through the model report's own loaders. `?static` skips the
+  motion for screenshots, and `?bench=control&seat=attack` opens a chart on one
+  view.
+- **`methodology.html` explains a round with the onboarding's motion**: draw,
+  coin flip, build, blind audit with its confidence meter and verdict stamp,
+  the grader's proof pills, and the stake moving to the winner with both Elo
+  changes. It replays two real rounds of the article's example pair, r-9001
+  (vulnerability, defused) and r-8025 (control, a false alarm), and loops
+  between the two modes; the code on the Build step is a labelled sketch of
+  each round's mechanism, not the submitted source.
+- **Which model is the most dangerous splits attacks by mode.** Vulnerability
+  shows every played attack as landed (by why the patch failed) or found and
+  fixed, and names the models that refused every attack; Control shows each
+  clean build that drew a false alarm. "Survived" is now "landed".
+- **The results article is the home page.** `web/index.html` is now the
+  article, served at `/`; the leaderboard moves to `web/board.html`, served at
+  `/board`, and `standings.py --publish` writes there. `/leaderboard` redirects
+  to `/board` (the template is no longer reachable), `/article` to `/`, and old
+  board deep links (`/#explore`, `/?tour=…`) are forwarded to `/board`. The
+  onboarding hands off to the board as before, and the board still opens it on
+  a first visit; the board's top bar links back to the article.
+- **The article is in the board's look with a reading layout**: the author's
+  text, a key-numbers strip, a contents rail that follows the reader, and the six chart pages as numbered
+  figures. Each chart page posts its height to the page that embeds it and
+  starts its motion only when it scrolls into view.
+- **Catch vs noise keeps labels off the dots.** Labels are measured once the
+  fonts load, kept clear of every dot's halo and of each other, and pushed out
+  along a leader line when the near ring is taken; touching dots are nudged
+  sideways only, so the y value stays exact.
+- **`?theme=paper` draws the same charts in a light editorial palette** for
+  embedding in a blog (ivory canvas, ink text, Source Serif titles, mono meta;
+  pale model accents are mixed toward ink so they still read). Embedded pages
+  report the height of their card, not of the document, so an iframe can
+  shrink as well as grow, and the ratings axis drops to 200-point ticks when
+  100-point ones would collide.
+- **The model report's bar charts carry hover titles** on every segment, as
+  its scatters already did.
+
 ### Board
 
 - **The benchmark is called Defuse Arena everywhere.** The board was titled

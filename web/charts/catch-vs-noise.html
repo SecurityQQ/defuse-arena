@@ -6,7 +6,7 @@
 <title>Catch vs noise · Defuse Arena</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Rajdhani:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,500&family=Hanken+Grotesk:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#010A13;--panel:#091428;--panel-2:#0F1B2D;--line:rgba(200,170,110,.16);--line-soft:rgba(200,170,110,.07);
 --gold:#C8AA6E;--gold-2:#F0E6D2;--teal:#0AC8B9;--red:#E06060;--text:#CDBE91;--muted:#7A8CA3;
@@ -33,7 +33,7 @@ color:var(--muted);background:rgba(200,170,110,.04);border:0;border-right:1px so
 .plot svg{display:block;width:100%;height:auto}
 .foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:9px;font-size:12px;color:var(--muted)}
 .foot a{color:var(--gold);text-decoration:none}.foot a:hover{color:var(--gold-2)}
-.legend{display:flex;gap:14px;flex-wrap:wrap}.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center}.legend .note{color:#5f7188;font-size:11.5px}.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .grid{stroke:rgba(200,170,110,.08)}
 .tick{fill:var(--muted);font-family:var(--font-mono);font-size:9.5px}
 .axis{fill:var(--muted);font-family:var(--font-display);font-size:9px;letter-spacing:.14em;text-transform:uppercase}
@@ -71,19 +71,63 @@ box-shadow:0 12px 34px rgba(0,0,0,.65),0 0 0 1px rgba(10,200,185,.08) inset;font
 #tip .m{color:var(--muted);font-size:12px}
 #tip p{margin:0}
 @media (max-width:560px){.card{margin:0;border-radius:0;padding:14px 12px}.chip{padding:7px 9px;font-size:9px}}
+
+/* ?theme=paper: the same charts in an editorial light palette, for embedding
+   in a blog (ivory canvas, ink text, Source Serif titles, mono meta). */
+html.paper{--bg:#FAF9F5;--panel:#F0EEE6;--line:#E3E1D8;--line-soft:#ECEAE2;--gold:#A8764B;--gold-2:#141413;--teal:#3F72A8;--red:#C4553A;
+--text:#3D3D3A;--muted:#5E5D59;--font-display:"Source Serif 4",Georgia,serif;--font-ui:"Hanken Grotesk",system-ui,sans-serif;
+--font-mono:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html.paper,html.paper body{background:transparent}
+.paper .card{margin:0;padding:18px 20px 16px;border-radius:16px;background:#F0EEE6;border:1px solid #E3E1D8}
+.paper .card::before{display:none}
+.paper .kicker{font:500 10.5px/1 var(--font-mono);letter-spacing:.14em;color:#5E5D59;opacity:1}
+.paper h1{font:500 21px/1.25 var(--font-display);letter-spacing:0;text-transform:none;color:#141413}
+.paper .sub{font:500 14px/1.5 var(--font-ui);color:#5E5D59}
+.paper .seg{border-color:#E3E1D8;border-radius:999px;background:#FAF9F5}
+.paper .chip{font:500 10.5px/1 var(--font-mono);letter-spacing:.1em;color:#5E5D59;background:transparent;border-right-color:#E3E1D8;padding:8px 13px}
+.paper .chip:hover{color:#141413}
+.paper .chip.on{color:#141413;background:#FFFFFF;box-shadow:inset 0 -2px 0 #D97757}
+.paper .plot{border-color:#E3E1D8;border-radius:12px;background:#FAF9F5}
+.paper .foot{font:500 12px/1.4 var(--font-ui);color:#5E5D59}
+.paper .foot a{color:#C4553A}.paper .foot a:hover{color:#141413}
+.paper .legend .note{color:#B0AEA5}
+.paper .grid{stroke:#E8E6DE}
+.paper .tick{fill:#5E5D59}
+.paper .axis{fill:#5E5D59;font-family:var(--font-mono);font-size:9px;letter-spacing:.12em}
+.paper .name{fill:#141413;font-weight:600}
+.paper .num{fill:#3D3D3A}
+.paper .num.dim,.paper .name.dim{fill:#B0AEA5}
+.paper .prior{stroke:rgba(20,20,19,.35)}
+.paper .priorl{fill:#5E5D59}
+.paper .corner{fill:#B0AEA5;font-family:var(--font-mono);font-size:9px;letter-spacing:.1em}
+.paper .corner.best{fill:#788C5D}
+.paper .shade{fill:rgba(120,140,93,.09);stroke:rgba(120,140,93,.45)}
+.paper .lbl{fill:#141413;font:600 11px/1 var(--font-ui);letter-spacing:0;stroke:#FAF9F5}
+.paper .leader{stroke:rgba(20,20,19,.3)}
+.paper .guide line{stroke:#D97757}
+.paper .guide rect{fill:#FAF9F5;stroke:#D97757}
+.paper .guide text{fill:#C4553A}
+.paper .frontier{stroke:#D97757}
+.paper .frontier-glow{stroke:rgba(217,119,87,.16)}
+.paper .avg{stroke:#141413}
+.paper .avgl{fill:#141413}
+.paper #tip{background:#FFFFFF;border-color:#E3E1D8;box-shadow:0 10px 28px rgba(20,20,19,.12);color:#3D3D3A;font-family:var(--font-ui)}
+.paper #tip b{font:500 15px/1.2 var(--font-display);letter-spacing:0;text-transform:none;color:#141413}
+.paper #tip .v{color:#C4553A}
+.paper #tip .m{color:#5E5D59}
 </style>
 </head>
 <body>
 <div class="card">
   <div class="kicker">Defuse Arena · 288 rounds</div>
   <h1>Catch vs noise</h1>
-  <p class="sub">Planted bugs fixed against false alarms on clean code. The shaded corner is the auditor to hire.</p>
+  <p class="sub" id="sub">Planted bugs fixed against false alarms on clean code. The shaded corner is the auditor to hire.</p>
   <div class="bar" id="bar"></div>
   <div class="plot" id="plot"></div>
   <div class="foot"><div class="legend" id="legend"></div><a href="https://defuse-arena.vercel.app" target="_blank" rel="noopener">defuse-arena.vercel.app ↗</a></div>
 </div>
 <div id="tip" role="tooltip"></div>
-<script id="data" type="application/json">{"season":"s-2026-02+s-flash-probe+s-2026-07","rounds":288,"field_fpr":0.31007751937984496,"clean_n":129,"models":[{"agent":"grok-4.7","name":"Grok 4.7","model":"grok-4-7-xhigh","accent":"#8FE9FF","glyph":"GR","ratings":{"theta1.all":{"v":1536.0574,"ci":183.8829,"w":5,"l":6,"f":4},"theta1.att":{"v":1426.304,"ci":345.8401,"w":0,"l":5,"f":4},"theta1.def":{"v":1474.6266,"ci":350.6117,"w":5,"l":1,"f":0},"theta0.all":{"v":1627.9095,"ci":194.0071,"w":14,"l":7,"f":0},"theta0.att":{"v":1601.6204,"ci":245.2453,"w":5,"l":7,"f":0},"theta0.def":{"v":1780.6573,"ci":332.9386,"w":9,"l":0,"f":0}},"def_elo":1684.1055,"def_ci":290.6978,"cost":0.92045,"def_n":15,"tp":5,"fn":1,"fp":0,"tn":9,"defusal":0.8333333333333334,"fpr":0.0,"fp_default":0,"fp_real":0,"attack_fn":0,"attack_tp":5,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0},{"agent":"glm-5.3-max","name":"GLM-5.3 Max","model":"glm-5-3-max","accent":"#0AC8B9","glyph":"GM","ratings":{"theta1.all":{"v":1555.3654,"ci":175.7555,"w":11,"l":13,"f":0},"theta1.att":{"v":1425.961,"ci":379.6097,"w":0,"l":13,"f":0},"theta1.def":{"v":1715.6266,"ci":395.659,"w":11,"l":0,"f":0},"theta0.all":{"v":1544.0681,"ci":181.8174,"w":13,"l":12,"f":0},"theta0.att":{"v":1516.454,"ci":263.8069,"w":3,"l":10,"f":0},"theta0.def":{"v":1615.616,"ci":256.6563,"w":10,"l":2,"f":0}},"def_elo":1670.6399,"def_ci":246.7706,"cost":0.610415,"def_n":23,"tp":11,"fn":0,"fp":2,"tn":10,"defusal":1.0,"fpr":0.16666666666666666,"fp_default":2,"fp_real":0,"attack_fn":0,"attack_tp":13,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0},{"agent":"opus-5.5","name":"Opus 5.5","model":"Claude Opus 5.5 Medium","accent":"#E8A24A","glyph":"OP","ratings":{"theta1.all":{"v":1599.6451,"ci":185.1061,"w":11,"l":0,"f":9},"theta1.att":{"v":1435.1116,"ci":338.8054,"w":0,"l":0,"f":8},"theta1.def":{"v":1590.9397,"ci":319.4449,"w":11,"l":0,"f":1},"theta0.all":{"v":1497.2608,"ci":182.5185,"w":12,"l":13,"f":0},"theta0.att":{"v":1588.8616,"ci":226.9172,"w":6,"l":10,"f":0},"theta0.def":{"v":1493.3863,"ci":256.1837,"w":6,"l":3,"f":0}},"def_elo":1535.9636,"def_ci":217.2664,"cost":0.185286,"def_n":20,"tp":11,"fn":0,"fp":3,"tn":6,"defusal":1.0,"fpr":0.3333333333333333,"fp_default":3,"fp_real":0,"attack_fn":0,"attack_tp":0,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0},{"agent":"gpt-6-astra","name":"GPT-6 Astra","model":"gpt-6-astra-max","accent":"#9BB7FF","glyph":"AS","ratings":{"theta1.all":{"v":1415.6456,"ci":216.7114,"w":2,"l":0,"f":8},"theta1.att":{"v":1439.0566,"ci":347.6243,"w":0,"l":0,"f":7},"theta1.def":{"v":1434.1123,"ci":378.8273,"w":2,"l":0,"f":1},"theta0.all":{"v":1644.9709,"ci":220.0037,"w":9,"l":4,"f":0},"theta0.att":{"v":1374.5982,"ci":325.6909,"w":1,"l":4,"f":0},"theta0.def":{"v":1758.2133,"ci":341.2426,"w":8,"l":0,"f":0}},"def_elo":1648.1411,"def_ci":302.9148,"cost":0.71473,"def_n":10,"tp":2,"fn":0,"fp":0,"tn":8,"defusal":1.0,"fpr":0.0,"fp_default":0,"fp_real":0,"attack_fn":0,"attack_tp":0,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0},{"agent":"gemini-4-argon","name":"Gemini 4 Argon","model":"gemini-4-argon-high","accent":"#E3C27A","glyph":"AR","ratings":{"theta1.all":{"v":1509.5953,"ci":177.1174,"w":8,"l":8,"f":7},"theta1.att":{"v":1398.7845,"ci":338.3868,"w":0,"l":8,"f":7},"theta1.def":{"v":1701.7839,"ci":404.8278,"w":8,"l":0,"f":0},"theta0.all":{"v":1555.2378,"ci":179.4242,"w":15,"l":11,"f":1},"theta0.att":{"v":1394.0948,"ci":273.6576,"w":2,"l":10,"f":0},"theta0.def":{"v":1664.8274,"ci":245.78,"w":13,"l":1,"f":1}},"def_elo":1683.1796,"def_ci":245.2733,"cost":0.228253,"def_n":22,"tp":8,"fn":0,"fp":1,"tn":13,"defusal":1.0,"fpr":0.07142857142857142,"fp_default":1,"fp_real":0,"attack_fn":0,"attack_tp":8,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0},{"agent":"gpt-6.1","name":"GPT-6.1","model":"GPT-6.1 Sol Low Thinking","accent":"#6FB6FF","glyph":"G6","ratings":{"theta1.all":{"v":1460.1131,"ci":184.1575,"w":4,"l":0,"f":14},"theta1.att":{"v":1437.9134,"ci":339.1228,"w":0,"l":0,"f":12},"theta1.def":{"v":1375.3497,"ci":315.9456,"w":4,"l":0,"f":2},"theta0.all":{"v":1559.9353,"ci":177.3601,"w":18,"l":11,"f":0},"theta0.att":{"v":1521.7019,"ci":245.3152,"w":4,"l":8,"f":0},"theta0.def":{"v":1600.8683,"ci":236.7422,"w":14,"l":3,"f":0}},"def_elo":1535.8129,"def_ci":205.4926,"cost":0.058042,"def_n":21,"tp":4,"fn":0,"fp":3,"tn":14,"defusal":1.0,"fpr":0.17647058823529413,"fp_default":3,"fp_real":0,"attack_fn":0,"attack_tp":0,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0},{"agent":"glm-5.3-flash","name":"GLM-5.3 Flash","model":"glm-5-3-flash-max","accent":"#2ED3C6","glyph":"GF","ratings":{"theta1.all":{"v":1510.3288,"ci":199.288,"w":7,"l":6,"f":2},"theta1.att":{"v":1388.5716,"ci":349.1252,"w":0,"l":6,"f":2},"theta1.def":{"v":1684.4263,"ci":415.9543,"w":7,"l":0,"f":0},"theta0.all":{"v":1513.1561,"ci":232.9935,"w":5,"l":1,"f":4},"theta0.att":{"v":1307.3684,"ci":368.6758,"w":0,"l":0,"f":4},"theta0.def":{"v":1600.7309,"ci":303.1184,"w":5,"l":1,"f":0}},"def_elo":1671.2814,"def_ci":293.616,"cost":0.05002,"def_n":13,"tp":7,"fn":0,"fp":1,"tn":5,"defusal":1.0,"fpr":0.16666666666666666,"fp_default":0,"fp_real":1,"attack_fn":0,"attack_tp":6,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0},{"agent":"glm-5.3","name":"GLM-5.3","model":"GLM-5.3 Max","accent":"#0AC8B9","glyph":"G3","ratings":{"theta1.all":{"v":1534.6255,"ci":167.0878,"w":13,"l":18,"f":0},"theta1.att":{"v":1536.1295,"ci":283.9779,"w":2,"l":16,"f":0},"theta1.def":{"v":1538.1852,"ci":290.0909,"w":11,"l":2,"f":0},"theta0.all":{"v":1473.5368,"ci":185.2892,"w":10,"l":14,"f":0},"theta0.att":{"v":1521.3695,"ci":256.8967,"w":3,"l":11,"f":0},"theta0.def":{"v":1518.3304,"ci":248.6114,"w":7,"l":3,"f":0}},"def_elo":1536.1097,"def_ci":208.825,"cost":0.268298,"def_n":23,"tp":11,"fn":2,"fp":3,"tn":7,"defusal":0.8461538461538461,"fpr":0.3,"fp_default":3,"fp_real":0,"attack_fn":2,"attack_tp":16,"fn_incomplete":1,"fn_smoke":1,"fn_malformed":0},{"agent":"deepseek-flash","name":"DeepSeek V4.1 Flash","model":"DeepSeek V4.1 Flash High","accent":"#B49CF5","glyph":"DF","ratings":{"theta1.all":{"v":1496.7405,"ci":214.6118,"w":7,"l":7,"f":0},"theta1.att":{"v":1827.5834,"ci":278.9057,"w":5,"l":4,"f":0},"theta1.def":{"v":1254.1934,"ci":303.7485,"w":2,"l":3,"f":0},"theta0.all":{"v":1489.4618,"ci":209.2759,"w":9,"l":7,"f":0},"theta0.att":{"v":1540.2573,"ci":283.7388,"w":4,"l":4,"f":0},"theta0.def":{"v":1480.0364,"ci":265.4733,"w":5,"l":3,"f":0}},"def_elo":1359.8655,"def_ci":224.7741,"cost":0.036516,"def_n":13,"tp":2,"fn":3,"fp":3,"tn":5,"defusal":0.4,"fpr":0.375,"fp_default":3,"fp_real":0,"attack_fn":5,"attack_tp":4,"fn_incomplete":5,"fn_smoke":0,"fn_malformed":0},{"agent":"muse-wonder","name":"Muse Wonder","model":"muse-wonder-1-0-max","accent":"#C6443E","glyph":"MU","ratings":{"theta1.all":{"v":1580.6352,"ci":190.832,"w":10,"l":8,"f":0},"theta1.att":{"v":1602.1275,"ci":292.9853,"w":2,"l":8,"f":0},"theta1.def":{"v":1700.9337,"ci":405.017,"w":8,"l":0,"f":0},"theta0.all":{"v":1382.0303,"ci":197.6504,"w":6,"l":15,"f":0},"theta0.att":{"v":1597.0506,"ci":258.2542,"w":3,"l":7,"f":0},"theta0.def":{"v":1229.4257,"ci":240.172,"w":3,"l":8,"f":0}},"def_elo":1351.0614,"def_ci":199.9873,"cost":0.984828,"def_n":19,"tp":8,"fn":0,"fp":8,"tn":3,"defusal":1.0,"fpr":0.7272727272727273,"fp_default":5,"fp_real":3,"attack_fn":2,"attack_tp":8,"fn_incomplete":0,"fn_smoke":1,"fn_malformed":1},{"agent":"kimi-k3","name":"Kimi K3","model":"kimi-k3-max","accent":"#B98BE8","glyph":"K3","ratings":{"theta1.all":{"v":1428.2823,"ci":215.7525,"w":2,"l":8,"f":0},"theta1.att":{"v":1399.3248,"ci":372.464,"w":0,"l":7,"f":0},"theta1.def":{"v":1412.1518,"ci":379.8582,"w":2,"l":1,"f":0},"theta0.all":{"v":1453.0156,"ci":224.7204,"w":5,"l":6,"f":0},"theta0.att":{"v":1424.6294,"ci":317.9443,"w":1,"l":4,"f":0},"theta0.def":{"v":1494.0394,"ci":282.0987,"w":4,"l":2,"f":0}},"def_elo":1440.5509,"def_ci":254.0041,"cost":0.513139,"def_n":9,"tp":2,"fn":1,"fp":2,"tn":4,"defusal":0.6666666666666666,"fpr":0.3333333333333333,"fp_default":2,"fp_real":0,"attack_fn":0,"attack_tp":7,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0},{"agent":"sonnet-5.5","name":"Sonnet 5.5","model":"claude-sonnet-5-5-max","accent":"#F0C987","glyph":"SO","ratings":{"theta1.all":{"v":1430.5963,"ci":204.2306,"w":3,"l":0,"f":10},"theta1.att":{"v":1459.2394,"ci":355.6604,"w":0,"l":0,"f":8},"theta1.def":{"v":1338.1103,"ci":314.2781,"w":3,"l":0,"f":2},"theta0.all":{"v":1475.2102,"ci":247.9349,"w":3,"l":4,"f":0},"theta0.att":{"v":1477.1662,"ci":358.9865,"w":1,"l":2,"f":0},"theta0.def":{"v":1389.1352,"ci":313.8627,"w":2,"l":2,"f":0}},"def_elo":1370.8141,"def_ci":238.5869,"cost":0.413652,"def_n":7,"tp":3,"fn":0,"fp":2,"tn":2,"defusal":1.0,"fpr":0.5,"fp_default":2,"fp_real":0,"attack_fn":0,"attack_tp":0,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0},{"agent":"deepseek","name":"DeepSeek V4 Pro","model":"DeepSeek V4 Pro High","accent":"#8A6BE8","glyph":"DS","ratings":{"theta1.all":{"v":1566.6656,"ci":194.6421,"w":8,"l":8,"f":0},"theta1.att":{"v":1683.9341,"ci":287.0748,"w":3,"l":7,"f":0},"theta1.def":{"v":1515.1522,"ci":347.7821,"w":5,"l":1,"f":0},"theta0.all":{"v":1342.0874,"ci":203.2119,"w":4,"l":15,"f":0},"theta0.att":{"v":1569.948,"ci":263.1926,"w":3,"l":7,"f":0},"theta0.def":{"v":1110.4635,"ci":272.4425,"w":1,"l":8,"f":0}},"def_elo":1254.651,"def_ci":211.985,"cost":0.192583,"def_n":15,"tp":5,"fn":1,"fp":8,"tn":1,"defusal":0.8333333333333334,"fpr":0.8888888888888888,"fp_default":8,"fp_real":0,"attack_fn":3,"attack_tp":7,"fn_incomplete":2,"fn_smoke":1,"fn_malformed":0},{"agent":"glm-5.2","name":"GLM-5.2","model":"GLM-5.2 High","accent":"#57D6C4","glyph":"G2","ratings":{"theta1.all":{"v":1375.704,"ci":197.8476,"w":5,"l":14,"f":0},"theta1.att":{"v":1539.9586,"ci":325.8037,"w":1,"l":9,"f":0},"theta1.def":{"v":1264.4084,"ci":269.2998,"w":4,"l":5,"f":0},"theta0.all":{"v":1442.1193,"ci":201.6051,"w":6,"l":9,"f":1},"theta0.att":{"v":1564.8798,"ci":260.731,"w":4,"l":5,"f":0},"theta0.def":{"v":1264.27,"ci":257.2203,"w":2,"l":4,"f":1}},"def_elo":1257.8234,"def_ci":203.7602,"cost":0.238043,"def_n":15,"tp":4,"fn":5,"fp":4,"tn":2,"defusal":0.4444444444444444,"fpr":0.6666666666666666,"fp_default":3,"fp_real":1,"attack_fn":1,"attack_tp":9,"fn_incomplete":0,"fn_smoke":1,"fn_malformed":0}]}</script>
+<script id="data" type="application/json">{"season":"s-2026-02+s-flash-probe+s-2026-07","rounds":288,"field_fpr":0.31007751937984496,"clean_n":129,"models":[{"agent":"grok-4.7","name":"Grok 4.7","model":"Grok 4.7 XHigh","accent":"#8FE9FF","glyph":"GR","ratings":{"theta1.all":{"v":1536.0574,"ci":183.8829,"w":5,"l":6,"f":4},"theta1.att":{"v":1426.304,"ci":345.8401,"w":0,"l":5,"f":4},"theta1.def":{"v":1474.6266,"ci":350.6117,"w":5,"l":1,"f":0},"theta0.all":{"v":1627.9095,"ci":194.0071,"w":14,"l":7,"f":0},"theta0.att":{"v":1601.6204,"ci":245.2453,"w":5,"l":7,"f":0},"theta0.def":{"v":1780.6573,"ci":332.9386,"w":9,"l":0,"f":0}},"def_elo":1684.1055,"def_ci":290.6978,"cost":0.92045,"def_n":15,"tp":5,"fn":1,"fp":0,"tn":9,"defusal":0.8333333333333334,"fpr":0.0,"fp_default":0,"fp_real":0,"attack_fn":0,"attack_tp":5,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0,"att_fp_default":3,"att_fp_real":2,"att_tn":7},{"agent":"glm-5.3-max","name":"GLM-5.3 Max","model":"GLM-5.3 Max","accent":"#0AC8B9","glyph":"GM","ratings":{"theta1.all":{"v":1555.3654,"ci":175.7555,"w":11,"l":13,"f":0},"theta1.att":{"v":1425.961,"ci":379.6097,"w":0,"l":13,"f":0},"theta1.def":{"v":1715.6266,"ci":395.659,"w":11,"l":0,"f":0},"theta0.all":{"v":1544.0681,"ci":181.8174,"w":13,"l":12,"f":0},"theta0.att":{"v":1516.454,"ci":263.8069,"w":3,"l":10,"f":0},"theta0.def":{"v":1615.616,"ci":256.6563,"w":10,"l":2,"f":0}},"def_elo":1670.6399,"def_ci":246.7706,"cost":0.610415,"def_n":23,"tp":11,"fn":0,"fp":2,"tn":10,"defusal":1.0,"fpr":0.16666666666666666,"fp_default":2,"fp_real":0,"attack_fn":0,"attack_tp":13,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0,"att_fp_default":3,"att_fp_real":0,"att_tn":10},{"agent":"opus-5.5","name":"Opus 5.5","model":"Claude Opus 5.5 Medium","accent":"#E8A24A","glyph":"OP","ratings":{"theta1.all":{"v":1599.6451,"ci":185.1061,"w":11,"l":0,"f":9},"theta1.att":{"v":1435.1116,"ci":338.8054,"w":0,"l":0,"f":8},"theta1.def":{"v":1590.9397,"ci":319.4449,"w":11,"l":0,"f":1},"theta0.all":{"v":1497.2608,"ci":182.5185,"w":12,"l":13,"f":0},"theta0.att":{"v":1588.8616,"ci":226.9172,"w":6,"l":10,"f":0},"theta0.def":{"v":1493.3863,"ci":256.1837,"w":6,"l":3,"f":0}},"def_elo":1535.9636,"def_ci":217.2664,"cost":0.185286,"def_n":20,"tp":11,"fn":0,"fp":3,"tn":6,"defusal":1.0,"fpr":0.3333333333333333,"fp_default":3,"fp_real":0,"attack_fn":0,"attack_tp":0,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0,"att_fp_default":5,"att_fp_real":1,"att_tn":10},{"agent":"gpt-6-astra","name":"GPT-6 Astra","model":"GPT-6 Astra Max Thinking","accent":"#9BB7FF","glyph":"AS","ratings":{"theta1.all":{"v":1415.6456,"ci":216.7114,"w":2,"l":0,"f":8},"theta1.att":{"v":1439.0566,"ci":347.6243,"w":0,"l":0,"f":7},"theta1.def":{"v":1434.1123,"ci":378.8273,"w":2,"l":0,"f":1},"theta0.all":{"v":1644.9709,"ci":220.0037,"w":9,"l":4,"f":0},"theta0.att":{"v":1374.5982,"ci":325.6909,"w":1,"l":4,"f":0},"theta0.def":{"v":1758.2133,"ci":341.2426,"w":8,"l":0,"f":0}},"def_elo":1648.1411,"def_ci":302.9148,"cost":0.71473,"def_n":10,"tp":2,"fn":0,"fp":0,"tn":8,"defusal":1.0,"fpr":0.0,"fp_default":0,"fp_real":0,"attack_fn":0,"attack_tp":0,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0,"att_fp_default":1,"att_fp_real":0,"att_tn":4},{"agent":"gemini-4-argon","name":"Gemini 4 Argon","model":"Gemini 4 Argon High","accent":"#E3C27A","glyph":"AR","ratings":{"theta1.all":{"v":1509.5953,"ci":177.1174,"w":8,"l":8,"f":7},"theta1.att":{"v":1398.7845,"ci":338.3868,"w":0,"l":8,"f":7},"theta1.def":{"v":1701.7839,"ci":404.8278,"w":8,"l":0,"f":0},"theta0.all":{"v":1555.2378,"ci":179.4242,"w":15,"l":11,"f":1},"theta0.att":{"v":1394.0948,"ci":273.6576,"w":2,"l":10,"f":0},"theta0.def":{"v":1664.8274,"ci":245.78,"w":13,"l":1,"f":1}},"def_elo":1683.1796,"def_ci":245.2733,"cost":0.228253,"def_n":22,"tp":8,"fn":0,"fp":1,"tn":13,"defusal":1.0,"fpr":0.07142857142857142,"fp_default":1,"fp_real":0,"attack_fn":0,"attack_tp":8,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0,"att_fp_default":2,"att_fp_real":0,"att_tn":10},{"agent":"gpt-6.1","name":"GPT-6.1","model":"GPT-6.1 Sol Low Thinking","accent":"#6FB6FF","glyph":"G6","ratings":{"theta1.all":{"v":1460.1131,"ci":184.1575,"w":4,"l":0,"f":14},"theta1.att":{"v":1437.9134,"ci":339.1228,"w":0,"l":0,"f":12},"theta1.def":{"v":1375.3497,"ci":315.9456,"w":4,"l":0,"f":2},"theta0.all":{"v":1559.9353,"ci":177.3601,"w":18,"l":11,"f":0},"theta0.att":{"v":1521.7019,"ci":245.3152,"w":4,"l":8,"f":0},"theta0.def":{"v":1600.8683,"ci":236.7422,"w":14,"l":3,"f":0}},"def_elo":1535.8129,"def_ci":205.4926,"cost":0.058042,"def_n":21,"tp":4,"fn":0,"fp":3,"tn":14,"defusal":1.0,"fpr":0.17647058823529413,"fp_default":3,"fp_real":0,"attack_fn":0,"attack_tp":0,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0,"att_fp_default":4,"att_fp_real":0,"att_tn":8},{"agent":"glm-5.3-flash","name":"GLM-5.3 Flash","model":"GLM-5.3 Flash Max","accent":"#2ED3C6","glyph":"GF","ratings":{"theta1.all":{"v":1510.3288,"ci":199.288,"w":7,"l":6,"f":2},"theta1.att":{"v":1388.5716,"ci":349.1252,"w":0,"l":6,"f":2},"theta1.def":{"v":1684.4263,"ci":415.9543,"w":7,"l":0,"f":0},"theta0.all":{"v":1513.1561,"ci":232.9935,"w":5,"l":1,"f":4},"theta0.att":{"v":1307.3684,"ci":368.6758,"w":0,"l":0,"f":4},"theta0.def":{"v":1600.7309,"ci":303.1184,"w":5,"l":1,"f":0}},"def_elo":1671.2814,"def_ci":293.616,"cost":0.05002,"def_n":13,"tp":7,"fn":0,"fp":1,"tn":5,"defusal":1.0,"fpr":0.16666666666666666,"fp_default":0,"fp_real":1,"attack_fn":0,"attack_tp":6,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0,"att_fp_default":0,"att_fp_real":0,"att_tn":0},{"agent":"glm-5.3","name":"GLM-5.3","model":"GLM-5.3 Low","accent":"#0AC8B9","glyph":"G3","ratings":{"theta1.all":{"v":1534.6255,"ci":167.0878,"w":13,"l":18,"f":0},"theta1.att":{"v":1536.1295,"ci":283.9779,"w":2,"l":16,"f":0},"theta1.def":{"v":1538.1852,"ci":290.0909,"w":11,"l":2,"f":0},"theta0.all":{"v":1473.5368,"ci":185.2892,"w":10,"l":14,"f":0},"theta0.att":{"v":1521.3695,"ci":256.8967,"w":3,"l":11,"f":0},"theta0.def":{"v":1518.3304,"ci":248.6114,"w":7,"l":3,"f":0}},"def_elo":1536.1097,"def_ci":208.825,"cost":0.268298,"def_n":23,"tp":11,"fn":2,"fp":3,"tn":7,"defusal":0.8461538461538461,"fpr":0.3,"fp_default":3,"fp_real":0,"attack_fn":2,"attack_tp":16,"fn_incomplete":1,"fn_smoke":1,"fn_malformed":0,"att_fp_default":3,"att_fp_real":0,"att_tn":11},{"agent":"deepseek-flash","name":"DeepSeek V4.1 Flash","model":"DeepSeek V4.1 Flash High","accent":"#B49CF5","glyph":"DF","ratings":{"theta1.all":{"v":1496.7405,"ci":214.6118,"w":7,"l":7,"f":0},"theta1.att":{"v":1827.5834,"ci":278.9057,"w":5,"l":4,"f":0},"theta1.def":{"v":1254.1934,"ci":303.7485,"w":2,"l":3,"f":0},"theta0.all":{"v":1489.4618,"ci":209.2759,"w":9,"l":7,"f":0},"theta0.att":{"v":1540.2573,"ci":283.7388,"w":4,"l":4,"f":0},"theta0.def":{"v":1480.0364,"ci":265.4733,"w":5,"l":3,"f":0}},"def_elo":1359.8655,"def_ci":224.7741,"cost":0.036516,"def_n":13,"tp":2,"fn":3,"fp":3,"tn":5,"defusal":0.4,"fpr":0.375,"fp_default":3,"fp_real":0,"attack_fn":5,"attack_tp":4,"fn_incomplete":5,"fn_smoke":0,"fn_malformed":0,"att_fp_default":3,"att_fp_real":1,"att_tn":4},{"agent":"muse-wonder","name":"Muse Wonder","model":"Muse Wonder Max","accent":"#C6443E","glyph":"MU","ratings":{"theta1.all":{"v":1580.6352,"ci":190.832,"w":10,"l":8,"f":0},"theta1.att":{"v":1602.1275,"ci":292.9853,"w":2,"l":8,"f":0},"theta1.def":{"v":1700.9337,"ci":405.017,"w":8,"l":0,"f":0},"theta0.all":{"v":1382.0303,"ci":197.6504,"w":6,"l":15,"f":0},"theta0.att":{"v":1597.0506,"ci":258.2542,"w":3,"l":7,"f":0},"theta0.def":{"v":1229.4257,"ci":240.172,"w":3,"l":8,"f":0}},"def_elo":1351.0614,"def_ci":199.9873,"cost":0.984828,"def_n":19,"tp":8,"fn":0,"fp":8,"tn":3,"defusal":1.0,"fpr":0.7272727272727273,"fp_default":5,"fp_real":3,"attack_fn":2,"attack_tp":8,"fn_incomplete":0,"fn_smoke":1,"fn_malformed":1,"att_fp_default":3,"att_fp_real":0,"att_tn":7},{"agent":"kimi-k3","name":"Kimi K3","model":"Kimi K3 Max","accent":"#B98BE8","glyph":"K3","ratings":{"theta1.all":{"v":1428.2823,"ci":215.7525,"w":2,"l":8,"f":0},"theta1.att":{"v":1399.3248,"ci":372.464,"w":0,"l":7,"f":0},"theta1.def":{"v":1412.1518,"ci":379.8582,"w":2,"l":1,"f":0},"theta0.all":{"v":1453.0156,"ci":224.7204,"w":5,"l":6,"f":0},"theta0.att":{"v":1424.6294,"ci":317.9443,"w":1,"l":4,"f":0},"theta0.def":{"v":1494.0394,"ci":282.0987,"w":4,"l":2,"f":0}},"def_elo":1440.5509,"def_ci":254.0041,"cost":0.513139,"def_n":9,"tp":2,"fn":1,"fp":2,"tn":4,"defusal":0.6666666666666666,"fpr":0.3333333333333333,"fp_default":2,"fp_real":0,"attack_fn":0,"attack_tp":7,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0,"att_fp_default":1,"att_fp_real":0,"att_tn":4},{"agent":"sonnet-5.5","name":"Sonnet 5.5","model":"Claude Sonnet 5.5 Max","accent":"#F0C987","glyph":"SO","ratings":{"theta1.all":{"v":1430.5963,"ci":204.2306,"w":3,"l":0,"f":10},"theta1.att":{"v":1459.2394,"ci":355.6604,"w":0,"l":0,"f":8},"theta1.def":{"v":1338.1103,"ci":314.2781,"w":3,"l":0,"f":2},"theta0.all":{"v":1475.2102,"ci":247.9349,"w":3,"l":4,"f":0},"theta0.att":{"v":1477.1662,"ci":358.9865,"w":1,"l":2,"f":0},"theta0.def":{"v":1389.1352,"ci":313.8627,"w":2,"l":2,"f":0}},"def_elo":1370.8141,"def_ci":238.5869,"cost":0.413652,"def_n":7,"tp":3,"fn":0,"fp":2,"tn":2,"defusal":1.0,"fpr":0.5,"fp_default":2,"fp_real":0,"attack_fn":0,"attack_tp":0,"fn_incomplete":0,"fn_smoke":0,"fn_malformed":0,"att_fp_default":1,"att_fp_real":0,"att_tn":2},{"agent":"deepseek","name":"DeepSeek V4 Pro","model":"DeepSeek V4 Pro High","accent":"#8A6BE8","glyph":"DS","ratings":{"theta1.all":{"v":1566.6656,"ci":194.6421,"w":8,"l":8,"f":0},"theta1.att":{"v":1683.9341,"ci":287.0748,"w":3,"l":7,"f":0},"theta1.def":{"v":1515.1522,"ci":347.7821,"w":5,"l":1,"f":0},"theta0.all":{"v":1342.0874,"ci":203.2119,"w":4,"l":15,"f":0},"theta0.att":{"v":1569.948,"ci":263.1926,"w":3,"l":7,"f":0},"theta0.def":{"v":1110.4635,"ci":272.4425,"w":1,"l":8,"f":0}},"def_elo":1254.651,"def_ci":211.985,"cost":0.192583,"def_n":15,"tp":5,"fn":1,"fp":8,"tn":1,"defusal":0.8333333333333334,"fpr":0.8888888888888888,"fp_default":8,"fp_real":0,"attack_fn":3,"attack_tp":7,"fn_incomplete":2,"fn_smoke":1,"fn_malformed":0,"att_fp_default":3,"att_fp_real":0,"att_tn":7},{"agent":"glm-5.2","name":"GLM-5.2","model":"GLM-5.2 High","accent":"#57D6C4","glyph":"G2","ratings":{"theta1.all":{"v":1375.704,"ci":197.8476,"w":5,"l":14,"f":0},"theta1.att":{"v":1539.9586,"ci":325.8037,"w":1,"l":9,"f":0},"theta1.def":{"v":1264.4084,"ci":269.2998,"w":4,"l":5,"f":0},"theta0.all":{"v":1442.1193,"ci":201.6051,"w":6,"l":9,"f":1},"theta0.att":{"v":1564.8798,"ci":260.731,"w":4,"l":5,"f":0},"theta0.def":{"v":1264.27,"ci":257.2203,"w":2,"l":4,"f":1}},"def_elo":1257.8234,"def_ci":203.7602,"cost":0.238043,"def_n":15,"tp":4,"fn":5,"fp":4,"tn":2,"defusal":0.4444444444444444,"fpr":0.6666666666666666,"fp_default":3,"fp_real":1,"attack_fn":1,"attack_tp":9,"fn_incomplete":0,"fn_smoke":1,"fn_malformed":0,"att_fp_default":3,"att_fp_real":1,"att_tn":5}]}</script>
 <script>
 "use strict";
 const CHART = "catch-vs-noise";
@@ -92,10 +136,29 @@ const M = D.models;
 const NS = "http://www.w3.org/2000/svg";
 const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches || /[?&]static\b/.test(location.search);
 if (REDUCE) document.documentElement.classList.add("still");
-const C = { gold: "#C8AA6E", teal: "#0AC8B9", red: "#E06060", dim: "#1b2a40", gold2: "#F0E6D2" };
+const PAPER = /[?&]theme=paper\b/.test(location.search);
+if (PAPER) document.documentElement.classList.add("paper");
+const C = PAPER
+  ? { gold: "#A8764B", teal: "#3F72A8", red: "#C4553A", dim: "#E3E1D8", gold2: "#141413", ring: "#FAF9F5", frontier: "#D97757", faint: "#B0AEA5", prior: "rgba(20,20,19,.35)", shade: "rgba(120,140,93,.45)" }
+  : { gold: "#C8AA6E", teal: "#0AC8B9", red: "#E06060", dim: "#1b2a40", gold2: "#F0E6D2", ring: "rgba(240,230,210,.9)", frontier: "#C8AA6E", faint: "#3a475a", prior: "rgba(200,170,110,.45)", shade: "rgba(10,200,185,.5)" };
+// on the light canvas a model's accent is mixed toward ink so pale hues still read
+function tone(hex) {
+  if (!PAPER) return hex;
+  const n = parseInt(hex.slice(1), 16), k = 0.68, ink = [20, 20, 19];
+  const c = [n >> 16 & 255, n >> 8 & 255, n & 255].map((v, i) => Math.round(v * k + ink[i] * (1 - k)));
+  return "#" + c.map(v => v.toString(16).padStart(2, "0")).join("");
+}
 const plot = document.getElementById("plot"), bar = document.getElementById("bar"), legend = document.getElementById("legend");
 const tip = document.getElementById("tip");
 
+// Start the entrance motion only once the chart is on screen; inside an
+// iframe the observer watches the top-level viewport.
+function whenVisible(cb) {
+  if (REDUCE || !window.IntersectionObserver) return cb();
+  let done = false;
+  const io = new IntersectionObserver(es => { if (!done && es.some(e => e.isIntersecting)) { done = true; io.disconnect(); cb(); } }, { threshold: 0.2 });
+  io.observe(document.querySelector(".card"));
+}
 function el(tag, attrs, parent) {
   const n = document.createElementNS(NS, tag);
   for (const k in attrs) if (attrs[k] != null) n.setAttribute(k, attrs[k]);
@@ -174,7 +237,7 @@ function ratings() {
     const H = top + rowH * M.length + 34;
     svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Ratings with 95% intervals" }, plot);
     X = v => L + (v - lo) / (hi - lo) * (W - L - R);
-    const step = narrow ? 200 : 100;
+    const step = (W - L - R) / ((hi - lo) / 100) < 42 ? 200 : 100;
     for (let t = Math.ceil(lo / step) * step; t <= hi; t += step) {
       el("line", { class: "grid", x1: X(t), x2: X(t), y1: top - 6, y2: top + rowH * M.length }, svg);
       txt("text", { class: "tick", x: X(t), y: top + rowH * M.length + 16, "text-anchor": "middle" }, t, svg);
@@ -185,12 +248,12 @@ function ratings() {
     M.forEach((m, i) => {
       const g = el("g", { "data-agent": m.agent }, svg);
       el("rect", { x: 0, y: -rowH / 2, width: W, height: rowH, fill: "transparent" }, g);
-      el("path", { d: "M0,-4 L4,0 L0,4 L-4,0Z", transform: `translate(${L - 12 - (narrow ? 0 : 0)},0)`, fill: m.accent, opacity: .9 }, g);
+      el("path", { d: "M0,-4 L4,0 L0,4 L-4,0Z", transform: `translate(${L - 12 - (narrow ? 0 : 0)},0)`, fill: tone(m.accent), opacity: .9 }, g);
       const name = txt("text", { class: "name", x: L - 22, y: 4, "text-anchor": "end" }, m.name, g);
       const band = el("rect", { y: -2.5, height: 5, rx: 2.5, opacity: .55 }, g);
       const capL = el("line", { y1: -6, y2: 6, "stroke-width": 1.5 }, g);
       const capR = el("line", { y1: -6, y2: 6, "stroke-width": 1.5 }, g);
-      const dot = el("circle", { r: 5.2, stroke: "rgba(240,230,210,.9)", "stroke-width": 1.2 }, g);
+      const dot = el("circle", { r: 5.2, stroke: C.ring, "stroke-width": 1.2 }, g);
       const num = txt("text", { class: "num", x: W - R + 10, y: 4 }, "", g);
       const row = { g, name, band, capL, capR, dot, num, cur: null, m };
       rows.set(m.agent, row);
@@ -235,7 +298,7 @@ function ratings() {
       row.cur = to;
     });
     addLegend([[color, `${ROLE[state.role][0]}${state.role === "all" ? "" : " · " + SEAT[state.theta][state.role]}`],
-      ["rgba(200,170,110,.45)", "dashed = 1500 prior"], ["#3a475a", "dimmed = no played rounds"]]);
+      [C.prior, "dashed = 1500 prior"], [C.faint, "dimmed = no played rounds"]]);
   }
   build();
   let rw; addEventListener("resize", () => { clearTimeout(rw); rw = setTimeout(() => { if (Math.abs(width() - W) > 40) build(); }, 150); });
@@ -243,24 +306,28 @@ function ratings() {
 
 /* ---------------------------------------------------------- stacked bars */
 function stacked(spec) {
-  let W0;
+  const qb = new URLSearchParams(location.search).get("bench");
+  let W0, mode = spec.modes ? (spec.modes.find(m => m.key === (qb === "control" ? "theta0" : "theta1")) || spec.modes[0]) : spec;
+  if (spec.modes) segmented(spec.modes.map(m => [m.key, m.chip]), mode.key, k => { mode = spec.modes.find(m => m.key === k); build(); });
   function build() {
     plot.textContent = "";
+    if (mode.sub) document.getElementById("sub").textContent = mode.sub;
     const W = width(); W0 = W; const narrow = W < 600;
-    const rows = spec.rows();
-    const L = narrow ? 128 : 140, R = narrow ? 44 : 150, top = 22, rowH = narrow ? 25 : 28;
-    const H = top + rowH * rows.length + (spec.axis ? 34 : 14);
+    const rows = mode.rows();
+    const L = narrow ? 128 : 156, R = narrow ? 44 : 150, top = 22, rowH = narrow ? 25 : 28;
+    const H = top + rowH * rows.length + (mode.axis ? 34 : 14);
     const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": spec.label }, plot);
-    const X = v => L + v / spec.max(rows) * (W - L - R);
-    if (spec.axis) for (const t of spec.axis) {
+    const max = mode.max(rows);
+    const X = v => L + v / max * (W - L - R);
+    if (mode.axis) for (const t of mode.axis) {
       el("line", { class: "grid", x1: X(t), x2: X(t), y1: top - 4, y2: top + rowH * rows.length }, svg);
-      txt("text", { class: "tick", x: X(t), y: top + rowH * rows.length + 15, "text-anchor": "middle" }, spec.tick(t), svg);
+      txt("text", { class: "tick", x: X(t), y: top + rowH * rows.length + 15, "text-anchor": "middle" }, mode.tick(t), svg);
     }
     rows.forEach((r, i) => {
       const y = top + rowH * (i + 0.5);
       const g = el("g", { transform: `translate(0,${y})` }, svg);
       el("rect", { x: 0, y: -rowH / 2, width: W, height: rowH, fill: "transparent" }, g);
-      el("path", { d: "M0,-4 L4,0 L0,4 L-4,0Z", transform: `translate(${L - 12},0)`, fill: r.m.accent, opacity: .9 }, g);
+      el("path", { d: "M0,-4 L4,0 L0,4 L-4,0Z", transform: `translate(${L - 12},0)`, fill: tone(r.m.accent), opacity: .9 }, g);
       txt("text", { class: "name", x: L - 22, y: 4, "text-anchor": "end" }, r.m.name, g);
       let acc = 0; const segs = [];
       r.parts.forEach(([v, color]) => { if (v > 0) segs.push([acc, v, color]); acc += v; });
@@ -270,17 +337,18 @@ function stacked(spec) {
         const rect = el("rect", { x: x0, y: -h / 2, height: h, width: 0, rx: 3, fill: color }, g);
         tween(700, i * 45 + j * 120, t => rect.setAttribute("width", Math.max(0, w * t - (j < segs.length - 1 ? 2 : 0))));
       });
-      txt("text", { class: "num", x: (spec.labelAtBar ? X(acc) + 8 : W - R + 10), y: 4 }, narrow ? r.short : r.label, g);
+      txt("text", { class: "num", x: (mode.labelAtBar ? X(acc) + 8 : W - R + 10), y: 4 }, narrow ? r.short : r.label, g);
       hoverable(svg, g, ev => showTip(ev, r.m.name, r.tip));
     });
-    if (spec.avg != null) {
-      const x = X(spec.avg);
+    if (mode.avg != null) {
+      const x = X(mode.avg);
       const line = el("line", { class: "avg", x1: x, x2: x, y1: top - 8, y2: top + rowH * rows.length }, svg);
-      const label = txt("text", { class: "avgl", x: x + 5, y: top - 10 }, spec.avgLabel, svg);
+      const label = txt("text", { class: "avgl", x: x + 5, y: top - 10 }, mode.avgLabel, svg);
       line.style.opacity = 0; label.style.opacity = 0;
       tween(500, rows.length * 45 + 300, t => { line.style.opacity = t; label.style.opacity = t; });
     }
-    addLegend(spec.legend);
+    addLegend(mode.legend);
+    if (mode.note) { const s = document.createElement("span"); s.className = "note"; s.textContent = mode.note(); legend.appendChild(s); }
   }
   build();
   let rw; addEventListener("resize", () => { clearTimeout(rw); rw = setTimeout(() => { if (Math.abs(width() - W0) > 40) build(); }, 150); });
@@ -292,7 +360,7 @@ function scatter(spec) {
   function build() {
     plot.textContent = "";
     const W = width(); W0 = W; const narrow = W < 600;
-    const H = Math.round(W * (narrow ? 0.9 : 0.56));
+    const H = Math.round(W * (narrow ? 1.0 : spec.tall ? 0.66 : 0.56));
     const L = 58, R = 22, T = 18, B = 48;
     const pts = spec.points();
     const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": spec.label }, plot);
@@ -340,8 +408,8 @@ function scatter(spec) {
     const gx = el("line", {}, guide), gy = el("line", {}, guide);
     const bx = el("rect", { rx: 3, height: 15 }, guide), by = el("rect", { rx: 3, height: 15 }, guide);
     const tx = txt("text", { "text-anchor": "middle" }, "", guide), ty = txt("text", { "text-anchor": "end" }, "", guide);
-    function showGuide(p) {
-      const x = X(p.x), y = Y(p.y);
+    function showGuide(p, px) {
+      const x = px != null ? px : X(p.x), y = Y(p.y);
       guide.style.display = "";
       gx.setAttribute("x1", x); gx.setAttribute("x2", x); gx.setAttribute("y1", y); gx.setAttribute("y2", H - B);
       gy.setAttribute("x1", L); gy.setAttribute("x2", x); gy.setAttribute("y1", y); gy.setAttribute("y2", y);
@@ -352,51 +420,83 @@ function scatter(spec) {
       by.setAttribute("x", L - wy - 2); by.setAttribute("y", y - 8); by.setAttribute("width", wy);
       ty.setAttribute("x", L - 7); ty.setAttribute("y", y + 3.5);
     }
-    // label placement: greedy, around the dot, avoiding dots and earlier labels
+    // dots that would sit on top of each other are dodged sideways, never up or
+    // down, so the y value stays exact; the tooltip and guide keep the true x
+    const pos = pts.map(p => ({ x: X(p.x), y: Y(p.y) }));
+    for (let it = 0; it < 80; it++) {
+      let moved = false;
+      for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+        const A = pos[i], Bp = pos[j], need = pts[i].r + pts[j].r + 4, dy = Bp.y - A.y;
+        if (Math.abs(dy) >= need) continue;
+        const want = Math.sqrt(need * need - dy * dy), dx = Bp.x - A.x;
+        if (Math.abs(dx) >= want) continue;
+        const dir = dx > 0.01 ? 1 : dx < -0.01 ? -1 : (pts[i].x <= pts[j].x ? 1 : -1);
+        const d = (want - Math.abs(dx)) / 2 + 0.2;
+        A.x -= d * dir; Bp.x += d * dir; moved = true;
+      }
+      for (const q of pos) q.x = Math.min(W - R - 6, Math.max(L + 6, q.x));
+      if (!moved) break;
+    }
+    // labels: measured, kept clear of every dot's halo and of each other,
+    // pushed further out along a leader line when the near ring is taken
+    for (const [i, p] of pts.entries()) boxes[i] = { x0: pos[i].x - p.r - 8, x1: pos[i].x + p.r + 8, y0: pos[i].y - p.r - 8, y1: pos[i].y + p.r + 8 };
+    const probe = txt("text", { class: "lbl", x: -999, y: -999 }, "", svg);
+    const widthOf = t => { probe.textContent = t; return probe.getComputedTextLength(); };
     const hit = b => boxes.some(o => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0)
       || b.x0 < L + 2 || b.x1 > W - R - 2 || b.y0 < T + 2 || b.y1 > H - B - 2;
-    const order = pts.map((p, i) => i).sort((a, b) => pts[b].r - pts[a].r);
+    const ANG = [0, 180, -90, 90, -35, -145, 35, 145, -60, -120, 60, 120, -15, -165, 15, 165];
+    const order = pts.map((p, i) => i).sort((a, b) => pos[a].y - pos[b].y || pos[a].x - pos[b].x);
     const place = {};
     for (const i of order) {
-      const p = pts[i], x = X(p.x), y = Y(p.y), w = p.label.length * 6.4 + 4, h = 12, r = p.r + 5;
-      const tries = [];
-      for (const k of [1, 1.9, 2.9, 4]) tries.push([x + r * k, y + 3.5, "start"], [x - r * k, y + 3.5, "end"],
-        [x, y - r * k, "middle"], [x, y + r * k + 9, "middle"], [x + r * k * .8, y - r * k * .8, "start"], [x - r * k * .8, y - r * k * .8, "end"],
-        [x + r * k * .8, y + r * k * .8 + 6, "start"], [x - r * k * .8, y + r * k * .8 + 6, "end"]);
-      let pick = tries[0];
-      for (const t of tries) {
-        const [lx, ly, a] = t, x0 = a === "start" ? lx : a === "end" ? lx - w : lx - w / 2;
-        const b = { x0, x1: x0 + w, y0: ly - 10, y1: ly + 2 };
-        if (!hit(b)) { pick = t; boxes.push(b); break; }
+      const p = pts[i], { x, y } = pos[i], w = widthOf(p.label) + 4, h = 11;
+      let pick = null;
+      search: for (const dist of [p.r + 10, p.r + 24, p.r + 40, p.r + 58, p.r + 80, p.r + 105]) {
+        for (const deg of ANG) {
+          const t = deg * Math.PI / 180, cx = x + Math.cos(t) * dist, cy = y + Math.sin(t) * dist;
+          const c = Math.cos(t), sn = Math.sin(t);
+          const anchor = c > 0.35 ? "start" : c < -0.35 ? "end" : "middle";
+          const x0 = anchor === "start" ? cx : anchor === "end" ? cx - w : cx - w / 2;
+          const y0 = sn < -0.35 ? cy - h : sn > 0.35 ? cy : cy - h / 2;
+          const b = { x0: x0 - 2, x1: x0 + w + 2, y0: y0 - 2, y1: y0 + h + 2 };
+          if (!hit(b)) {
+            pick = { lx: anchor === "start" ? x0 : anchor === "end" ? x0 + w : x0 + w / 2, ly: y0 + h - 2, a: anchor, box: b, far: dist > p.r + 12 };
+            boxes.push(b); break search;
+          }
+        }
       }
-      place[i] = pick;
+      place[i] = pick || { lx: x + p.r + 8, ly: y + 3.5, a: "start", box: null, far: false };
     }
+    probe.remove();
     pts.forEach((p, i) => {
-      const x = X(p.x), y = Y(p.y);
+      const { x, y } = pos[i];
       const g = el("g", {}, svg);
-      const [lx, ly, a] = place[i];
-      if (Math.hypot(lx - x, ly - 3.5 - y) > p.r + 16) el("line", { class: "leader", x1: x, y1: y, x2: lx, y2: ly - 3.5 }, g);
+      const { lx, ly, a, box, far } = place[i];
+      if (far && box) {
+        const ex = Math.min(box.x1 - 2, Math.max(box.x0 + 2, x)), ey = Math.min(box.y1 - 2, Math.max(box.y0 + 2, y));
+        const d = Math.hypot(ex - x, ey - y) || 1;
+        el("line", { class: "leader", x1: x + (ex - x) / d * (p.r + 2), y1: y + (ey - y) / d * (p.r + 2), x2: ex, y2: ey }, g);
+      }
       const mark = el("g", { transform: `translate(${x},${y})` }, g);
       const inner = el("g", {}, mark);
-      el("circle", { r: Math.max(18, p.r + 6), fill: "transparent" }, inner);
+      el("circle", { r: Math.max(16, p.r + 6), fill: "transparent" }, inner);
       el("circle", { r: p.r + 5, fill: p.color, opacity: .18 }, inner);
-      el("circle", { r: p.r, fill: p.color, stroke: "rgba(240,230,210,.9)", "stroke-width": 1.2 }, inner);
+      el("circle", { r: p.r, fill: p.color, stroke: C.ring, "stroke-width": 1.2 }, inner);
       const lbl = txt("text", { class: "lbl", x: lx, y: ly, "text-anchor": a }, p.label, g);
       lbl.style.opacity = 0;
       inner.classList.add("pop"); inner.style.setProperty("--i", i);
       tween(500, i * 40 + 250, t => lbl.style.opacity = t);
-      hoverable(svg, g, ev => { showGuide(p); showTip(ev, p.m.name, p.tip); });
+      hoverable(svg, g, ev => { showGuide(p, x); showTip(ev, p.m.name, p.tip); });
       g.addEventListener("pointerleave", () => guide.style.display = "none");
       g.addEventListener("blur", () => guide.style.display = "none");
     });
     svg.appendChild(guide);
     addLegend(spec.legend);
   }
-  build();
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(build);
   let rw; addEventListener("resize", () => { clearTimeout(rw); rw = setTimeout(() => { if (Math.abs(width() - W0) > 40) build(); }, 150); });
 }
 
-/* ---------------------------------------------------------- the five charts */
+/* ---------------------------------------------------------- the charts */
 const CHARTS = {
   "ratings": ratings,
   "false-alarms": () => stacked({
@@ -411,38 +511,80 @@ const CHARTS = {
     legend: [[C.gold, "flagged the default admin token"], [C.red, "flagged something else"], [C.dim, "cleared"]],
   }),
   "attacks-survived": () => stacked({
-    label: "How attacks survived",
-    rows: () => M.filter(m => m.attack_fn > 0).sort((a, b) => b.attack_fn - a.attack_fn).map(m => ({
-      m, parts: [[m.fn_incomplete, C.teal], [m.fn_smoke, C.gold], [m.fn_malformed, C.red]],
-      label: `${m.attack_fn} of ${m.attack_fn + m.attack_tp} survived`, short: `${m.attack_fn}/${m.attack_fn + m.attack_tp}`,
-      tip: [["v", `${m.attack_fn} of ${m.attack_fn + m.attack_tp} played attacks survived`],
-        ["", `${m.fn_incomplete} incomplete fix · ${m.fn_smoke} patch broke the service · ${m.fn_malformed} patch did not apply`],
-        ["m", "Every one was detected; the fix failed"]] })),
-    max: rows => Math.max(...rows.map(r => r.m.attack_fn)), labelAtBar: true,
-    legend: [[C.teal, "fix incomplete — exploit still works"], [C.gold, "fix broke the service"], [C.red, "patch did not apply"]],
+    label: "Which model is the most dangerous",
+    modes: [{
+      key: "theta1", chip: "⚔ Vulnerability",
+      sub: "Vulnerability mode: every played round in which the model planted a bug. An attack lands when the bug outlives the defender's patch, split by why the fix failed. None slipped past detection.",
+      rows: () => M.filter(m => m.attack_fn + m.attack_tp > 0)
+        .sort((a, b) => b.attack_fn / (b.attack_fn + b.attack_tp) - a.attack_fn / (a.attack_fn + a.attack_tp) || b.attack_fn - a.attack_fn).map(m => ({
+        m, parts: [[m.fn_incomplete, C.teal], [m.fn_smoke, C.gold], [m.fn_malformed, C.red], [m.attack_tp, C.dim]],
+        label: `${m.attack_fn} of ${m.attack_fn + m.attack_tp} landed`, short: `${m.attack_fn}/${m.attack_fn + m.attack_tp}`,
+        tip: [["v", `${m.attack_fn} of ${m.attack_fn + m.attack_tp} attacks landed`],
+          ["", `${m.fn_incomplete} incomplete fix · ${m.fn_smoke} patch broke the service · ${m.fn_malformed} patch did not apply`],
+          ["m", `${m.attack_tp} found and fixed by the defender`]] })),
+      max: rows => Math.max(...rows.map(r => r.m.attack_fn + r.m.attack_tp)), labelAtBar: true,
+      legend: [[C.teal, "fix incomplete — exploit still works"], [C.gold, "fix broke the service"], [C.red, "patch did not apply"], [C.dim, "found and fixed"]],
+      note: () => { const r = M.filter(m => { const x = m.ratings["theta1.att"]; return x.w + x.l === 0 && x.f > 0; }).map(m => m.name);
+        return r.length ? `not shown, refused every attack: ${r.join(", ")}` : ""; },
+    }, {
+      key: "theta0", chip: "○ Control",
+      sub: "Control mode: every played round in which the model kept its service clean. It still lands a hit if the defender cries wolf, so a hit here is a false alarm on clean code.",
+      rows: () => M.filter(m => m.att_fp_default + m.att_fp_real + m.att_tn > 0)
+        .sort((a, b) => (b.att_fp_default + b.att_fp_real) / (b.att_fp_default + b.att_fp_real + b.att_tn) - (a.att_fp_default + a.att_fp_real) / (a.att_fp_default + a.att_fp_real + a.att_tn)
+          || (b.att_fp_default + b.att_fp_real) - (a.att_fp_default + a.att_fp_real)).map(m => {
+        const fp = m.att_fp_default + m.att_fp_real, n = fp + m.att_tn;
+        return { m, parts: [[m.att_fp_default, C.gold], [m.att_fp_real, C.red], [m.att_tn, C.dim]],
+          label: `${fp} of ${n} flagged`, short: `${fp}/${n}`,
+          tip: [["v", `${fp} of ${n} clean builds drew a false alarm`],
+            ["", `${m.att_fp_default} on the default admin token · ${m.att_fp_real} on something else`],
+            ["m", `${m.att_tn} cleared by the defender`]] }; }),
+      max: rows => Math.max(...rows.map(r => r.m.att_fp_default + r.m.att_fp_real + r.m.att_tn)), labelAtBar: true,
+      legend: [[C.gold, "defender flagged the default admin token"], [C.red, "defender flagged something else"], [C.dim, "defender cleared it"]],
+    }],
   }),
   "audit-vs-price": () => scatter({
     label: "Audit rating vs price",
-    points: () => M.filter(m => m.cost > 0).map(m => ({ m, x: m.cost, y: m.def_elo, r: 4 + Math.sqrt(m.def_n) * 1.1, color: m.accent, label: m.name,
+    points: () => M.filter(m => m.cost > 0).map(m => ({ m, x: m.cost, y: m.def_elo, r: 4 + Math.sqrt(m.def_n) * 1.1, color: tone(m.accent), label: m.name,
       tip: [["v", `Audit ${Math.round(m.def_elo)} ±${Math.round(m.def_ci)}  ·  ${usd(m.cost)} per round`], ["", `${m.def_n} played audit rounds`], ["m", m.model]] })),
     x: { log: true, min: 0.03, max: 1.2, ticks: [0.03, 0.05, 0.1, 0.25, 0.5, 1], fmt: v => usd(v), title: "$ per round · log scale" },
     y: { min: 1200, max: 1750, ticks: [1200, 1300, 1400, 1500, 1600, 1700], fmt: v => Math.round(v), title: "audit rating" },
     frontier: pts => { const s = pts.slice().sort((a, b) => a.x - b.x); const f = []; let best = -Infinity; for (const p of s) if (p.y > best) { f.push(p); best = p.y; } return f; },
     corners: [[0, 1, "start", "cheap and strong", true], [1, 1, "end", "strong but pricey"], [0, 0, "start", "cheap but weak"], [1, 0, "end", "pricey and weak"]],
-    legend: [[C.gold, "Pareto frontier"], ["#7A8CA3", "bubble = audit rounds played"]],
+    legend: [[C.frontier, "Pareto frontier"], [C.faint, "bubble = audit rounds played"]],
   }),
   "catch-vs-noise": () => scatter({
     label: "Catch vs noise",
-    points: () => M.filter(m => m.defusal != null && m.fpr != null).map(m => ({ m, x: m.fpr, y: m.defusal, r: 4 + Math.sqrt(m.def_n) * 1.1, color: m.accent, label: m.name,
+    points: () => M.filter(m => m.defusal != null && m.fpr != null).map(m => ({ m, x: m.fpr, y: m.defusal, r: 4 + Math.sqrt(m.def_n) * 1.1, color: tone(m.accent), label: m.name,
       tip: [["v", `Fixed ${m.tp} of ${m.tp + m.fn} planted bugs  ·  ${pct(m.fpr)} false alarms`], ["", `${m.fp} of ${m.fp + m.tn} clean services flagged`], ["m", m.model]] })),
     x: { min: 0, max: 1, ticks: [0, .2, .4, .6, .8, 1], fmt: pct, title: "false alarms on clean code" },
-    y: { min: 0.3, max: 1.06, ticks: [.4, .6, .8, 1], fmt: pct, title: "planted bugs fixed" },
-    shade: [0, 0.85, 0.25, 1.06],
+    y: { min: 0.3, max: 1.16, ticks: [.4, .6, .8, 1], fmt: pct, title: "planted bugs fixed" },
+    shade: [0, 0.85, 0.25, 1.03], tall: true,
     corners: [[0, 1, "start", "the auditor to hire", true], [1, 1, "end", "alarmist"], [0, 0, "start", "quiet but blind"], [1, 0, "end", "noisy and blind"]],
-    legend: [["rgba(10,200,185,.5)", "shaded = fixes bugs, stays quiet on clean code"], ["#7A8CA3", "bubble = audit rounds played"]],
+    legend: [[C.shade, "shaded = fixes bugs, stays quiet on clean code"], [C.faint, "bubble = audit rounds played · touching dots are nudged sideways, hover for exact values"]],
   }),
 };
-CHARTS[CHART]();
+// hold the plot's height while it waits, so the embedding page does not jump
+const EST = { "ratings": 30 + 30 * M.length + 34, "false-alarms": 22 + 28 * M.length + 34, "attacks-survived": 22 + 28 * 11 + 14,
+  "audit-vs-price": width() * 0.56, "catch-vs-noise": width() * 0.66 };
+if (!REDUCE) plot.style.minHeight = Math.round(EST[CHART] || 400) + "px";
+whenVisible(() => { CHARTS[CHART](); setTimeout(() => plot.style.minHeight = "", 1500); });
+</script>
+<script>
+// Tell an embedding page (web/article.html) how tall this page is, so its
+// iframe fits the chart without a scrollbar.
+(() => {
+  if (parent === window) return;
+  // measure the card itself: the document is never shorter than the iframe,
+  // so its scrollHeight could only ever grow
+  const card = document.querySelector(".card");
+  const post = () => {
+    const r = card.getBoundingClientRect(), mb = parseFloat(getComputedStyle(card).marginBottom) || 0;
+    parent.postMessage({ type: "defuse-embed-height", h: Math.ceil(r.bottom + scrollY + mb) }, "*");
+  };
+  addEventListener("load", post);
+  if (window.ResizeObserver) new ResizeObserver(post).observe(card);
+  post();
+})();
 </script>
 </body>
 </html>

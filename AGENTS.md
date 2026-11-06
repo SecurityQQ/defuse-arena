@@ -57,8 +57,9 @@ three hours and blocked the main thread for the whole run.
 
 - `seasons/` is runtime data: never commit it, and never hand-edit a generated
   `standings.html`.
-- `web/index.html` is a generated artifact: regenerate it with
-  `python3 scripts/standings.py <season> [ranked_at] [render_ranked_at] --publish web/index.html`,
+- `web/board.html` is a generated artifact (the leaderboard, served at `/board`;
+  `/` is the hand-written results article `web/index.html`): regenerate it with
+  `python3 scripts/standings.py <season> [ranked_at] [render_ranked_at] --publish web/board.html`,
   never edit it.
 - Record substantial changes in `CHANGELOG.md` in the same commit — see
   `.devin/skills/changelog/SKILL.md`.

@@ -590,7 +590,7 @@ body.leaving #gl{transition:filter .8s,transform .8s;filter:blur(6px) brightness
 <!-- ======= top bar: back link, wordmark, stepper, autoplay, gold counter ======= -->
 <header class="topbar">
   <div class="brand">
-    <a class="back-link" href="index.html" data-to-board>◆ Leaderboard</a>
+    <a class="back-link" href="board.html" data-to-board>◆ Leaderboard</a>
     <span class="wordmark">DEFUSE ARENA</span>
   </div>
   <nav class="stepper-wrap" aria-label="Onboarding steps">
@@ -600,7 +600,7 @@ body.leaving #gl{transition:filter .8s,transform .8s;filter:blur(6px) brightness
     <button type="button" class="hx-chip" id="autoplay" aria-pressed="false">
       <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z" fill="currentColor"/></svg><span>Auto tour</span>
     </button>
-    <a class="hx-chip skip" href="index.html" data-skip>Skip tour <span aria-hidden="true">››</span></a>
+    <a class="hx-chip skip" href="board.html" data-skip>Skip tour <span aria-hidden="true">››</span></a>
   </div>
 </header>
 
@@ -623,7 +623,7 @@ body.leaving #gl{transition:filter .8s,transform .8s;filter:blur(6px) brightness
     <button type="button" class="hx-button hx-button--xl" data-go="2"><span>Begin the story</span></button>
     <button type="button" class="hx-button hx-button--secondary hx-button--xl" id="hero-auto"><span>Watch it play</span></button>
   </div>
-  <a class="hero-skip rise" style="--i:6" href="index.html" data-skip>Skip the tour and go straight to the leaderboard</a>
+  <a class="hero-skip rise" style="--i:6" href="board.html" data-skip>Skip the tour and go straight to the leaderboard</a>
 </section>
 
 <!-- ======= step 2: the brief ======= -->
@@ -1097,8 +1097,8 @@ body.leaving #gl{transition:filter .8s,transform .8s;filter:blur(6px) brightness
     if (e) e.preventDefault();
     if (document.body.classList.contains('leaving')) return;
     clearTimers(); S.autoplay = false;
-    const url = skip ? 'index.html?tour=skip'
-      : `index.html?tour=${encodeURIComponent(R.round_id)}&att=${encodeURIComponent(R.attacker)}&def=${encodeURIComponent(R.defender)}`;
+    const url = skip ? 'board.html?tour=skip'
+      : `board.html?tour=${encodeURIComponent(R.round_id)}&att=${encodeURIComponent(R.attacker)}&def=${encodeURIComponent(R.defender)}`;
     if (reduce) { location.href = url; return; }
     document.body.classList.add('leaving');
     $('#warp').classList.add('go');

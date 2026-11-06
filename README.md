@@ -110,8 +110,9 @@ classes and the match record. The match log itself keeps only the pack filter.
 `web/roster.json` declares the fifteen-champion pool; a model that has not played
 is listed without a rating.
 
-`web/index.html` is the published copy of the current season, served by the
-static deployment (Vercel, site root `web/`) as the default document. Regenerate
+`web/board.html` is the published copy of the current season, served by the
+static deployment (Vercel, site root `web/`) at `/board`; the home page `/` is
+the results article, `web/index.html`. Regenerate
 it with `--publish` when the season data changes; the template stays empty.
 
 Spend is reported in **USD**, not tokens: `web/pricing.json` holds the per-model

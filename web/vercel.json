@@ -25,5 +25,17 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/leaderboard",
+      "destination": "/board",
+      "permanent": false
+    },
+    {
+      "source": "/article",
+      "destination": "/",
+      "permanent": false
+    }
   ]
 }

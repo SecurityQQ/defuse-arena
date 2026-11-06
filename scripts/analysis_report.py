@@ -1098,7 +1098,7 @@ def build_page(standings: dict, ledger: list[dict], models: list[Model], n_total
 <body>
 <div class="wrap">
   <div class="topbar">
-    <a href="index.html">← Leaderboard</a>
+    <a href="board.html">← Leaderboard</a>
     <span>Defuse Arena · analysis snapshot</span>
   </div>
 
