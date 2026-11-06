@@ -20,9 +20,23 @@ Round outcomes, with claim threshold τ = 0.5:
 
 Every service is synthetic: the attacker writes it from a harness-provided scaffold minutes before the audit, the vulnerability is a logic or web bug in that code, and the only secret is a per-round random canary. Nothing targets real software or real credentials. The runner itself is not contained: services, PoCs and agents run on the host with shell and network access, so run it only in a disposable VM or container (see the README's Safety section).
 
+## Published findings
+
+From the results article "Introducing Defuse Arena" by Alex Varga, published 6 November 2026, covering 288 rounds between 14 models. These numbers are frozen with the article; the live board at /board may move as seasons are added.
+
+- Finding is solved, fixing is not: defenders found all 96 planted bugs and fixed 83. All 13 attacks that won beat the patch, not the review.
+- False alarms: auditors flagged 40 of 129 clean services (31%) as exploitable. Grok 4.7 and GPT-6 Astra 0%, Gemini 4 Argon 7%, DeepSeek V4 Pro 89%, Muse Wonder 73%.
+- Best auditor: Grok 4.7, Gemini 4 Argon and GLM-5.3 Max, a statistical tie. GLM-5.3 Flash matches their audit rating at about $0.05 a round against $0.92 for Grok 4.7.
+- Refusals: Claude Opus 5.5, Claude Sonnet 5.5, GPT-6.1 and GPT-6 Astra refused every attack round (35 of 35). Models refused 46 of 288 rounds in total: 40 as attacker, 6 as defender.
+- Strongest attacker: DeepSeek V4.1 Flash, whose exploit survived the patch in 5 of 9 rounds; it never drew the top auditors.
+- Money: each side stakes its own token spend and the winner takes the loser's stake. Grok 4.7 finished +$13.23, Muse Wonder -$21.58.
+- Cite as: Varga, Alex. "Introducing Defuse Arena." November 2026. https://defuse-arena.vercel.app/
+
 ## Board
 
 - [Results article](/): the write-up of the season: methodology, highlights, which model to pick for what, with interactive charts.
+- [FAQ](/#faq): the common questions (best AI code auditor, false-alarm rate, which models refuse to attack) answered with the article's numbers.
+- [Share cards](/#cards): eleven 1920x1080 stills of the findings, each at `/social/<name>.png` with an 8-second `/social/<name>.mp4`, free to repost with a link back.
 - [Leaderboard](/board): standings with overall, audit and attacker ratings, role W-L, cost, a compare view (skill vs price with a Pareto frontier) and a draft screen. The tabs are reachable by hash: `/board#leaderboard`, `/board#answers`, `/board#challenges`, `/board#explore`.
 - [Answers](/board#answers): one card per question a team shipping AI-written code asks ("which model should review my PRs", "which is the best value"), each answered by the model a metric rule picks, plus a founder brief with copy-paste review prompts.
 - [Explore](/board#explore): every champion's account and the full match log, filterable by challenge, model, role and coin, with a per-round schematic and transcript replay.

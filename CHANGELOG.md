@@ -6,6 +6,46 @@ plain markdown — no HTML, no links to local files.
 
 ## Unreleased — 2026-11-06 — Defuse Arena, and an llm.txt
 
+### Launch: search, answer engines and link previews
+
+- **Every public page has a link preview.** The article, `/board`,
+  `/onboarding` and `/analysis` carry a description, a canonical URL on
+  `defuse-arena.vercel.app`, Open Graph and Twitter large-image cards and the
+  diamond crest as `favicon.svg`. The article's preview is the closing launch
+  card (`social/10-read-more.png`); the board's is the which-model cheat sheet,
+  the onboarding's the one-round diagram, the model report's the price
+  scatter. The article title now leads with the question people search for:
+  "Defuse Arena: Which AI Model Audits Code Best? 288 Rounds". Before, only
+  the article had a title and description, and no page had an image.
+- **The article describes itself to search and answer engines** in one
+  JSON-LD graph: the author, the site, the article, the round data as a
+  `Dataset` under MIT, and a `FAQPage`.
+- **The article gains a FAQ section and a Share cards section.** The FAQ
+  answers eight questions (best AI code auditor, false-alarm rate, planted
+  bugs found, refusals, strongest attacker, cost, open source) with the
+  article's own numbers, word for word the same as the `FAQPage` markup. Share
+  cards lists all eleven launch stills with their videos. Four stills also sit
+  in the text as figures: net winnings in Methodology, 96 of 96 found and
+  the refusals in Results, and the cheat sheet at the end. The iframe
+  figures are renumbered around them.
+- **`web/social/` serves the launch cards** from `article/social/out/`: the
+  1920×1080 PNG, a 1600-wide WebP for the page (about 55 KB against 300 KB)
+  and the 8-second MP4 of each.
+- **`robots.txt` and `sitemap.xml`.** The sitemap lists the four pages with
+  the cards as image entries. `vercel.json` sends `noindex, indexifembedded`
+  on `/charts/`, so the embeds count toward the article and do not rank as
+  thin pages of their own, and caches `/social/` for a week.
+- **Crawlers see the board, not the tour.** The first-visit redirect to the
+  onboarding skips user agents that identify as bots, crawlers or link
+  previewers. The template and the published board carry the same head;
+  the board's data block is unchanged.
+- **`llms.txt` carries the article's findings** in a section dated with the
+  article, so an agent can quote the numbers instead of scraping the page; the
+  live board's numbers stay out of it.
+- **The README opens with the results**: the headline card, links to the
+  article, the board and llms.txt, the findings with four cards, and a
+  citation. Its status line now counts 288 rounds across 14 models.
+
 ### Article charts
 
 - **`scripts/article_charts.py` writes six embeddable pages to
@@ -52,6 +92,27 @@ plain markdown — no HTML, no links to local files.
   100-point ones would collide.
 - **The model report's bar charts carry hover titles** on every segment, as
   its scatters already did.
+- **`scripts/social_cards.py` writes ten launch-thread videos**, one per post
+  and numbered in post order, as HyperFrames projects under `article/social/`:
+  one title and one chart each, 1920×1080 at 30 fps, 8 seconds, in the
+  board's look. The thread leads on false alarms: every clean round as a
+  square in the order played, the false alarms turning red while the field
+  rate counts up. Then one round in both modes, vulnerability and control,
+  with the played count of each outcome; the financial incentive and every
+  model's net winnings over the season; false alarms by model against the
+  field average; the 96 planted bugs, all found, split into fixed and
+  beat-the-patch; audit rating against price with GLM-5.3 Flash and Grok 4.7
+  marked and their false-alarm rates in the subtitle; attack refusals by
+  model; per attacker, how often its working exploit still read the canary
+  after the defender's patch; a which-model cheat sheet; and a closing card
+  with the article's headline numbers. `01-alt` joins the first and fourth
+  into one 12-second film: the clean-round squares and the 31% count, then
+  the same space turns into the per-model false-alarm bars against the field
+  average while the 31% stays on screen. The attacker card says the patch
+  failed, not that the bug went unnoticed: every losing defender had reported
+  the bug. Numbers come from the same loaders as the article charts; ties in
+  the footnotes use the whole ratings the board prints. Renders and
+  final-frame stills land in `article/social/out/`.
 
 ### Board
 

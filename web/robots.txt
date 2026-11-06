@@ -1,0 +1,6 @@
+# Defuse Arena: every page is public, crawlers and AI agents welcome.
+# A plain-text summary for language models is at /llms.txt.
+User-agent: *
+Allow: /
+
+Sitemap: https://defuse-arena.vercel.app/sitemap.xml

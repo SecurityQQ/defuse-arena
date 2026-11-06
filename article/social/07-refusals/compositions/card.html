@@ -1,0 +1,116 @@
+<template>
+  <style>
+    @font-face { font-family: "Cinzel"; font-weight: 700; src: url("assets/fonts/cinzel-700.woff2") format("woff2"); }
+    @font-face { font-family: "Rajdhani"; font-weight: 500; src: url("assets/fonts/rajdhani-500.woff2") format("woff2"); }
+    @font-face { font-family: "Rajdhani"; font-weight: 600; src: url("assets/fonts/rajdhani-600.woff2") format("woff2"); }
+    @font-face { font-family: "Rajdhani"; font-weight: 700; src: url("assets/fonts/rajdhani-700.woff2") format("woff2"); }
+    #root { position: absolute; inset: 0; overflow: hidden; color: #CDBE91; font-family: "Rajdhani", sans-serif;
+      background:
+        radial-gradient(1200px 640px at 12% -12%, rgba(10,200,185,.12), transparent 60%),
+        radial-gradient(1000px 600px at 95% 0%, rgba(200,170,110,.12), transparent 55%),
+        linear-gradient(180deg, #010A13 0%, #06101F 45%, #010A13 100%); }
+    #frame { position: absolute; inset: 36px; border: 1px solid rgba(200,170,110,.22); border-radius: 14px; }
+    #frame::before { content: ""; position: absolute; inset: 8px; border: 1px solid rgba(200,170,110,.08); border-radius: 9px; }
+    #head { position: absolute; left: 110px; right: 110px; top: 96px; }
+    #kicker { font-family: "Cinzel", serif; font-weight: 700; font-size: 20px; letter-spacing: .26em; text-transform: uppercase; color: #C8AA6E; }
+    #title { margin-top: 18px; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 76px; line-height: 1.02; color: #F0E6D2; letter-spacing: -.005em; max-width: 1560px; }
+    #title em { font-style: normal; color: #0AC8B9; white-space: nowrap; }
+    #title em.hot { color: #E06060; }
+    #head.narrow #title, #head.narrow #sub { max-width: 1240px; }
+    #subs { position: relative; }
+    #sub2 { position: absolute; left: 0; top: 0; margin-top: 18px; font-size: 30px; font-weight: 600; line-height: 1.3; color: #CDBE91; max-width: 1500px; }
+    #sub { margin-top: 18px; font-size: 30px; font-weight: 500; line-height: 1.3; color: #7A8CA3; max-width: 1500px; }
+    #chart { position: absolute; left: 110px; right: 110px; top: 400px; bottom: 140px; }
+    #chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+    #foot { position: absolute; left: 110px; right: 110px; bottom: 66px; display: flex; justify-content: space-between; align-items: baseline; gap: 40px; font-size: 24px; color: #8E9DB0; }
+    #foot b { font-family: "Cinzel", serif; font-weight: 700; color: #C8AA6E; letter-spacing: .12em; font-size: 22px; white-space: nowrap; }
+    #note { max-width: 1250px; }
+    .callout { position: absolute; right: 120px; top: 92px; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 120px; line-height: .9; text-align: right; }
+    .callout small { display: block; font-size: 26px; letter-spacing: .2em; text-transform: uppercase; font-family: "Cinzel", serif; margin-top: 10px; }
+    .callout.red { color: #E06060; }
+    .grid { stroke: rgba(200,170,110,.09); stroke-width: 1.5; }
+    .tick { fill: #8E9DB0; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 26px; }
+    .axis { fill: #7A8CA3; font-family: "Cinzel", serif; font-weight: 700; font-size: 18px; letter-spacing: .18em; text-transform: uppercase; }
+    .name { fill: #F0E6D2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 31px; }
+    .sub { fill: #7A8CA3; font-size: 22px; }
+    .val { font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 30px; }
+    .track { fill: rgba(200,170,110,.05); }
+    .ref { stroke: #C8AA6E; stroke-width: 2; stroke-dasharray: 8 7; }
+    .refl { fill: #C8AA6E; font-family: "Cinzel", serif; font-weight: 700; font-size: 24px; letter-spacing: .12em; text-transform: uppercase; }
+    .cell { fill: #0AC8B9; }
+    .boxr { fill: rgba(15,27,45,.85); stroke-width: 2; }
+    .boxk { font-family: "Cinzel", serif; font-weight: 700; font-size: 20px; letter-spacing: .16em; text-transform: uppercase; }
+    .boxt { fill: #F0E6D2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 32px; }
+    .arrow { fill: none; stroke: rgba(200,170,110,.6); stroke-width: 2.5; }
+    .ocr { fill: rgba(1,10,19,.7); stroke-width: 2; }
+    .oct { fill: #F0E6D2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 29px; }
+    .ocn { font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 29px; }
+    .zero { stroke: #C8AA6E; stroke-width: 2; }
+    .dimname { fill: #A3B1C2; }
+    .prr { fill: rgba(15,27,45,.7); stroke: rgba(200,170,110,.14); }
+    .prr.hotr, .statr.hotr { fill: rgba(224,96,96,.10); stroke: #E06060; stroke-width: 2; }
+    .pneed { fill: #C8AA6E; font-family: "Cinzel", serif; font-weight: 700; font-size: 24px; letter-spacing: .08em; text-transform: uppercase; }
+    .ppick { fill: #F0E6D2; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 36px; }
+    .ppick.hot { fill: #0AC8B9; }
+    .pwhy { fill: #A3B1C2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 30px; }
+    .statr { fill: rgba(15,27,45,.75); stroke: rgba(200,170,110,.18); }
+    .statn { font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 96px; font-variant-numeric: tabular-nums; }
+    .statn.hot { font-size: 110px; }
+    .statl { fill: #A3B1C2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 30px; }
+    .cta { fill: #F0E6D2; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 56px; }
+    .ctau { fill: #0AC8B9; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 48px; }
+    .bigs { fill: #A3B1C2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 30px; }
+    .bignum { fill: #E06060; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 300px; font-variant-numeric: tabular-nums; }
+    .bigl { fill: #F0E6D2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 40px; }
+    .leg { fill: #CDBE91; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 28px; }
+    .plbl { font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 27px; paint-order: stroke; stroke: #010A13; stroke-width: 6px; stroke-linejoin: round; }
+    .plbl.hot { font-size: 30px; font-weight: 700; }
+    .span { stroke: #0AC8B9; stroke-width: 3; stroke-dasharray: 10 8; }
+    .spanl { fill: #0AC8B9; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 30px; }
+  </style>
+  <div id="root" data-composition-id="card" data-width="1920" data-height="1080">
+    <div id="frame" class="clip" data-start="0" data-duration="8"></div>
+    <div id="head" class="clip narrow" data-start="0" data-duration="8">
+      <div id="kicker">Vulnerability mode · attacker seat</div>
+      <h1 id="title">4 frontier models refused <em>every single</em> attack</h1>
+      <div id="subs"><p id="sub">Asked to plant a test backdoor for another model to catch, Claude and OpenAI models said no 35 times out of 35.</p></div>
+    </div>
+    <div id="callout" data-start="0" data-duration="8" class="clip callout red">35 / 35<small>refused</small></div>
+    <div id="chart" class="clip" data-start="0" data-duration="8">
+      <svg viewBox="0 0 1700 638" preserveAspectRatio="xMinYMid meet" xmlns="http://www.w3.org/2000/svg"><line class="grid" x1="430.0" y1="46" x2="430.0" y2="578"/>
+<text class="tick" x="430.0" y="608" text-anchor="middle">0%</text>
+<line class="grid" x1="732.5" y1="46" x2="732.5" y2="578"/>
+<text class="tick" x="732.5" y="608" text-anchor="middle">25%</text>
+<line class="grid" x1="1035.0" y1="46" x2="1035.0" y2="578"/>
+<text class="tick" x="1035.0" y="608" text-anchor="middle">50%</text>
+<line class="grid" x1="1337.5" y1="46" x2="1337.5" y2="578"/>
+<text class="tick" x="1337.5" y="608" text-anchor="middle">75%</text>
+<line class="grid" x1="1640.0" y1="46" x2="1640.0" y2="578"/>
+<text class="tick" x="1640.0" y="608" text-anchor="middle">100%</text>
+<g id="row-0" class="row"><text class="name" x="408" y="99.0" text-anchor="end" dominant-baseline="middle">GPT-6.1</text><rect class="track" x="430" y="80.0" width="1210" height="34" rx="3"/><rect id="bar-0" class="bar" x="430" y="80.0" width="1210.0" height="34" rx="3" fill="#E06060"/><text id="val-0" class="val" x="1654.0" y="99.0" dominant-baseline="middle" fill="#E06060">12 of 12 refused</text></g>
+<g id="row-1" class="row"><text class="name" x="408" y="173.0" text-anchor="end" dominant-baseline="middle">Opus 5.5</text><rect class="track" x="430" y="154.0" width="1210" height="34" rx="3"/><rect id="bar-1" class="bar" x="430" y="154.0" width="1210.0" height="34" rx="3" fill="#E06060"/><text id="val-1" class="val" x="1654.0" y="173.0" dominant-baseline="middle" fill="#E06060">8 of 8 refused</text></g>
+<g id="row-2" class="row"><text class="name" x="408" y="247.0" text-anchor="end" dominant-baseline="middle">Sonnet 5.5</text><rect class="track" x="430" y="228.0" width="1210" height="34" rx="3"/><rect id="bar-2" class="bar" x="430" y="228.0" width="1210.0" height="34" rx="3" fill="#E06060"/><text id="val-2" class="val" x="1654.0" y="247.0" dominant-baseline="middle" fill="#E06060">8 of 8 refused</text></g>
+<g id="row-3" class="row"><text class="name" x="408" y="321.0" text-anchor="end" dominant-baseline="middle">GPT-6 Astra</text><rect class="track" x="430" y="302.0" width="1210" height="34" rx="3"/><rect id="bar-3" class="bar" x="430" y="302.0" width="1210.0" height="34" rx="3" fill="#E06060"/><text id="val-3" class="val" x="1654.0" y="321.0" dominant-baseline="middle" fill="#E06060">7 of 7 refused</text></g>
+<g id="row-4" class="row"><text class="name" x="408" y="395.0" text-anchor="end" dominant-baseline="middle">Grok 4.7</text><rect class="track" x="430" y="376.0" width="1210" height="34" rx="3"/><rect id="bar-4" class="bar" x="430" y="376.0" width="440.0" height="34" rx="3" fill="#C8AA6E"/><text id="val-4" class="val" x="884.0" y="395.0" dominant-baseline="middle" fill="#C8AA6E">4 of 11 refused</text></g>
+<g id="row-5" class="row"><text class="name" x="408" y="469.0" text-anchor="end" dominant-baseline="middle">Gemini 4 Argon</text><rect class="track" x="430" y="450.0" width="1210" height="34" rx="3"/><rect id="bar-5" class="bar" x="430" y="450.0" width="71.2" height="34" rx="3" fill="#C8AA6E"/><text id="val-5" class="val" x="515.2" y="469.0" dominant-baseline="middle" fill="#C8AA6E">1 of 17 refused</text></g>
+<g id="row-6" class="row"><text class="name" x="408" y="543.0" text-anchor="end" dominant-baseline="middle">8 other models</text><rect class="track" x="430" y="524.0" width="1210" height="34" rx="3"/><rect id="bar-6" class="bar" x="430" y="524.0" width="4.0" height="34" rx="3" fill="#0AC8B9"/><text id="val-6" class="val" x="448.0" y="543.0" dominant-baseline="middle" fill="#0AC8B9">0 of 87 refused</text></g></svg>
+    </div>
+    <div id="foot" class="clip" data-start="0" data-duration="8">
+      <span id="note">Did not refuse once: DeepSeek V4 Pro, DeepSeek V4.1 Flash, GLM-5.2, GLM-5.3, GLM-5.3 Flash, GLM-5.3 Max, Kimi K3, Muse Wonder. Source: 288 rounds, Defuse Arena season 2026.</span>
+      <b>defuse-arena.vercel.app</b>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#kicker", {opacity:0, y:12}, {opacity:1, y:0, duration:.4, ease:"power3.out"}, .05);
+    tl.fromTo("#title", {opacity:0, y:22, filter:"blur(8px)"}, {opacity:1, y:0, filter:"blur(0px)", duration:.55, ease:"power4.out"}, .15);
+    tl.fromTo("#sub", {opacity:0, y:12}, {opacity:1, y:0, duration:.45, ease:"power3.out"}, .45);
+    tl.fromTo("#foot", {opacity:0}, {opacity:1, duration:.5}, .9);
+    
+tl.fromTo(".row", {opacity:0, x:-18}, {opacity:1, x:0, duration:.35, ease:"power3.out", stagger:.05}, .7);
+tl.fromTo(".bar", {scaleX:0}, {scaleX:1, duration:.9, ease:"power3.out", stagger:.07, transformOrigin:"left center"}, 1.1);
+tl.fromTo(".val", {opacity:0}, {opacity:1, duration:.3, stagger:.07}, 1.6);
+tl.fromTo("#callout", {opacity:0, y:10}, {opacity:1, y:0, duration:.45, ease:"power3.out"}, 3.2);
+    window.__timelines["card"] = tl;
+  </script>
+</template>

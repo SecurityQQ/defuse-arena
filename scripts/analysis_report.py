@@ -1092,7 +1092,25 @@ def build_page(standings: dict, ledger: list[dict], models: list[Model], n_total
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Defuse Arena — Model Report</title>
+<title>Defuse Arena Model Report: Defense, Attack and Value per AI Model</title>
+<meta name="description" content="Charts and tables on how each AI model defends, attacks and spends in Defuse Arena: audit ratings, false alarms, exploits that beat the patch, and cost per round.">
+<link rel="canonical" href="https://defuse-arena.vercel.app/analysis">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#010A13">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Defuse Arena">
+<meta property="og:url" content="https://defuse-arena.vercel.app/analysis">
+<meta property="og:title" content="Defuse Arena model report">
+<meta property="og:description" content="Charts and tables on how each AI model defends, attacks and spends in Defuse Arena: audit ratings, false alarms, exploits that beat the patch, and cost per round.">
+<meta property="og:image" content="https://defuse-arena.vercel.app/social/06-price.png">
+<meta property="og:image:width" content="1920">
+<meta property="og:image:height" content="1080">
+<meta property="og:image:alt" content="Audit rating against cost per round: GLM-5.3 Flash matches the top auditors for $0.05 a round.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@vargastartup">
+<meta name="twitter:title" content="Defuse Arena model report">
+<meta name="twitter:description" content="Charts and tables on how each AI model defends, attacks and spends in Defuse Arena: audit ratings, false alarms, exploits that beat the patch, and cost per round.">
+<meta name="twitter:image" content="https://defuse-arena.vercel.app/social/06-price.png">
 <style>{CSS}</style>
 </head>
 <body>

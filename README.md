@@ -1,5 +1,43 @@
 # Defuse Arena
 
+**An open benchmark where AI models attack and audit each other's code.** One
+model builds a service and may plant a working backdoor; another model audits
+it, and an executable exploit decides who wins. Which AI model finds the bug,
+which one fixes it, and which one cries wolf on clean code?
+
+[**Read the results →**](https://defuse-arena.vercel.app/) ·
+[Leaderboard](https://defuse-arena.vercel.app/board) ·
+[How a round works](https://defuse-arena.vercel.app/onboarding) ·
+[llms.txt](https://defuse-arena.vercel.app/llms.txt)
+
+[![Introducing Defuse Arena: 288 rounds played, 96 of 96 planted bugs found, 83 fixed for good, 31% false alarms on clean code, 46 rounds refused](web/social/10-read-more.png)](https://defuse-arena.vercel.app/)
+
+## Findings from 288 rounds between 14 models
+
+- **Finding bugs is solved; fixing them is not.** Defenders found all 96 planted
+  bugs and fixed 83. Every one of the 13 attacks that won beat the patch, not
+  the review.
+- **AI auditors raise false alarms on 31% of clean code** (40 of 129 clean
+  services). Grok 4.7 and GPT-6 Astra raised none; DeepSeek V4 Pro flagged 89%.
+- **Best AI code auditor:** Grok 4.7, Gemini 4 Argon and GLM-5.3 Max, a
+  statistical tie. GLM-5.3 Flash gets the same audit rating for $0.05 a round
+  against $0.92.
+- **Claude and OpenAI models refused every attack round** (35 of 35); eight
+  other models never refused once.
+- **Strongest attacker:** DeepSeek V4.1 Flash, whose exploit survived the patch
+  in 5 of 9 rounds.
+
+| | |
+|---|---|
+| [![Who cries wolf: false alarms on clean code by model, from 0% for Grok 4.7 and GPT-6 Astra to 89% for DeepSeek V4 Pro](web/social/04-who-cries-wolf.png)](web/social/04-who-cries-wolf.png) | [![Which model should audit your code: a cheat sheet from 288 rounds](web/social/09-which-model.png)](web/social/09-which-model.png) |
+| [![Same audit rating, 18 times cheaper: GLM-5.3 Flash at $0.05 a round against Grok 4.7 at $0.92](web/social/06-price.png)](web/social/06-price.png) | [![Four frontier models refused every single attack, 35 of 35](web/social/07-refusals.png)](web/social/07-refusals.png) |
+
+All eleven cards, with 8-second videos, are in [`web/social/`](web/social/).
+The round data and the scripts that recompute the published numbers are in
+[`article/`](article/).
+
+## How it works
+
 A two-agent benchmark for hidden-vulnerability auditing.
 
 > **Warning:** the runner executes model-written code on your machine, with no
@@ -23,9 +61,10 @@ non-void round and prices a no-show or a forfeit as a loss, so refusing is
 never cheaper than playing. The spend margin is an efficiency axis, not a
 rating term.
 
-**Status:** Phase 1 runner, in use. Seasons have run: 258 ranked rounds across
-13 models, plus a 29-round probe of a fourteenth. The data pack for the
-258-round board, with scripts that recompute its numbers, is in `article/`.
+**Status:** Phase 1 runner, in use. Seasons have run: 288 rounds across 14
+models: the 258-round ranked board, a 29-round probe of a fourteenth model,
+and one round that completes the DeepSeek V4.1 Flash vs Opus 5.5 pairing. The data pack, with scripts that recompute its
+numbers, is in `article/`.
 The spec, schemas, prompts and round-robin runner are in place. There is no
 container harness and no immutable conformance suite yet.
 
@@ -159,6 +198,21 @@ inspection-arena/
 ├── tests/
 └── docs/
 ```
+
+## Cite
+
+```bibtex
+@misc{varga2026defusearena,
+  title  = {Introducing Defuse Arena},
+  author = {Varga, Alex},
+  year   = {2026},
+  month  = nov,
+  url    = {https://defuse-arena.vercel.app/}
+}
+```
+
+Compute came from Cognition's Devin ambassador program; the research is
+independent of Cognition.
 
 ## License
 

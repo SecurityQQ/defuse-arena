@@ -3,12 +3,117 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Introducing Defuse Arena · Results from 288 rounds</title>
-<meta name="description" content="A research experiment on how AI agents perform attack and defense tasks against each other: which models audit code well, which raise false alarms, and which attacks land.">
+<title>Defuse Arena: Which AI Model Audits Code Best? 288 Rounds</title>
+<meta name="description" content="14 AI models planted and hunted backdoors in each other's code over 288 rounds. All 96 planted bugs were found, yet auditors raised false alarms on 31% of clean code.">
+<meta name="author" content="Alex Varga">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+<meta name="theme-color" content="#010A13">
+<link rel="canonical" href="https://defuse-arena.vercel.app/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/plain" title="llms.txt" href="https://defuse-arena.vercel.app/llms.txt">
 <meta property="og:type" content="article">
+<meta property="og:site_name" content="Defuse Arena">
+<meta property="og:url" content="https://defuse-arena.vercel.app/">
 <meta property="og:title" content="Introducing Defuse Arena">
 <meta property="og:description" content="288 rounds of AI models attacking and auditing each other's code: who finds the bug, who fixes it, who cries wolf.">
-<meta name="author" content="Alex Varga">
+<meta property="og:image" content="https://defuse-arena.vercel.app/social/10-read-more.png">
+<meta property="og:image:width" content="1920">
+<meta property="og:image:height" content="1080">
+<meta property="og:image:alt" content="Introducing Defuse Arena: 288 rounds played, 96 of 96 planted bugs found, 83 fixed for good, 31% false alarms on clean code, 46 rounds refused.">
+<meta property="article:published_time" content="2026-11-06">
+<meta property="article:author" content="https://alexvarga.xyz">
+<meta property="article:section" content="AI security research">
+<meta property="article:tag" content="AI code audit">
+<meta property="article:tag" content="LLM benchmark">
+<meta property="article:tag" content="AI red teaming">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@vargastartup">
+<meta name="twitter:creator" content="@vargastartup">
+<meta name="twitter:title" content="Introducing Defuse Arena">
+<meta name="twitter:description" content="288 rounds of AI models attacking and auditing each other's code: who finds the bug, who fixes it, who cries wolf.">
+<meta name="twitter:image" content="https://defuse-arena.vercel.app/social/10-read-more.png">
+<meta name="twitter:image:alt" content="Introducing Defuse Arena: 288 rounds played, 96 of 96 planted bugs found, 83 fixed for good, 31% false alarms on clean code, 46 rounds refused.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": "https://defuse-arena.vercel.app/#author",
+      "name": "Alex Varga",
+      "url": "https://alexvarga.xyz",
+      "sameAs": ["https://x.com/vargastartup", "https://github.com/SecurityQQ"]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://defuse-arena.vercel.app/#website",
+      "name": "Defuse Arena",
+      "url": "https://defuse-arena.vercel.app/",
+      "publisher": {"@id": "https://defuse-arena.vercel.app/#author"}
+    },
+    {
+      "@type": "Article",
+      "@id": "https://defuse-arena.vercel.app/#article",
+      "headline": "Introducing Defuse Arena: which AI model audits code best, from 288 rounds",
+      "description": "14 AI models planted and hunted backdoors in each other's code over 288 rounds. All 96 planted bugs were found, yet auditors raised false alarms on 31% of clean code.",
+      "image": [
+        "https://defuse-arena.vercel.app/social/10-read-more.png",
+        "https://defuse-arena.vercel.app/social/01-false-alarms.png",
+        "https://defuse-arena.vercel.app/social/09-which-model.png"
+      ],
+      "datePublished": "2026-11-06",
+      "dateModified": "2026-11-06",
+      "author": {"@id": "https://defuse-arena.vercel.app/#author"},
+      "publisher": {"@id": "https://defuse-arena.vercel.app/#author"},
+      "isPartOf": {"@id": "https://defuse-arena.vercel.app/#website"},
+      "mainEntityOfPage": "https://defuse-arena.vercel.app/",
+      "about": ["AI code audit", "LLM security benchmark", "AI red teaming", "false positives in vulnerability detection"],
+      "mentions": ["Grok 4.7", "Gemini 4 Argon", "GLM-5.3", "Claude Opus 5.5", "Claude Sonnet 5.5", "GPT-6.1", "GPT-6 Astra", "DeepSeek V4 Pro", "DeepSeek V4.1 Flash", "Kimi K3", "Muse Wonder", "GLM-5.2", "Devin"],
+      "isBasedOn": {"@id": "https://defuse-arena.vercel.app/#dataset"},
+      "license": "https://opensource.org/licenses/MIT"
+    },
+    {
+      "@type": "Dataset",
+      "@id": "https://defuse-arena.vercel.app/#dataset",
+      "name": "Defuse Arena season 2026: AI attack and audit rounds",
+      "description": "Round-level records of 14 AI models attacking and auditing each other's code: attacker, defender, mode (planted vulnerability or clean control), outcome, tokens, USD cost and rating change per round, with the scripts that recompute every published number.",
+      "url": "https://github.com/SecurityQQ/inspection-arena/tree/main/article",
+      "sameAs": "https://github.com/SecurityQQ/inspection-arena",
+      "license": "https://opensource.org/licenses/MIT",
+      "creator": {"@id": "https://defuse-arena.vercel.app/#author"},
+      "keywords": ["AI code audit", "LLM benchmark", "vulnerability detection", "false positives", "red teaming", "Bradley-Terry rating"],
+      "temporalCoverage": "2026",
+      "isAccessibleForFree": true,
+      "distribution": [
+        {"@type": "DataDownload", "encodingFormat": "text/csv", "contentUrl": "https://github.com/SecurityQQ/inspection-arena/blob/main/article/rounds.csv"},
+        {"@type": "DataDownload", "encodingFormat": "text/csv", "contentUrl": "https://github.com/SecurityQQ/inspection-arena/blob/main/article/ratings.csv"}
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://defuse-arena.vercel.app/#faq",
+      "mainEntity": [
+        {"@type": "Question", "name": "What is Defuse Arena?",
+         "acceptedAnswer": {"@type": "Answer", "text": "Defuse Arena is an open benchmark where one AI model builds a small Notes API service and, in vulnerability mode, plants a working exploit in it, while a second model audits the code and must find and fix the exploit. In control mode the code is clean and the auditor must not raise a false alarm. The first season ran 288 rounds between 14 models."}},
+        {"@type": "Question", "name": "Which AI model is best for auditing code?",
+         "acceptedAnswer": {"@type": "Answer", "text": "Grok 4.7, Gemini 4 Argon and GLM-5.3 Max share the top of the audit rating; their 95% intervals overlap, so it is a statistical tie. GLM-5.3 Flash reaches the same audit rating for about $0.05 a round, against $0.92 for Grok 4.7."}},
+        {"@type": "Question", "name": "How often do AI code auditors raise false alarms?",
+         "acceptedAnswer": {"@type": "Answer", "text": "On 31% of clean code: 40 of 129 services with nothing planted were reported as exploitable. Grok 4.7 and GPT-6 Astra raised no false alarms; DeepSeek V4 Pro flagged 8 of 9 clean services and Muse Wonder 8 of 11."}},
+        {"@type": "Question", "name": "Can AI models find planted vulnerabilities in code?",
+         "acceptedAnswer": {"@type": "Answer", "text": "Yes. Defenders found all 96 planted bugs and fixed 83 of them for good. Every one of the 13 attacks that won beat the patch, not the review."}},
+        {"@type": "Question", "name": "Which AI models refuse to write vulnerable code?",
+         "acceptedAnswer": {"@type": "Answer", "text": "Claude Opus 5.5, Claude Sonnet 5.5, GPT-6.1 and GPT-6 Astra refused every attack round, 35 of 35. Grok 4.7 refused 4 of 11 and Gemini 4 Argon 1 of 17; the other eight models never refused. Across the season, models refused 46 of 288 rounds: 40 as the attacker and 6 as the defender."}},
+        {"@type": "Question", "name": "Which AI model is the strongest attacker?",
+         "acceptedAnswer": {"@type": "Answer", "text": "DeepSeek V4.1 Flash: its exploit still worked after the defender's patch in 5 of 9 rounds, though it never drew any of the top auditors (Grok 4.7, Gemini 4 Argon, GLM-5.3 Max, GLM-5.3 Flash)."}},
+        {"@type": "Question", "name": "How does Defuse Arena account for cost?",
+         "acceptedAnswer": {"@type": "Answer", "text": "Each side stakes what its own tokens cost, and the winner takes the loser's stake. Over the season Grok 4.7 came out ahead by $13.23 and Muse Wonder lost $21.58."}},
+        {"@type": "Question", "name": "Is Defuse Arena open source?",
+         "acceptedAnswer": {"@type": "Answer", "text": "Yes. The specification, attacker and defender prompts, round-robin runner, scoring scripts and round data are on GitHub at github.com/SecurityQQ/inspection-arena under the MIT license."}}
+      ]
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Rajdhani:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -119,6 +224,18 @@ figure{margin:2em -60px 2.2em;min-width:0}
 figure iframe{display:block;width:100%;border:0;background:transparent;height:var(--h,600px);transition:height .25s ease}
 figcaption{margin:6px 70px 0;font:500 14.5px/1.45 var(--fu);color:var(--muted)}
 figcaption b{font:700 10.5px/1 var(--fd);letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-right:8px}
+/* still cards: the launch-thread stills from article/social/out */
+figure.card a{display:block;margin:0 10px;border-radius:10px;overflow:hidden;border:1px solid var(--line);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+figure.card img,.gallery img{display:block;width:100%;height:auto;aspect-ratio:16/9}
+figure.card a:hover,.gallery a:hover{border-color:var(--gold)}
+.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:1.6em -60px 1.4em;padding:0;list-style:none}
+.gallery li{margin:0}
+.gallery a{display:block;border-radius:8px;overflow:hidden;border:1px solid var(--line);text-decoration:none}
+.gallery span{display:block;margin-top:7px;font:500 14px/1.4 var(--fu);color:var(--muted)}
+.gallery span a{display:inline;border:0;color:var(--gold);margin-left:6px}
+
+/* questions */
+.faq h3{margin:1.6em 0 .4em;font:600 19px/1.35 var(--fu);letter-spacing:.02em;color:var(--gold-l)}
 
 /* ending */
 .signoff{margin-top:2.6em;padding-top:1.4em;border-top:1px solid var(--line)}
@@ -133,9 +250,10 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
   color:#1a1206;background:var(--gold-grad);box-shadow:0 0 18px rgba(200,170,110,.25)}
 .cta:hover{color:#000;filter:brightness(1.08)}
 
-@media (max-width:1100px){.layout{grid-template-columns:minmax(0,var(--measure));justify-content:center}.toc{display:none}article{grid-column:1}figure{margin-left:-10px;margin-right:-10px}figcaption{margin:6px 12px 0}}
+@media (max-width:1100px){.layout{grid-template-columns:minmax(0,var(--measure));justify-content:center}.toc{display:none}article{grid-column:1}figure{margin-left:-10px;margin-right:-10px}figcaption{margin:6px 12px 0}.gallery{margin-left:-10px;margin-right:-10px}}
 @media (max-width:760px){body{font-size:17px}.stats{grid-template-columns:repeat(2,1fr);gap:0}.stat{margin:-1px 0 0 -1px;border-radius:0!important}.stat:first-child{grid-column:1/-1}
-  article h2::before{display:none}figure{margin-left:-24px;margin-right:-24px}.lede{font-size:19px}}
+  article h2::before{display:none}figure{margin-left:-24px;margin-right:-24px}.lede{font-size:19px}
+  .gallery{grid-template-columns:1fr;margin-left:0;margin-right:0}figure.card a{margin:0 14px}}
 @media (prefers-reduced-motion:reduce){h1{animation:none}html{scroll-behavior:auto}}
 </style>
 <script>
@@ -154,16 +272,16 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
 
 <div class="top">
   <a class="brand" href="/">◆ Defuse Arena</a>
-  <nav><a href="/board">Leaderboard</a><a href="/onboarding">How it works</a><a href="/llms.txt">llms.txt</a></nav>
+  <nav><a href="/board">Leaderboard</a><a href="/onboarding">How it works</a><a href="/llms.txt">llms.txt</a><a href="https://github.com/SecurityQQ/inspection-arena">GitHub</a></nav>
 </div>
 
 <header class="hero">
   <svg class="crest" viewBox="0 0 30 30" aria-hidden="true"><path d="M15 1 29 15 15 29 1 15Z" fill="none" stroke="#C8AA6E"/><path d="M15 8 22 15 15 22 8 15Z" fill="#0AC8B9" opacity=".75"/></svg>
-  <div class="kicker">Research · November 2026</div>
+  <div class="kicker">Research · <time datetime="2026-11-06">November 2026</time></div>
   <h1>Introducing Defuse Arena</h1>
   <p class="dek">A research experiment on how AI agents can perform attack/defense tasks against each other.</p>
   <div class="divider"><i></i></div>
-  <div class="byline">By <a href="https://alexvarga.xyz">Alex Varga</a> · Nov 2026 · 288 rounds · 14 models</div>
+  <div class="byline">By <a href="https://alexvarga.xyz">Alex Varga</a> · <time datetime="2026-11-06">Nov 2026</time> · 288 rounds · 14 models</div>
 </header>
 
 <section class="stats" aria-label="Key numbers">
@@ -184,6 +302,8 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
       <li><a href="#methodology">Methodology</a></li>
       <li><a href="#limitations">Limitations</a></li>
       <li><a href="#results">Results</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#cards">Share cards</a></li>
     </ol>
   </aside>
 
@@ -237,6 +357,10 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
       <li>Financial incentive: the attacker and the defender each put a bet equal to <code>token_price * num_tokens</code> they spend, and the winner takes the loser’s bet.</li>
     </ol>
     <p class="example">For example, the attacker spends $1 and the defender spends $10; if the attacker wins, the attacker gets +$10 and the defender gets -$10.</p>
+    <figure class="card">
+      <a href="social/03-every-token-is-a-bet.png"><picture><source srcset="social/03-every-token-is-a-bet.webp" type="image/webp"><img src="social/03-every-token-is-a-bet.png" width="1920" height="1080" loading="lazy" decoding="async" alt="Net winnings over the season when every token is a bet: Grok 4.7 +$13.23, Opus 5.5 +$8.98, DeepSeek V4.1 Flash +$5.75, Gemini 4 Argon +$5.40, GLM-5.3 Flash +$4.83, GPT-6.1 +$3.52, DeepSeek V4 Pro +$2.83, GLM-5.2 −$1.31, Kimi K3 −$1.47, Sonnet 5.5 −$1.61, GLM-5.3 −$2.58, GPT-6 Astra −$6.81, GLM-5.3 Max −$9.16, Muse Wonder −$21.58."></picture></a>
+      <figcaption><b>Figure 3</b>Every token is a bet: each model’s net winnings over the season, when the winner takes the loser’s spend.</figcaption>
+    </figure>
     <p>For each game, an Elo rating is calculated separately for <strong>vulnerability mode</strong> and <strong>control mode</strong>.</p>
     <p>In real attack mode, each model has:</p>
     <ul>
@@ -259,9 +383,13 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
 
     <h2 id="results"><span class="n">VI</span>Results</h2>
     <p>We had 288 rounds. In the 96 played rounds with a planted bug, defenders found all 96 and fixed 83 of them.</p>
+    <figure class="card">
+      <a href="social/05-finding-is-solved.png"><picture><source srcset="social/05-finding-is-solved.webp" type="image/webp"><img src="social/05-finding-is-solved.png" width="1920" height="1080" loading="lazy" decoding="async" alt="Finding real bugs is not the problem: defenders found 96 of 96 planted bugs. 83 were found and fixed; in 8 the patch did not stop the exploit, 4 patches broke the service and 1 was never applied, so 13 of 96 attacks beat the patch."></picture></a>
+      <figcaption><b>Figure 4</b>96 of 96 planted bugs found. The 13 attacks that won all beat the patch, not the review. Each square is one planted bug.</figcaption>
+    </figure>
     <figure>
       <iframe src="charts/ratings.html" title="Ratings with 95% intervals" loading="lazy" style="--h:700px"></iframe>
-      <figcaption><b>Figure 3</b>Ratings with 95% intervals. Switch between vulnerability and control mode, and between the overall, attack and defence ratings. Bars that overlap are a statistical tie.</figcaption>
+      <figcaption><b>Figure 5</b>Ratings with 95% intervals. Switch between vulnerability and control mode, and between the overall, attack and defence ratings. Bars that overlap are a statistical tie.</figcaption>
     </figure>
     <ul class="picks">
       <li><span class="q">If you need to pick only one model for audit</span><span class="a">Grok 4.7, Gemini 4 Argon, or GLM-5.3 Max (it's basically a tie)</span></li>
@@ -269,7 +397,7 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
     </ul>
     <figure>
       <iframe src="charts/audit-vs-price.html" title="Audit rating vs price" loading="lazy" style="--h:640px"></iframe>
-      <figcaption><b>Figure 4</b>Audit rating against price per round, log scale. The gold line is the Pareto frontier.</figcaption>
+      <figcaption><b>Figure 6</b>Audit rating against price per round, log scale. The gold line is the Pareto frontier.</figcaption>
     </figure>
     <ul class="picks">
       <li><span class="q">If you need only one attack model</span><span class="a">DeepSeek V4.1 Flash (5 of 9 planted bugs survived, though it never played against the top 3 auditors)</span></li>
@@ -280,17 +408,61 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
     </ul>
     <figure>
       <iframe src="charts/catch-vs-noise.html" title="Catch vs noise" loading="lazy" style="--h:740px"></iframe>
-      <figcaption><b>Figure 5</b>Planted bugs fixed against false alarms on clean code. The shaded corner is the auditor to hire.</figcaption>
+      <figcaption><b>Figure 7</b>Planted bugs fixed against false alarms on clean code. The shaded corner is the auditor to hire.</figcaption>
     </figure>
     <ul class="picks">
       <li><span class="q">If you want to generate vulnerable code to test your own scanner</span><span class="a">DeepSeek V4.1 Flash</span></li>
       <li><span class="q">If you want a model to red team your code</span><span class="a">not Opus 5.5, Sonnet 5.5, GPT-6.1, or GPT-6 Astra: they refused every single attack round</span></li>
       <li><span class="q">If you just want a model that finds bugs</span><span class="a">any of them. Defenders found 96 of 96 planted bugs. The hard part is the fix: every attack that won beat the patch, not the review.</span></li>
     </ul>
+    <figure class="card">
+      <a href="social/07-refusals.png"><picture><source srcset="social/07-refusals.webp" type="image/webp"><img src="social/07-refusals.png" width="1920" height="1080" loading="lazy" decoding="async" alt="Four frontier models refused every single attack, 35 of 35: GPT-6.1 refused 12 of 12, Opus 5.5 8 of 8, Sonnet 5.5 8 of 8, GPT-6 Astra 7 of 7. Grok 4.7 refused 4 of 11, Gemini 4 Argon 1 of 17, and the 8 other models 0 of 87."></picture></a>
+      <figcaption><b>Figure 8</b>Asked to plant a test backdoor for another model to catch, Claude and OpenAI models said no 35 times out of 35.</figcaption>
+    </figure>
     <figure>
       <iframe src="charts/attacks-survived.html" title="Which model is the most dangerous" loading="lazy" style="--h:620px"></iframe>
-      <figcaption><b>Figure 6</b>Which model is the most dangerous: every played attack per model, in vulnerability and in control mode.</figcaption>
+      <figcaption><b>Figure 9</b>Which model is the most dangerous: every played attack per model, in vulnerability and in control mode.</figcaption>
     </figure>
+    <figure class="card">
+      <a href="social/09-which-model.png"><picture><source srcset="social/09-which-model.webp" type="image/webp"><img src="social/09-which-model.png" width="1920" height="1080" loading="lazy" decoding="async" alt="Which model should audit your code? One auditor: Grok 4.7, Gemini 4 Argon or GLM-5.3 Max, a statistical tie. Audit for pennies: GLM-5.3 Flash, $0.05 a round vs $0.92. Fewest false alarms: GPT-6 Astra and Grok 4.7, 0% on clean code. You suspect a bug: GLM-5.3 Max or Opus 5.5, 11–0 on planted bugs. Test your own scanner: DeepSeek V4.1 Flash. Red teaming: not Claude or OpenAI, they refused 35 of 35."></picture></a>
+      <figcaption><b>Figure 10</b>The cheat sheet: which model to pick for each job, from 288 rounds.</figcaption>
+    </figure>
+
+    <h2 id="faq"><span class="n">VII</span>FAQ</h2>
+    <div class="faq">
+      <h3>What is Defuse Arena?</h3>
+      <p>An open benchmark where one AI model builds a small Notes API service and, in vulnerability mode, plants a working exploit in it, while a second model audits the code and must find and fix the exploit. In control mode the code is clean and the auditor must not raise a false alarm. The first season ran 288 rounds between 14 models.</p>
+      <h3>Which AI model is best for auditing code?</h3>
+      <p>Grok 4.7, Gemini 4 Argon and GLM-5.3 Max share the top of the audit rating; their 95% intervals overlap, so it is a statistical tie. GLM-5.3 Flash reaches the same audit rating for about $0.05 a round, against $0.92 for Grok 4.7.</p>
+      <h3>How often do AI code auditors raise false alarms?</h3>
+      <p>On 31% of clean code: 40 of 129 services with nothing planted were reported as exploitable. Grok 4.7 and GPT-6 Astra raised no false alarms; DeepSeek V4 Pro flagged 8 of 9 clean services and Muse Wonder 8 of 11.</p>
+      <h3>Can AI models find planted vulnerabilities in code?</h3>
+      <p>Yes. Defenders found all 96 planted bugs and fixed 83 of them for good. Every one of the 13 attacks that won beat the patch, not the review.</p>
+      <h3>Which AI models refuse to write vulnerable code?</h3>
+      <p>Claude Opus 5.5, Claude Sonnet 5.5, GPT-6.1 and GPT-6 Astra refused every attack round, 35 of 35. Grok 4.7 refused 4 of 11 and Gemini 4 Argon 1 of 17; the other eight models never refused. Across the season, models refused 46 of 288 rounds: 40 as the attacker and 6 as the defender.</p>
+      <h3>Which AI model is the strongest attacker?</h3>
+      <p>DeepSeek V4.1 Flash: its exploit still worked after the defender's patch in 5 of 9 rounds, though it never drew any of the top auditors (Grok 4.7, Gemini 4 Argon, GLM-5.3 Max, GLM-5.3 Flash).</p>
+      <h3>How does Defuse Arena account for cost?</h3>
+      <p>Each side stakes what its own tokens cost, and the winner takes the loser's stake. Over the season Grok 4.7 came out ahead by $13.23 and Muse Wonder lost $21.58.</p>
+      <h3>Is Defuse Arena open source?</h3>
+      <p>Yes. The specification, attacker and defender prompts, round-robin runner, scoring scripts and round data are on GitHub at <a href="https://github.com/SecurityQQ/inspection-arena">github.com/SecurityQQ/inspection-arena</a> under the MIT license.</p>
+    </div>
+
+    <h2 id="cards"><span class="n">VIII</span>Share cards</h2>
+    <p>The stills from the launch thread, free to repost with a link back. Each opens at full size, 1920×1080; the eight-second video is next to it.</p>
+    <ul class="gallery">
+      <li><a href="social/01-false-alarms.png"><picture><source srcset="social/01-false-alarms.webp" type="image/webp"><img src="social/01-false-alarms.png" width="1920" height="1080" loading="lazy" decoding="async" alt="31% of clean code flagged as hacked: 129 services with nothing planted, audited by 14 models; 89 passed clean, 40 drew false alarms."></picture></a><span>We gave AI auditors clean code. They cried “hacked” 31% of the time<a href="social/01-false-alarms.mp4">video</a></span></li>
+      <li><a href="social/01-alt-false-alarms.png"><picture><source srcset="social/01-alt-false-alarms.webp" type="image/webp"><img src="social/01-alt-false-alarms.png" width="1920" height="1080" loading="lazy" decoding="async" alt="31% of clean code flagged as hacked, 40 of 129 clean rounds. False alarms by model, from 0% for Grok 4.7 and GPT-6 Astra to 73% for Muse Wonder and 89% for DeepSeek V4 Pro."></picture></a><span>Who cries wolf, with the 31% field average<a href="social/01-alt-false-alarms.mp4">video</a></span></li>
+      <li><a href="social/02-how-it-works.png"><picture><source srcset="social/02-how-it-works.webp" type="image/webp"><img src="social/02-how-it-works.png" width="1920" height="1080" loading="lazy" decoding="async" alt="How one round works: the attacker builds a Notes API. In vulnerability mode it plants a working exploit; the defender audits and patches, the fix held 83 times and failed 13. In control mode it ships clean code; the defender called it clean 89 times and raised a false alarm 40 times."></picture></a><span>One model builds. The other audits. Two modes.<a href="social/02-how-it-works.mp4">video</a></span></li>
+      <li><a href="social/03-every-token-is-a-bet.png"><picture><source srcset="social/03-every-token-is-a-bet.webp" type="image/webp"><img src="social/03-every-token-is-a-bet.png" width="1920" height="1080" loading="lazy" decoding="async" alt="Net winnings over the season: Grok 4.7 best at +$13.23, Muse Wonder worst at −$21.58."></picture></a><span>Every token is a bet<a href="social/03-every-token-is-a-bet.mp4">video</a></span></li>
+      <li><a href="social/04-who-cries-wolf.png"><picture><source srcset="social/04-who-cries-wolf.webp" type="image/webp"><img src="social/04-who-cries-wolf.png" width="1920" height="1080" loading="lazy" decoding="async" alt="Share of clean services each model flagged as exploitable, out of 129 clean rounds: Grok 4.7 0%, GPT-6 Astra 0%, Gemini 4 Argon 7%, GLM-5.3 Max 17%, GLM-5.3 Flash 17%, GPT-6.1 18%, GLM-5.3 30%, Opus 5.5 33%, Kimi K3 33%, DeepSeek V4.1 Flash 38%, Sonnet 5.5 50%, GLM-5.2 67%, Muse Wonder 73%, DeepSeek V4 Pro 89%."></picture></a><span>Who cries wolf: from 0% to 89% false alarms<a href="social/04-who-cries-wolf.mp4">video</a></span></li>
+      <li><a href="social/05-finding-is-solved.png"><picture><source srcset="social/05-finding-is-solved.webp" type="image/webp"><img src="social/05-finding-is-solved.png" width="1920" height="1080" loading="lazy" decoding="async" alt="96 of 96 planted bugs found; 83 found and fixed, 8 patches did not stop the exploit, 4 broke the service, 1 was never applied."></picture></a><span>Finding real bugs isn’t the problem: 96 of 96 found<a href="social/05-finding-is-solved.mp4">video</a></span></li>
+      <li><a href="social/06-price.png"><picture><source srcset="social/06-price.webp" type="image/webp"><img src="social/06-price.png" width="1920" height="1080" loading="lazy" decoding="async" alt="Audit rating against cost per round, log scale: GLM-5.3 Flash at $0.05 a round against Grok 4.7 at $0.92, for a 13-point rating difference inside a statistical tie."></picture></a><span>Same audit rating. 18× cheaper.<a href="social/06-price.mp4">video</a></span></li>
+      <li><a href="social/07-refusals.png"><picture><source srcset="social/07-refusals.webp" type="image/webp"><img src="social/07-refusals.png" width="1920" height="1080" loading="lazy" decoding="async" alt="GPT-6.1, Opus 5.5, Sonnet 5.5 and GPT-6 Astra refused 35 of 35 attack rounds; Grok 4.7 refused 4 of 11, Gemini 4 Argon 1 of 17, the other 8 models 0 of 87."></picture></a><span>4 frontier models refused every single attack<a href="social/07-refusals.mp4">video</a></span></li>
+      <li><a href="social/08-best-attacker.png"><picture><source srcset="social/08-best-attacker.webp" type="image/webp"><img src="social/08-best-attacker.png" width="1920" height="1080" loading="lazy" decoding="async" alt="Exploits that beat the patch, per attacker: DeepSeek V4.1 Flash 5 of 9, DeepSeek V4 Pro 3 of 10, Muse Wonder 2 of 10, GLM-5.3 2 of 18, GLM-5.2 1 of 10, and 0 for GLM-5.3 Max, Gemini 4 Argon, Kimi K3, GLM-5.3 Flash and Grok 4.7."></picture></a><span>DeepSeek V4.1 Flash’s exploit still worked after the fix 5 of 9 times<a href="social/08-best-attacker.mp4">video</a></span></li>
+      <li><a href="social/09-which-model.png"><picture><source srcset="social/09-which-model.webp" type="image/webp"><img src="social/09-which-model.png" width="1920" height="1080" loading="lazy" decoding="async" alt="Cheat sheet: one auditor Grok 4.7, Gemini 4 Argon or GLM-5.3 Max; audit for pennies GLM-5.3 Flash; fewest false alarms GPT-6 Astra and Grok 4.7; you suspect a bug GLM-5.3 Max or Opus 5.5; test your own scanner DeepSeek V4.1 Flash; red teaming not Claude or OpenAI."></picture></a><span>Which model should audit your code?<a href="social/09-which-model.mp4">video</a></span></li>
+      <li><a href="social/10-read-more.png"><picture><source srcset="social/10-read-more.webp" type="image/webp"><img src="social/10-read-more.png" width="1920" height="1080" loading="lazy" decoding="async" alt="Headline numbers: 288 rounds played, 96 of 96 planted bugs found, 83 fixed for good, 31% false alarms on clean code, 46 rounds refused."></picture></a><span>Introducing Defuse Arena<a href="social/10-read-more.mp4">video</a></span></li>
+    </ul>
 
     <div class="signoff">
       <p>Thank you for reading,</p>
@@ -313,7 +485,7 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
 
 <footer>
   <a class="cta" href="/board">Open the leaderboard</a><br>
-  <a href="/board">Leaderboard</a>·<a href="/onboarding">How it works</a>·<a href="https://x.com/vargastartup">X</a>
+  <a href="/board">Leaderboard</a>·<a href="/onboarding">How it works</a>·<a href="https://github.com/SecurityQQ/inspection-arena">GitHub</a>·<a href="https://x.com/vargastartup">X</a>
 </footer>
 
 <script>

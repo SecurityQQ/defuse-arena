@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://defuse-arena.vercel.app/</loc>
+    <lastmod>2026-11-06</lastmod>
+    <priority>1.0</priority>
+    <image:image><image:loc>https://defuse-arena.vercel.app/social/10-read-more.png</image:loc></image:image>
+    <image:image><image:loc>https://defuse-arena.vercel.app/social/01-false-alarms.png</image:loc></image:image>
+    <image:image><image:loc>https://defuse-arena.vercel.app/social/01-alt-false-alarms.png</image:loc></image:image>
+    <image:image><image:loc>https://defuse-arena.vercel.app/social/02-how-it-works.png</image:loc></image:image>
+    <image:image><image:loc>https://defuse-arena.vercel.app/social/03-every-token-is-a-bet.png</image:loc></image:image>
+    <image:image><image:loc>https://defuse-arena.vercel.app/social/04-who-cries-wolf.png</image:loc></image:image>
+    <image:image><image:loc>https://defuse-arena.vercel.app/social/05-finding-is-solved.png</image:loc></image:image>
+    <image:image><image:loc>https://defuse-arena.vercel.app/social/06-price.png</image:loc></image:image>
+    <image:image><image:loc>https://defuse-arena.vercel.app/social/07-refusals.png</image:loc></image:image>
+    <image:image><image:loc>https://defuse-arena.vercel.app/social/08-best-attacker.png</image:loc></image:image>
+    <image:image><image:loc>https://defuse-arena.vercel.app/social/09-which-model.png</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://defuse-arena.vercel.app/board</loc>
+    <lastmod>2026-11-06</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://defuse-arena.vercel.app/onboarding</loc>
+    <lastmod>2026-11-06</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://defuse-arena.vercel.app/analysis</loc>
+    <lastmod>2026-11-06</lastmod>
+    <priority>0.6</priority>
+  </url>
+</urlset>

@@ -1,0 +1,125 @@
+<template>
+  <style>
+    @font-face { font-family: "Cinzel"; font-weight: 700; src: url("assets/fonts/cinzel-700.woff2") format("woff2"); }
+    @font-face { font-family: "Rajdhani"; font-weight: 500; src: url("assets/fonts/rajdhani-500.woff2") format("woff2"); }
+    @font-face { font-family: "Rajdhani"; font-weight: 600; src: url("assets/fonts/rajdhani-600.woff2") format("woff2"); }
+    @font-face { font-family: "Rajdhani"; font-weight: 700; src: url("assets/fonts/rajdhani-700.woff2") format("woff2"); }
+    #root { position: absolute; inset: 0; overflow: hidden; color: #CDBE91; font-family: "Rajdhani", sans-serif;
+      background:
+        radial-gradient(1200px 640px at 12% -12%, rgba(10,200,185,.12), transparent 60%),
+        radial-gradient(1000px 600px at 95% 0%, rgba(200,170,110,.12), transparent 55%),
+        linear-gradient(180deg, #010A13 0%, #06101F 45%, #010A13 100%); }
+    #frame { position: absolute; inset: 36px; border: 1px solid rgba(200,170,110,.22); border-radius: 14px; }
+    #frame::before { content: ""; position: absolute; inset: 8px; border: 1px solid rgba(200,170,110,.08); border-radius: 9px; }
+    #head { position: absolute; left: 110px; right: 110px; top: 96px; }
+    #kicker { font-family: "Cinzel", serif; font-weight: 700; font-size: 20px; letter-spacing: .26em; text-transform: uppercase; color: #C8AA6E; }
+    #title { margin-top: 18px; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 76px; line-height: 1.02; color: #F0E6D2; letter-spacing: -.005em; max-width: 1560px; }
+    #title em { font-style: normal; color: #0AC8B9; white-space: nowrap; }
+    #title em.hot { color: #E06060; }
+    #head.narrow #title, #head.narrow #sub { max-width: 1240px; }
+    #subs { position: relative; }
+    #sub2 { position: absolute; left: 0; top: 0; margin-top: 18px; font-size: 30px; font-weight: 600; line-height: 1.3; color: #CDBE91; max-width: 1500px; }
+    #sub { margin-top: 18px; font-size: 30px; font-weight: 500; line-height: 1.3; color: #7A8CA3; max-width: 1500px; }
+    #chart { position: absolute; left: 110px; right: 110px; top: 300px; bottom: 140px; }
+    #chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+    #foot { position: absolute; left: 110px; right: 110px; bottom: 66px; display: flex; justify-content: space-between; align-items: baseline; gap: 40px; font-size: 24px; color: #8E9DB0; }
+    #foot b { font-family: "Cinzel", serif; font-weight: 700; color: #C8AA6E; letter-spacing: .12em; font-size: 22px; white-space: nowrap; }
+    #note { max-width: 1250px; }
+    .callout { position: absolute; right: 120px; top: 92px; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 120px; line-height: .9; text-align: right; }
+    .callout small { display: block; font-size: 26px; letter-spacing: .2em; text-transform: uppercase; font-family: "Cinzel", serif; margin-top: 10px; }
+    .callout.red { color: #E06060; }
+    .grid { stroke: rgba(200,170,110,.09); stroke-width: 1.5; }
+    .tick { fill: #8E9DB0; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 26px; }
+    .axis { fill: #7A8CA3; font-family: "Cinzel", serif; font-weight: 700; font-size: 18px; letter-spacing: .18em; text-transform: uppercase; }
+    .name { fill: #F0E6D2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 31px; }
+    .sub { fill: #7A8CA3; font-size: 22px; }
+    .val { font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 30px; }
+    .track { fill: rgba(200,170,110,.05); }
+    .ref { stroke: #C8AA6E; stroke-width: 2; stroke-dasharray: 8 7; }
+    .refl { fill: #C8AA6E; font-family: "Cinzel", serif; font-weight: 700; font-size: 24px; letter-spacing: .12em; text-transform: uppercase; }
+    .cell { fill: #0AC8B9; }
+    .boxr { fill: rgba(15,27,45,.85); stroke-width: 2; }
+    .boxk { font-family: "Cinzel", serif; font-weight: 700; font-size: 20px; letter-spacing: .16em; text-transform: uppercase; }
+    .boxt { fill: #F0E6D2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 32px; }
+    .arrow { fill: none; stroke: rgba(200,170,110,.6); stroke-width: 2.5; }
+    .ocr { fill: rgba(1,10,19,.7); stroke-width: 2; }
+    .oct { fill: #F0E6D2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 29px; }
+    .ocn { font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 29px; }
+    .zero { stroke: #C8AA6E; stroke-width: 2; }
+    .dimname { fill: #A3B1C2; }
+    .prr { fill: rgba(15,27,45,.7); stroke: rgba(200,170,110,.14); }
+    .prr.hotr, .statr.hotr { fill: rgba(224,96,96,.10); stroke: #E06060; stroke-width: 2; }
+    .pneed { fill: #C8AA6E; font-family: "Cinzel", serif; font-weight: 700; font-size: 24px; letter-spacing: .08em; text-transform: uppercase; }
+    .ppick { fill: #F0E6D2; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 36px; }
+    .ppick.hot { fill: #0AC8B9; }
+    .pwhy { fill: #A3B1C2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 30px; }
+    .statr { fill: rgba(15,27,45,.75); stroke: rgba(200,170,110,.18); }
+    .statn { font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 96px; font-variant-numeric: tabular-nums; }
+    .statn.hot { font-size: 110px; }
+    .statl { fill: #A3B1C2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 30px; }
+    .cta { fill: #F0E6D2; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 56px; }
+    .ctau { fill: #0AC8B9; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 48px; }
+    .bigs { fill: #A3B1C2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 30px; }
+    .bignum { fill: #E06060; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 300px; font-variant-numeric: tabular-nums; }
+    .bigl { fill: #F0E6D2; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 40px; }
+    .leg { fill: #CDBE91; font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 28px; }
+    .plbl { font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 27px; paint-order: stroke; stroke: #010A13; stroke-width: 6px; stroke-linejoin: round; }
+    .plbl.hot { font-size: 30px; font-weight: 700; }
+    .span { stroke: #0AC8B9; stroke-width: 3; stroke-dasharray: 10 8; }
+    .spanl { fill: #0AC8B9; font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 30px; }
+  </style>
+  <div id="root" data-composition-id="card" data-width="1920" data-height="1080">
+    <div id="frame" class="clip" data-start="0" data-duration="8"></div>
+    <div id="head" class="clip " data-start="0" data-duration="8">
+      <div id="kicker">Control mode · false alarms by model</div>
+      <h1 id="title">Who cries wolf: from <em>0%</em> to <em class="hot">89%</em> false alarms</h1>
+      <div id="subs"><p id="sub">Share of clean services each model flagged as exploitable, out of 129 clean rounds in total.</p></div>
+    </div>
+    
+    <div id="chart" class="clip" data-start="0" data-duration="8">
+      <svg viewBox="0 0 1700 678" preserveAspectRatio="xMinYMid meet" xmlns="http://www.w3.org/2000/svg"><line class="grid" x1="430.0" y1="36" x2="430.0" y2="638"/>
+<text class="tick" x="430.0" y="668" text-anchor="middle">0%</text>
+<line class="grid" x1="732.5" y1="36" x2="732.5" y2="638"/>
+<text class="tick" x="732.5" y="668" text-anchor="middle">25%</text>
+<line class="grid" x1="1035.0" y1="36" x2="1035.0" y2="638"/>
+<text class="tick" x="1035.0" y="668" text-anchor="middle">50%</text>
+<line class="grid" x1="1337.5" y1="36" x2="1337.5" y2="638"/>
+<text class="tick" x="1337.5" y="668" text-anchor="middle">75%</text>
+<line class="grid" x1="1640.0" y1="36" x2="1640.0" y2="638"/>
+<text class="tick" x="1640.0" y="668" text-anchor="middle">100%</text>
+<g id="row-0" class="row"><text class="name" x="408" y="73.0" text-anchor="end" dominant-baseline="middle">Grok 4.7</text><rect class="track" x="430" y="59.0" width="1210" height="24" rx="3"/><rect id="bar-0" class="bar" x="430" y="59.0" width="4.0" height="24" rx="3" fill="#0AC8B9"/><text id="val-0" class="val" x="448.0" y="73.0" dominant-baseline="middle" fill="#0AC8B9">0%  (0/9)</text></g>
+<g id="row-1" class="row"><text class="name" x="408" y="115.0" text-anchor="end" dominant-baseline="middle">GPT-6 Astra</text><rect class="track" x="430" y="101.0" width="1210" height="24" rx="3"/><rect id="bar-1" class="bar" x="430" y="101.0" width="4.0" height="24" rx="3" fill="#0AC8B9"/><text id="val-1" class="val" x="448.0" y="115.0" dominant-baseline="middle" fill="#0AC8B9">0%  (0/8)</text></g>
+<g id="row-2" class="row"><text class="name" x="408" y="157.0" text-anchor="end" dominant-baseline="middle">Gemini 4 Argon</text><rect class="track" x="430" y="143.0" width="1210" height="24" rx="3"/><rect id="bar-2" class="bar" x="430" y="143.0" width="86.4" height="24" rx="3" fill="rgba(122,140,163,.55)"/><text id="val-2" class="val" x="530.4" y="157.0" dominant-baseline="middle" fill="#A3B1C2">7%  (1/14)</text></g>
+<g id="row-3" class="row"><text class="name" x="408" y="199.0" text-anchor="end" dominant-baseline="middle">GLM-5.3 Max</text><rect class="track" x="430" y="185.0" width="1210" height="24" rx="3"/><rect id="bar-3" class="bar" x="430" y="185.0" width="201.7" height="24" rx="3" fill="rgba(122,140,163,.55)"/><text id="val-3" class="val" x="645.7" y="199.0" dominant-baseline="middle" fill="#A3B1C2">17%  (2/12)</text></g>
+<g id="row-4" class="row"><text class="name" x="408" y="241.0" text-anchor="end" dominant-baseline="middle">GLM-5.3 Flash</text><rect class="track" x="430" y="227.0" width="1210" height="24" rx="3"/><rect id="bar-4" class="bar" x="430" y="227.0" width="201.7" height="24" rx="3" fill="rgba(122,140,163,.55)"/><text id="val-4" class="val" x="645.7" y="241.0" dominant-baseline="middle" fill="#A3B1C2">17%  (1/6)</text></g>
+<g id="row-5" class="row"><text class="name" x="408" y="283.0" text-anchor="end" dominant-baseline="middle">GPT-6.1</text><rect class="track" x="430" y="269.0" width="1210" height="24" rx="3"/><rect id="bar-5" class="bar" x="430" y="269.0" width="213.5" height="24" rx="3" fill="rgba(122,140,163,.55)"/><text id="val-5" class="val" x="657.5" y="283.0" dominant-baseline="middle" fill="#A3B1C2">18%  (3/17)</text></g>
+<g id="row-6" class="row"><text class="name" x="408" y="325.0" text-anchor="end" dominant-baseline="middle">GLM-5.3</text><rect class="track" x="430" y="311.0" width="1210" height="24" rx="3"/><rect id="bar-6" class="bar" x="430" y="311.0" width="363.0" height="24" rx="3" fill="rgba(122,140,163,.55)"/><text id="val-6" class="val" x="807.0" y="325.0" dominant-baseline="middle" fill="#A3B1C2">30%  (3/10)</text></g>
+<g id="row-7" class="row"><text class="name" x="408" y="367.0" text-anchor="end" dominant-baseline="middle">Opus 5.5</text><rect class="track" x="430" y="353.0" width="1210" height="24" rx="3"/><rect id="bar-7" class="bar" x="430" y="353.0" width="403.3" height="24" rx="3" fill="rgba(122,140,163,.55)"/><text id="val-7" class="val" x="847.3" y="367.0" dominant-baseline="middle" fill="#A3B1C2">33%  (3/9)</text></g>
+<g id="row-8" class="row"><text class="name" x="408" y="409.0" text-anchor="end" dominant-baseline="middle">Kimi K3</text><rect class="track" x="430" y="395.0" width="1210" height="24" rx="3"/><rect id="bar-8" class="bar" x="430" y="395.0" width="403.3" height="24" rx="3" fill="rgba(122,140,163,.55)"/><text id="val-8" class="val" x="847.3" y="409.0" dominant-baseline="middle" fill="#A3B1C2">33%  (2/6)</text></g>
+<g id="row-9" class="row"><text class="name" x="408" y="451.0" text-anchor="end" dominant-baseline="middle">DeepSeek V4.1 Flash</text><rect class="track" x="430" y="437.0" width="1210" height="24" rx="3"/><rect id="bar-9" class="bar" x="430" y="437.0" width="453.8" height="24" rx="3" fill="rgba(122,140,163,.55)"/><text id="val-9" class="val" x="897.8" y="451.0" dominant-baseline="middle" fill="#A3B1C2">38%  (3/8)</text></g>
+<g id="row-10" class="row"><text class="name" x="408" y="493.0" text-anchor="end" dominant-baseline="middle">Sonnet 5.5</text><rect class="track" x="430" y="479.0" width="1210" height="24" rx="3"/><rect id="bar-10" class="bar" x="430" y="479.0" width="605.0" height="24" rx="3" fill="rgba(122,140,163,.55)"/><text id="val-10" class="val" x="1049.0" y="493.0" dominant-baseline="middle" fill="#A3B1C2">50%  (2/4)</text></g>
+<g id="row-11" class="row"><text class="name" x="408" y="535.0" text-anchor="end" dominant-baseline="middle">GLM-5.2</text><rect class="track" x="430" y="521.0" width="1210" height="24" rx="3"/><rect id="bar-11" class="bar" x="430" y="521.0" width="806.7" height="24" rx="3" fill="rgba(122,140,163,.55)"/><text id="val-11" class="val" x="1250.7" y="535.0" dominant-baseline="middle" fill="#A3B1C2">67%  (4/6)</text></g>
+<g id="row-12" class="row"><text class="name" x="408" y="577.0" text-anchor="end" dominant-baseline="middle">Muse Wonder</text><rect class="track" x="430" y="563.0" width="1210" height="24" rx="3"/><rect id="bar-12" class="bar" x="430" y="563.0" width="880.0" height="24" rx="3" fill="#E06060"/><text id="val-12" class="val" x="1324.0" y="577.0" dominant-baseline="middle" fill="#E06060">73%  (8/11)</text></g>
+<g id="row-13" class="row"><text class="name" x="408" y="619.0" text-anchor="end" dominant-baseline="middle">DeepSeek V4 Pro</text><rect class="track" x="430" y="605.0" width="1210" height="24" rx="3"/><rect id="bar-13" class="bar" x="430" y="605.0" width="1075.6" height="24" rx="3" fill="#E06060"/><text id="val-13" class="val" x="1519.6" y="619.0" dominant-baseline="middle" fill="#E06060">89%  (8/9)</text></g>
+<g id="ref"><line class="ref" x1="805.2" y1="20" x2="805.2" y2="644"/><text class="refl" x="815.2" y="32">field average · 31%</text></g></svg>
+    </div>
+    <div id="foot" class="clip" data-start="0" data-duration="8">
+      <span id="note">Teal: zero false alarms. Red: flags most clean code. Source: 288 rounds, Defuse Arena season 2026.</span>
+      <b>defuse-arena.vercel.app</b>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#kicker", {opacity:0, y:12}, {opacity:1, y:0, duration:.4, ease:"power3.out"}, .05);
+    tl.fromTo("#title", {opacity:0, y:22, filter:"blur(8px)"}, {opacity:1, y:0, filter:"blur(0px)", duration:.55, ease:"power4.out"}, .15);
+    tl.fromTo("#sub", {opacity:0, y:12}, {opacity:1, y:0, duration:.45, ease:"power3.out"}, .45);
+    tl.fromTo("#foot", {opacity:0}, {opacity:1, duration:.5}, .9);
+    
+tl.fromTo("#ref", {opacity:0}, {opacity:1, duration:.4, ease:"power2.out"}, .9);
+tl.fromTo(".row", {opacity:0, x:-18}, {opacity:1, x:0, duration:.35, ease:"power3.out", stagger:.05}, .7);
+tl.fromTo(".bar", {scaleX:0}, {scaleX:1, duration:.9, ease:"power3.out", stagger:.07, transformOrigin:"left center"}, 1.1);
+tl.fromTo(".val", {opacity:0}, {opacity:1, duration:.3, stagger:.07}, 1.6);
+
+    window.__timelines["card"] = tl;
+  </script>
+</template>

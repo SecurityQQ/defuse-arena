@@ -1,0 +1,7 @@
+# HyperFrames working files: snapshots, check artifacts and render logs
+.hyperframes/
+out/*.log
+out/.snap-*/
+# Renders: the published copies live in web/social/
+out/*.png
+out/*.mp4
