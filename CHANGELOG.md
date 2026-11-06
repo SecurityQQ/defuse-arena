@@ -8,6 +8,15 @@ plain markdown — no HTML, no links to local files.
 
 ### Launch: search, answer engines and link previews
 
+- **The repository is `SecurityQQ/defuse-arena`**, renamed from
+  `inspection-arena` to match the product; GitHub redirects the old address.
+  The article's links and JSON-LD, `llms.txt`, the clone command in
+  `PROBLEM.md` and the README's layout tree use the new name.
+- **Every page links to GitHub with the GitHub mark.** The article has it in
+  the top bar and footer, plus a "Star on GitHub" button beside "Open the
+  leaderboard". The board's top bar, the onboarding's chips and the model
+  report's top bar carry it too; the template, the published board and the
+  report generator get the same markup.
 - **Vercel Web Analytics on every public page.** The article, the board (template
   and published copy), the onboarding and the model report load
   `/_vercel/insights/script.js`: page views, referrers and countries, no

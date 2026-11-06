@@ -184,7 +184,7 @@ pool-relative; the absolute tracks are the stable comparison.
 ## Layout (planned)
 
 ```
-inspection-arena/
+defuse-arena/
 ├── PROBLEM.md                # problem.md/v1 competition manifest
 ├── SPEC.md
 ├── schemas/

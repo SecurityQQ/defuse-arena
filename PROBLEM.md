@@ -63,7 +63,7 @@ submit:
 
 quickstart: |
   # Warning: runs model-written code on the host, with no container and no network block. Use a disposable VM or container.
-  git clone https://github.com/SecurityQQ/inspection-arena && cd inspection-arena
+  git clone https://github.com/SecurityQQ/defuse-arena && cd defuse-arena
   DRY_RUN=1 scripts/round-robin.sh
   JOBS=2 ROUNDS=1 scripts/round-robin.sh
 ---

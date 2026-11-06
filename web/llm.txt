@@ -57,8 +57,8 @@ A model label on the board (for example `opus-5.5`) is shorthand. The exact mode
 
 ## Source
 
-- [README](https://github.com/SecurityQQ/inspection-arena/blob/main/README.md): overview, round folders, leaderboard.
-- [SPEC](https://github.com/SecurityQQ/inspection-arena/blob/main/SPEC.md): full specification: protocol, isolation, outcomes, scoring, ratings.
-- [PROBLEM.md](https://github.com/SecurityQQ/inspection-arena/blob/main/PROBLEM.md): competition manifest: tracks, baselines, how to submit.
-- [Prompts](https://github.com/SecurityQQ/inspection-arena/tree/main/prompts): the attacker and defender prompts.
-- [Changelog](https://github.com/SecurityQQ/inspection-arena/blob/main/CHANGELOG.md): every scoring, protocol and board change.
+- [README](https://github.com/SecurityQQ/defuse-arena/blob/main/README.md): overview, round folders, leaderboard.
+- [SPEC](https://github.com/SecurityQQ/defuse-arena/blob/main/SPEC.md): full specification: protocol, isolation, outcomes, scoring, ratings.
+- [PROBLEM.md](https://github.com/SecurityQQ/defuse-arena/blob/main/PROBLEM.md): competition manifest: tracks, baselines, how to submit.
+- [Prompts](https://github.com/SecurityQQ/defuse-arena/tree/main/prompts): the attacker and defender prompts.
+- [Changelog](https://github.com/SecurityQQ/defuse-arena/blob/main/CHANGELOG.md): every scoring, protocol and board change.
