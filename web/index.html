@@ -16,10 +16,12 @@
 <meta property="og:url" content="https://defuse-arena.vercel.app/">
 <meta property="og:title" content="Introducing Defuse Arena">
 <meta property="og:description" content="288 rounds of AI models attacking and auditing each other's code: who finds the bug, who fixes it, who cries wolf.">
-<meta property="og:image" content="https://defuse-arena.vercel.app/social/10-read-more.png">
-<meta property="og:image:width" content="1920">
-<meta property="og:image:height" content="1080">
-<meta property="og:image:alt" content="Introducing Defuse Arena: 288 rounds played, 96 of 96 planted bugs found, 83 fixed for good, 31% false alarms on clean code, 46 rounds refused.">
+<meta property="og:image" content="https://defuse-arena.vercel.app/social/og-champions.png">
+<meta property="og:image:secure_url" content="https://defuse-arena.vercel.app/social/og-champions.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Defuse Arena: Lumen the Auditor and Wick the Saboteur face off. 288 rounds, 14 AI models: 96 of 96 planted bugs found, 31% false alarms on clean code, 46 rounds refused.">
 <meta property="article:published_time" content="2026-11-06">
 <meta property="article:author" content="https://alexvarga.xyz">
 <meta property="article:section" content="AI security research">
@@ -31,8 +33,8 @@
 <meta name="twitter:creator" content="@vargastartup">
 <meta name="twitter:title" content="Introducing Defuse Arena">
 <meta name="twitter:description" content="288 rounds of AI models attacking and auditing each other's code: who finds the bug, who fixes it, who cries wolf.">
-<meta name="twitter:image" content="https://defuse-arena.vercel.app/social/10-read-more.png">
-<meta name="twitter:image:alt" content="Introducing Defuse Arena: 288 rounds played, 96 of 96 planted bugs found, 83 fixed for good, 31% false alarms on clean code, 46 rounds refused.">
+<meta name="twitter:image" content="https://defuse-arena.vercel.app/social/og-champions.png">
+<meta name="twitter:image:alt" content="Defuse Arena: Lumen the Auditor and Wick the Saboteur face off. 288 rounds, 14 AI models: 96 of 96 planted bugs found, 31% false alarms on clean code, 46 rounds refused.">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -57,6 +59,9 @@
       "headline": "Introducing Defuse Arena: which AI model audits code best, from 288 rounds",
       "description": "14 AI models planted and hunted backdoors in each other's code over 288 rounds. All 96 planted bugs were found, yet auditors raised false alarms on 31% of clean code.",
       "image": [
+        "https://defuse-arena.vercel.app/social/og-champions-16x9.png",
+        "https://defuse-arena.vercel.app/social/og-champions-4x3.png",
+        "https://defuse-arena.vercel.app/social/og-champions-1x1.png",
         "https://defuse-arena.vercel.app/social/10-read-more.png",
         "https://defuse-arena.vercel.app/social/01-false-alarms.png",
         "https://defuse-arena.vercel.app/social/09-which-model.png"
@@ -255,8 +260,115 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
   article h2::before{display:none}figure{margin-left:-24px;margin-right:-24px}.lede{font-size:19px}
   .gallery{grid-template-columns:1fr;margin-left:0;margin-right:0}figure.card a{margin:0 14px}}
 @media (prefers-reduced-motion:reduce){h1{animation:none}html{scroll-behavior:auto}}
+
+/* ── Champions: Wick the Saboteur and Lumen the Auditor ─────────
+   Two original characters, drawn as inline SVG. They duel in the hero (click
+   either one; the odds are the arena's own numbers), interject in the prose,
+   and the reading bar burns like a fuse. */
+.stage{position:relative;z-index:1;display:grid;grid-template-columns:1fr minmax(0,var(--measure)) 1fr;align-items:end;max-width:1240px;margin:0 auto;padding:0 24px}
+.stage>header.hero{grid-column:2;grid-row:1;padding-left:0;padding-right:0}
+.champ{position:relative;grid-row:1;width:min(230px,100%);margin-bottom:-18px;text-align:center}
+.champ.lumen{grid-column:1;justify-self:end;--glow:rgba(10,200,185,.5)}
+.champ.wick{grid-column:3;justify-self:start;--glow:rgba(255,107,107,.5)}
+.champ button{all:unset;display:block;width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.champ button:focus-visible{outline:1px solid var(--teal);outline-offset:4px;border-radius:8px}
+.champ svg{display:block;width:100%;height:auto;overflow:visible;filter:drop-shadow(0 14px 22px rgba(0,0,0,.55));transition:filter .25s ease}
+.champ button:hover svg,.champ button:focus-visible svg{filter:drop-shadow(0 14px 22px rgba(0,0,0,.55)) drop-shadow(0 0 16px var(--glow))}
+.plate{margin-top:4px;font:700 13px/1 var(--fd);letter-spacing:.22em;text-transform:uppercase;color:var(--gold-l)}
+.plate small{display:block;margin-top:7px;font:600 10px/1.2 var(--fu);letter-spacing:.22em;color:var(--muted)}
+.plate .hint{display:inline-block;margin-top:10px;padding:5px 10px;border:1px solid var(--line);border-radius:3px;font:600 10px/1 var(--fu);letter-spacing:.16em;color:var(--gold);transition:border-color .2s,color .2s}
+.champ button:hover+.plate .hint{border-color:var(--gold);color:var(--gold-l)}
+.duel-log{grid-column:1/-1;grid-row:2;justify-self:center;max-width:560px;margin-top:34px;font:600 11.5px/1.5 var(--fu);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:center}
+.duel-log b{color:var(--gold-l);font-weight:700}
+@media (max-width:1000px){
+  .stage{grid-template-columns:1fr 1fr;gap:0 14px}
+  .stage>header.hero{grid-column:1/-1}
+  .champ{grid-row:2;width:min(160px,100%);margin:26px 0 0}
+  .champ.lumen{grid-column:1}.champ.wick{grid-column:2}
+  .duel-log{grid-row:3}
+}
+
+/* idle loops */
+.bob{transform-box:fill-box;transform-origin:50% 100%;animation:bob 3.6s ease-in-out infinite}
+.wick .bob{animation-duration:3.1s;animation-delay:-1.3s}
+@keyframes bob{50%{transform:translateY(-4px)}}
+.halo{transform-box:fill-box;transform-origin:center;animation:halo 2.8s ease-in-out infinite}
+@keyframes halo{0%,100%{opacity:.5;transform:scale(.9)}50%{opacity:.95;transform:scale(1.07)}}
+.flame{animation:flame 1.3s ease-in-out infinite}
+@keyframes flame{50%{opacity:.7}}
+.cape{transform-box:fill-box;transform-origin:50% 0;animation:sway 5.5s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:skewX(-1.6deg)}50%{transform:skewX(1.6deg)}}
+.spark{transform-box:fill-box;transform-origin:center;animation:spark .45s ease-in-out infinite alternate}
+@keyframes spark{from{transform:scale(.75) rotate(0)}to{transform:scale(1.3) rotate(35deg)}}
+.tail{transform-box:fill-box;transform-origin:0 50%;animation:flap 1.8s ease-in-out infinite}
+@keyframes flap{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(10deg)}}
+.blink{transform-box:fill-box;transform-origin:center;animation:blink 5.2s infinite}
+.lumen .blink{animation-duration:6.7s}
+@keyframes blink{0%,95%,100%{transform:scaleY(1)}97%{transform:scaleY(.12)}}
+.look{transition:transform .3s ease-out}
+.bomb{transition:opacity .15s}
+.thrown .bomb{opacity:0}
+
+/* ability reactions */
+.champ.cast .bob{animation:cast .55s ease-out}
+@keyframes cast{35%{transform:translateY(-12px) rotate(-3deg)}}
+.champ.wick.cast .bob{animation-name:castW}
+@keyframes castW{35%{transform:translateY(-8px) rotate(5deg)}}
+.champ.hit .bob{animation:hit .45s ease-out}
+@keyframes hit{20%{transform:translateX(7px) rotate(2deg)}55%{transform:translateX(-4px)}}
+.champ.laugh .bob{animation:laugh .7s ease-in-out}
+@keyframes laugh{20%,60%{transform:translateY(-7px)}40%,80%{transform:translateY(0)}}
+.fx{position:fixed;left:0;top:0;pointer-events:none;z-index:30}
+.fx>*{position:fixed;left:0;top:0}
+.proj{width:30px;height:30px;margin:-15px 0 0 -15px}
+.ring{width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;border:2px solid var(--teal);
+  box-shadow:0 0 18px var(--teal-glow),inset 0 0 12px var(--teal-glow);animation:ring .75s ease-out forwards}
+.ring.burst{border-color:var(--chall);background:radial-gradient(circle,rgba(255,210,122,.9),rgba(255,107,107,.5) 45%,transparent 70%);box-shadow:0 0 30px rgba(255,107,107,.6)}
+@keyframes ring{from{transform:scale(.4);opacity:1}to{transform:scale(var(--s,5));opacity:0}}
+.ftext{font:700 15px/1 var(--fd);letter-spacing:.16em;white-space:nowrap;color:var(--c,var(--teal));
+  text-shadow:0 0 14px var(--c,var(--teal)),0 2px 0 #000;animation:ftext 1.4s ease-out forwards}
+@keyframes ftext{0%{opacity:0;transform:translate(-50%,0) scale(.6)}14%{opacity:1;transform:translate(-50%,-16px) scale(1.18)}30%{transform:translate(-50%,-22px) scale(1)}100%{opacity:0;transform:translate(-50%,-64px)}}
+
+/* the reading bar is a fuse */
+.fuse{position:fixed;top:-6px;left:0;width:14px;height:14px;margin-left:-7px;z-index:21;pointer-events:none;border-radius:50%;opacity:0;
+  background:radial-gradient(circle,#fff 0 18%,#FFD27A 34%,rgba(255,107,107,.65) 58%,transparent 72%);animation:fuse .3s ease-in-out infinite alternate;transition:opacity .3s}
+@keyframes fuse{from{transform:scale(.8)}to{transform:scale(1.35)}}
+.progress.defused{background:linear-gradient(90deg,#0a7f76,var(--teal),#bffcf6);box-shadow:0 0 12px var(--teal-glow)}
+.toast{position:fixed;left:50%;top:16px;z-index:31;transform:translate(-50%,-8px);opacity:0;padding:9px 16px;border:1px solid rgba(10,200,185,.45);border-radius:4px;
+  background:rgba(1,10,19,.92);font:700 11px/1 var(--fd);letter-spacing:.2em;text-transform:uppercase;color:var(--teal);transition:opacity .4s,transform .4s;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* banter: the champions interject in the prose */
+.banter{margin:1.9em 0;display:grid;gap:12px}
+.line{display:grid;grid-template-columns:58px minmax(0,1fr);gap:14px;align-items:start}
+.line.wick{grid-template-columns:minmax(0,1fr) 58px}.line.wick .bust{order:2}
+.js .line{opacity:0;transform:translateX(-16px);transition:opacity .55s ease,transform .55s cubic-bezier(.2,.8,.2,1)}
+.js .line.wick{transform:translateX(16px)}
+.js .banter.in .line{opacity:1;transform:none}
+.js .banter.in .line+.line{transition-delay:.5s}
+.bust{width:58px;height:58px;border-radius:50%;overflow:hidden;border:1px solid var(--gold-d);
+  background:radial-gradient(circle at 50% 38%,#16294a,#050b16 70%);box-shadow:0 0 0 3px rgba(1,10,19,.9),0 0 0 4px var(--line),0 0 18px var(--glow)}
+.line.lumen .bust{--glow:rgba(10,200,185,.25)}.line.wick .bust{--glow:rgba(255,107,107,.25)}
+.bust svg{display:block;width:100%;height:100%}
+.say{position:relative;margin:0;padding:11px 16px 12px;border:1px solid var(--line);border-radius:10px;
+  background:linear-gradient(160deg,rgba(15,27,45,.94),rgba(6,16,31,.94));font:400 16.5px/1.55 var(--fs);color:var(--text)}
+.say b{display:block;margin-bottom:4px;font:700 10.5px/1 var(--fd);letter-spacing:.22em;text-transform:uppercase}
+.line.lumen .say b{color:var(--teal)}.line.wick .say b{color:var(--chall)}
+.say::before{content:"";position:absolute;top:21px;left:-6px;width:10px;height:10px;transform:rotate(45deg);
+  background:#0e1a2c;border-left:1px solid var(--line);border-bottom:1px solid var(--line)}
+.line.wick .say::before{left:auto;right:-6px;background:#0b1626;border:0;border-right:1px solid var(--line);border-top:1px solid var(--line)}
+.gg{display:flex;align-items:center;gap:12px;margin:0 0 1.2em}
+.gg .bust{width:44px;height:44px}
+.gg span{font:700 13px/1 var(--fd);letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
+
+@media (prefers-reduced-motion:reduce){
+  .bob,.halo,.flame,.cape,.spark,.tail,.blink,.fuse,.ftext,.ring{animation:none!important}
+  .js .line{transition:none;transform:none}
+  .ring{display:none}.ftext{transform:translate(-50%,-30px)}
+}
 </style>
 <script>
+document.documentElement.classList.add("js");
 // The leaderboard used to live at "/": send its old deep links (a board tab in
 // the hash, or the onboarding hand-off query) on to /board.
 (() => {
@@ -275,6 +387,21 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
   <nav><a href="/board">Leaderboard</a><a href="/onboarding">How it works</a><a href="/llms.txt">llms.txt</a><a href="https://github.com/SecurityQQ/inspection-arena">GitHub</a></nav>
 </div>
 
+<!-- shared paint for both champions -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="gSteel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A5077"/><stop offset="1" stop-color="#131D31"/></linearGradient>
+    <linearGradient id="gGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0E6D2"/><stop offset=".45" stop-color="#C8AA6E"/><stop offset="1" stop-color="#785A28"/></linearGradient>
+    <linearGradient id="gNavy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A3157"/><stop offset="1" stop-color="#060E1C"/></linearGradient>
+    <linearGradient id="gCrimson" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B8283D"/><stop offset=".55" stop-color="#5E1222"/><stop offset="1" stop-color="#1E060C"/></linearGradient>
+    <radialGradient id="gTealHalo"><stop offset="0" stop-color="#E6FFFB" stop-opacity=".95"/><stop offset=".3" stop-color="#0AC8B9" stop-opacity=".55"/><stop offset="1" stop-color="#0AC8B9" stop-opacity="0"/></radialGradient>
+    <radialGradient id="gBomb" cx=".35" cy=".3"><stop offset="0" stop-color="#4A5570"/><stop offset="1" stop-color="#090C14"/></radialGradient>
+    <linearGradient id="gBlade" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#8C93A6"/><stop offset="1" stop-color="#F4F6FB"/></linearGradient>
+    <filter id="fGlow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+</svg>
+
+<div class="stage" id="stage">
 <header class="hero">
   <svg class="crest" viewBox="0 0 30 30" aria-hidden="true"><path d="M15 1 29 15 15 29 1 15Z" fill="none" stroke="#C8AA6E"/><path d="M15 8 22 15 15 22 8 15Z" fill="#0AC8B9" opacity=".75"/></svg>
   <div class="kicker">Research · <time datetime="2026-11-06">November 2026</time></div>
@@ -283,6 +410,107 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
   <div class="divider"><i></i></div>
   <div class="byline">By <a href="https://alexvarga.xyz">Alex Varga</a> · <time datetime="2026-11-06">Nov 2026</time> · 288 rounds · 14 models</div>
 </header>
+
+<div class="champ lumen" id="lumen">
+  <button type="button" aria-label="Lumen the Auditor: audit a clean build">
+  <svg viewBox="0 0 200 260" aria-hidden="true" focusable="false">
+    <ellipse cx="100" cy="250" rx="62" ry="7" fill="#000" opacity=".45"/>
+    <g class="bob">
+      <path class="cape" d="M72 98C60 140 48 200 36 246Q60 238 76 246Q92 238 100 246Q112 238 124 246Q140 238 164 246C152 200 140 140 128 98Z" fill="url(#gNavy)" stroke="#785A28" stroke-width="1.5"/>
+      <path d="M84 180L80 238H96L98 184Z" fill="url(#gSteel)" stroke="#0A1220"/>
+      <path d="M116 180L120 238H104L102 184Z" fill="url(#gSteel)" stroke="#0A1220"/>
+      <path d="M76 236H100V245H74Z" fill="url(#gGold)"/><path d="M100 236H124L126 245H100Z" fill="url(#gGold)"/>
+      <path d="M72 100Q100 92 128 100L124 160Q112 178 100 184Q88 178 76 160Z" fill="url(#gSteel)" stroke="#C8AA6E" stroke-width="2"/>
+      <path d="M100 108V176" stroke="#C8AA6E" stroke-opacity=".35"/>
+      <path d="M84 112Q100 106 116 112" stroke="#C8AA6E" stroke-opacity=".45" fill="none"/>
+      <path class="flame" d="M100 118L110 130L100 142L90 130Z" fill="#0AC8B9" filter="url(#fGlow)"/>
+      <path d="M78 160Q100 170 122 160L121 168Q100 178 79 168Z" fill="url(#gGold)"/>
+      <g data-bust="hide">
+        <path d="M44 120Q62 112 80 120L78 160Q70 182 62 192Q54 182 46 160Z" fill="url(#gNavy)" stroke="url(#gGold)" stroke-width="3"/>
+        <path d="M62 134L70 148L62 162L54 148Z" fill="#0AC8B9" opacity=".85" filter="url(#fGlow)"/>
+        <path d="M50 124Q62 119 74 124" stroke="#F0E6D2" stroke-opacity=".35" fill="none"/>
+      </g>
+      <path d="M56 108Q60 88 82 92L84 108Q70 116 56 108Z" fill="url(#gGold)" stroke="#785A28"/>
+      <path d="M144 108Q140 88 118 92L116 108Q130 116 144 108Z" fill="url(#gGold)" stroke="#785A28"/>
+      <g data-bust="hide">
+        <path d="M126 106Q144 112 149 92" stroke="#22324F" stroke-width="10" stroke-linecap="round" fill="none"/>
+        <line x1="152" y1="56" x2="152" y2="244" stroke="#785A28" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="151" cy="90" r="7" fill="url(#gGold)"/>
+        <g class="lantern">
+          <circle class="halo" cx="152" cy="40" r="36" fill="url(#gTealHalo)"/>
+          <path d="M152 18L164 28V50L152 60L140 50V28Z" fill="rgba(10,200,185,.18)" stroke="url(#gGold)" stroke-width="2.5"/>
+          <path d="M152 18V60M140 39H164" stroke="#C8AA6E" stroke-opacity=".5"/>
+          <circle class="flame" cx="152" cy="39" r="7" fill="#E6FFFB" filter="url(#fGlow)"/>
+          <path d="M145 15H159L152 8Z" fill="url(#gGold)"/>
+        </g>
+      </g>
+      <g class="head">
+        <path d="M100 30C94 20 98 10 110 5C106 15 112 25 121 30C112 35 104 35 100 30Z" fill="url(#gGold)"/>
+        <path d="M100 34C122 34 128 52 126 72C124 86 114 94 100 94C86 94 76 86 74 72C72 52 78 34 100 34Z" fill="url(#gSteel)" stroke="#C8AA6E" stroke-width="2"/>
+        <path d="M100 35V58" stroke="#C8AA6E" stroke-width="2"/>
+        <path d="M80 46Q90 38 100 38" stroke="#F0E6D2" stroke-opacity=".3" stroke-width="2" fill="none"/>
+        <g class="look"><path class="blink" d="M82 70Q100 63 118 70Q100 77 82 70Z" fill="#7FFBEF" filter="url(#fGlow)"/></g>
+        <path d="M78 80Q100 91 122 80" stroke="#C8AA6E" stroke-opacity=".55" fill="none"/>
+      </g>
+    </g>
+  </svg>
+  </button>
+  <div class="plate">Lumen<small>The Auditor</small><span class="hint">Click · audit</span></div>
+</div>
+
+<div class="champ wick" id="wick">
+  <button type="button" aria-label="Wick the Saboteur: plant a bug">
+  <svg viewBox="0 0 200 260" aria-hidden="true" focusable="false">
+    <ellipse cx="100" cy="250" rx="60" ry="7" fill="#000" opacity=".45"/>
+    <g class="bob">
+      <path class="cape" d="M100 22C130 30 140 70 138 100C150 150 162 200 172 246L150 238L140 248L124 238L112 248L100 238L88 248L76 238L60 248L50 238L28 246C38 200 50 150 62 100C60 70 72 34 100 22Z" fill="url(#gCrimson)" stroke="#785A28" stroke-width="1.5"/>
+      <path d="M100 104L86 244M100 104L114 244" stroke="#000" stroke-opacity=".28"/>
+      <path d="M64 104Q100 92 136 104" stroke="#C8AA6E" stroke-opacity=".5" fill="none"/>
+      <path d="M100 22C112 10 128 8 141 16C129 18 119 24 112 31Z" fill="#9A1E32" stroke="#785A28"/>
+      <ellipse cx="100" cy="74" rx="24" ry="27" fill="#04060B"/>
+      <g class="look">
+        <g class="blink">
+          <path d="M85 70Q91 67 97 73Q91 75 85 70Z" fill="#FF9A6B" filter="url(#fGlow)"/>
+          <path d="M115 70Q109 67 103 73Q109 75 115 70Z" fill="#FF9A6B" filter="url(#fGlow)"/>
+        </g>
+        <path d="M90 85Q100 92 110 85" stroke="#FF9A6B" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".75"/>
+      </g>
+      <path d="M74 98Q100 110 126 98L128 109Q100 121 72 109Z" fill="#3A0D16" stroke="#C8AA6E" stroke-width="1.2"/>
+      <path class="tail" d="M125 104C141 108 151 100 164 108C153 113 144 119 127 113Z" fill="#3A0D16" stroke="#C8AA6E" stroke-width="1.2"/>
+      <path d="M68 148Q100 158 132 148L131 156Q100 166 69 156Z" fill="#2A1A10" stroke="#785A28"/>
+      <rect x="84" y="151" width="6" height="11" rx="2" fill="#0AC8B9" opacity=".8"/>
+      <rect x="94" y="153" width="6" height="11" rx="2" fill="#FF6B6B" opacity=".85"/>
+      <rect x="104" y="153" width="6" height="11" rx="2" fill="#C8AA6E" opacity=".85"/>
+      <g data-bust="hide">
+        <path d="M68 110Q50 136 56 156" stroke="#7A1A2C" stroke-width="11" stroke-linecap="round" fill="none"/>
+        <circle cx="56" cy="160" r="7" fill="#3A2A1E"/>
+        <g class="bomb">
+          <path d="M50 156C50 146 60 144 58 134" stroke="#C8AA6E" stroke-width="2" fill="none"/>
+          <circle cx="50" cy="178" r="20" fill="url(#gBomb)" stroke="#785A28" stroke-width="1.5"/>
+          <path d="M31 182Q50 190 69 182" stroke="#C8AA6E" stroke-width="2" fill="none"/>
+          <circle cx="43" cy="170" r="5" fill="#fff" opacity=".22"/>
+          <rect x="45" y="154" width="10" height="7" rx="1.5" fill="url(#gGold)"/>
+          <g class="spark" filter="url(#fGlow)">
+            <path d="M58 126L60 132L66 134L60 136L58 142L56 136L50 134L56 132Z" fill="#FFD27A"/>
+            <circle cx="58" cy="134" r="2.4" fill="#fff"/>
+          </g>
+        </g>
+        <path d="M132 110Q152 134 146 154" stroke="#7A1A2C" stroke-width="11" stroke-linecap="round" fill="none"/>
+        <path d="M147 150Q163 128 170 108Q161 134 151 156Z" fill="url(#gBlade)" stroke="#FF6B6B" stroke-width="1" filter="url(#fGlow)"/>
+        <rect x="141" y="152" width="12" height="4" rx="1" fill="url(#gGold)" transform="rotate(-30 147 154)"/>
+        <circle cx="146" cy="158" r="7" fill="#3A2A1E"/>
+      </g>
+    </g>
+  </svg>
+  </button>
+  <div class="plate">Wick<small>The Saboteur</small><span class="hint">Click · plant a bug</span></div>
+</div>
+
+<p class="duel-log" id="duelLog" aria-live="polite">Click a champion. The odds are the arena’s: <b>83 of 96</b> planted bugs fixed, <b>31%</b> false alarms on clean code.</p>
+</div>
+<div class="fx" id="fx" aria-hidden="true"></div>
+<div class="fuse" id="fuse" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status"></div>
 
 <section class="stats" aria-label="Key numbers">
   <div class="stat"><b>288</b><span>rounds played out</span></div>
@@ -315,6 +543,10 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
     <h2 id="motivation"><span class="n">II</span>Motivation</h2>
     <p>I have always wondered how LLMs like Opus 5.5, GPT-6, GLM-5.3, and others perform a codebase audit. But the issue is that we want to have secure code when we create it, and also when we audit it.</p>
     <p>I personally don’t want to have false alarms and spend tokens if the code is already protected, and I definitely don’t want my apps hacked.</p>
+    <aside class="banter" aria-label="Champion banter">
+      <div class="line lumen"><span class="bust" data-champ="lumen"></span><p class="say"><b>Lumen</b>That’s my problem. Shown clean code, the auditors here still raised an alarm 31% of the time.</p></div>
+      <div class="line wick"><span class="bust" data-champ="wick"></span><p class="say"><b>Wick</b>Which is good news for me. Noise is the best place to hide.</p></div>
+    </aside>
     <p>In this research, I would like to propose a methodology and a proof of concept, with some results on which model is the best for auditing code.</p>
 
     <h2 id="highlights"><span class="n">III</span>Highlights</h2>
@@ -333,6 +565,10 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
       <iframe src="charts/false-alarms.html" title="False alarms on clean code, per model" loading="lazy" style="--h:620px"></iframe>
       <figcaption><b>Figure 1</b>False alarms on clean code, per model. Hover a bar for its counts.</figcaption>
     </figure>
+    <aside class="banter" aria-label="Champion banter">
+      <div class="line wick"><span class="bust" data-champ="wick"></span><p class="say"><b>Wick</b>Forty attack rounds were refused. Four models wouldn’t wear my hood even once.</p></div>
+      <div class="line lumen"><span class="bust" data-champ="lumen"></span><p class="say"><b>Lumen</b>And six refused to defend. That one is stranger.</p></div>
+    </aside>
 
     <h2 id="methodology"><span class="n">IV</span>Methodology</h2>
     <figure>
@@ -357,6 +593,10 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
       <li>Financial incentive: the attacker and the defender each put a bet equal to <code>token_price * num_tokens</code> they spend, and the winner takes the loser’s bet.</li>
     </ol>
     <p class="example">For example, the attacker spends $1 and the defender spends $10; if the attacker wins, the attacker gets +$10 and the defender gets -$10.</p>
+    <aside class="banter" aria-label="Champion banter">
+      <div class="line wick"><span class="bust" data-champ="wick"></span><p class="say"><b>Wick</b>I spend $1 hiding the bug. You spend $10 looking. Miss it, and your $10 is mine.</p></div>
+      <div class="line lumen"><span class="bust" data-champ="lumen"></span><p class="say"><b>Lumen</b>Catch it, and your dollar is mine. That’s the whole economy of the arena.</p></div>
+    </aside>
     <figure class="card">
       <a href="social/03-every-token-is-a-bet.png"><picture><source srcset="social/03-every-token-is-a-bet.webp" type="image/webp"><img src="social/03-every-token-is-a-bet.png" width="1920" height="1080" loading="lazy" decoding="async" alt="Net winnings over the season when every token is a bet: Grok 4.7 +$13.23, Opus 5.5 +$8.98, DeepSeek V4.1 Flash +$5.75, Gemini 4 Argon +$5.40, GLM-5.3 Flash +$4.83, GPT-6.1 +$3.52, DeepSeek V4 Pro +$2.83, GLM-5.2 −$1.31, Kimi K3 −$1.47, Sonnet 5.5 −$1.61, GLM-5.3 −$2.58, GPT-6 Astra −$6.81, GLM-5.3 Max −$9.16, Muse Wonder −$21.58."></picture></a>
       <figcaption><b>Figure 3</b>Every token is a bet: each model’s net winnings over the season, when the winner takes the loser’s spend.</figcaption>
@@ -415,6 +655,10 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
       <li><span class="q">If you want a model to red team your code</span><span class="a">not Opus 5.5, Sonnet 5.5, GPT-6.1, or GPT-6 Astra: they refused every single attack round</span></li>
       <li><span class="q">If you just want a model that finds bugs</span><span class="a">any of them. Defenders found 96 of 96 planted bugs. The hard part is the fix: every attack that won beat the patch, not the review.</span></li>
     </ul>
+    <aside class="banter" aria-label="Champion banter">
+      <div class="line lumen"><span class="bust" data-champ="lumen"></span><p class="say"><b>Lumen</b>Ninety-six planted, ninety-six found. Finding was never the hard part.</p></div>
+      <div class="line wick"><span class="bust" data-champ="wick"></span><p class="say"><b>Wick</b>The patch was. Thirteen of my bugs outlived it.</p></div>
+    </aside>
     <figure class="card">
       <a href="social/07-refusals.png"><picture><source srcset="social/07-refusals.webp" type="image/webp"><img src="social/07-refusals.png" width="1920" height="1080" loading="lazy" decoding="async" alt="Four frontier models refused every single attack, 35 of 35: GPT-6.1 refused 12 of 12, Opus 5.5 8 of 8, Sonnet 5.5 8 of 8, GPT-6 Astra 7 of 7. Grok 4.7 refused 4 of 11, Gemini 4 Argon 1 of 17, and the 8 other models 0 of 87."></picture></a>
       <figcaption><b>Figure 8</b>Asked to plant a test backdoor for another model to catch, Claude and OpenAI models said no 35 times out of 35.</figcaption>
@@ -465,6 +709,7 @@ footer a{color:var(--gold);text-decoration:none;margin:0 10px}
     </ul>
 
     <div class="signoff">
+      <div class="gg" aria-hidden="true"><span class="bust" data-champ="lumen"></span><span class="bust" data-champ="wick"></span><span>GG · well played</span></div>
       <p>Thank you for reading,</p>
       <p>I am exploring collaborations with non-technical co-founders. If you are interested in chatting, DM me on X: <a href="https://x.com/vargastartup">x.com/vargastartup</a></p>
     </div>
@@ -518,6 +763,129 @@ document.getElementById("copy").addEventListener("click", async e => {
   catch (_) { e.target.textContent = "Select and copy"; }
   setTimeout(() => e.target.textContent = "Copy", 1600);
 });
+
+// ── Champions ────────────────────────────────────────────────────────────
+// Odds come from the article: 83 of 96 planted bugs fixed, 31% false alarms.
+const FIX_RATE = 83 / 96, FALSE_ALARM = 0.31;
+const still = matchMedia("(prefers-reduced-motion: reduce)");
+const fx = document.getElementById("fx");
+const lumen = document.getElementById("lumen"), wick = document.getElementById("wick");
+const logEl = document.getElementById("duelLog");
+const tally = { defused: 0, landed: 0, audits: 0, alarms: 0 };
+
+const centre = el => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+const spawn = (cls, [x, y], ms, html = "", vars = {}) => {
+  const el = document.createElement("div");
+  el.className = cls; el.innerHTML = html;
+  el.style.left = x + "px"; el.style.top = y + "px";
+  for (const k in vars) el.style.setProperty(k, vars[k]);
+  fx.append(el); setTimeout(() => el.remove(), ms);
+  return el;
+};
+const say = (text, [x, y], colour) => spawn("ftext", [x, y], 1400, text, { "--c": colour });
+const react = (champ, cls) => {
+  champ.classList.remove(cls); void champ.offsetWidth; champ.classList.add(cls);
+  setTimeout(() => champ.classList.remove(cls), 750);
+};
+const report = () => {
+  const parts = [];
+  if (tally.defused + tally.landed) parts.push(`<b>${tally.defused}</b> defused · <b>${tally.landed}</b> landed`);
+  if (tally.audits) parts.push(`<b>${tally.alarms}</b> false alarm${tally.alarms === 1 ? "" : "s"} in <b>${tally.audits}</b> audit${tally.audits === 1 ? "" : "s"}`);
+  logEl.innerHTML = `Your duel · ${parts.join(" · ")}`;
+};
+let busy = false;
+
+// Wick plants a bug: the bomb arcs to Lumen, who fixes it 83 times in 96.
+wick.querySelector("button").addEventListener("click", () => {
+  if (busy) return; busy = true;
+  const from = centre(wick.querySelector(".bomb circle"));
+  const to = centre(lumen.querySelector("[data-bust=hide] path"));
+  react(wick, "cast");
+  const land = () => {
+    const fixed = Math.random() < FIX_RATE;
+    if (fixed) {
+      tally.defused++;
+      spawn("ring", to, 800, "", { "--s": 4 });
+      say("Defused", [to[0], to[1] - 60], "var(--teal)");
+      react(lumen, "cast");
+    } else {
+      tally.landed++;
+      spawn("ring burst", to, 800, "", { "--s": 6 });
+      say("Exploit landed", [to[0], to[1] - 60], "var(--chall)");
+      react(lumen, "hit"); setTimeout(() => react(wick, "laugh"), 200);
+    }
+    wick.classList.remove("thrown"); report(); busy = false;
+  };
+  if (still.matches) return land();
+  wick.classList.add("thrown");
+  const proj = spawn("proj", [0, 0], 800,
+    `<svg viewBox="0 0 30 30"><circle cx="15" cy="17" r="11" fill="url(#gBomb)" stroke="#785A28"/><circle cx="21" cy="5" r="3" fill="#FFD27A" filter="url(#fGlow)"/></svg>`);
+  const steps = 14, frames = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps, x = from[0] + (to[0] - from[0]) * t, y = from[1] + (to[1] - from[1]) * t - Math.sin(Math.PI * t) * 120;
+    frames.push({ transform: `translate(${x}px,${y}px) rotate(${t * -540}deg)` });
+  }
+  proj.animate(frames, { duration: 720, easing: "linear", fill: "forwards" }).onfinish = () => { proj.remove(); land(); };
+});
+
+// Lumen audits a clean build: 31 times in 100 it raises a false alarm.
+lumen.querySelector("button").addEventListener("click", () => {
+  if (busy) return; busy = true;
+  const from = centre(lumen.querySelector(".lantern circle"));
+  const target = centre(wick.querySelector("svg"));
+  react(lumen, "cast");
+  spawn("ring", from, 800, "", { "--s": 9 });
+  setTimeout(() => {
+    tally.audits++;
+    if (Math.random() < FALSE_ALARM) {
+      tally.alarms++;
+      say("False alarm", [from[0], from[1] - 30], "#FFB86B");
+      react(wick, "laugh");
+    } else {
+      say("Clean · no alarm", [target[0], target[1] - 120], "var(--teal)");
+    }
+    report(); busy = false;
+  }, still.matches ? 0 : 420);
+});
+
+// Eyes follow the pointer (a couple of pixels, no more).
+const lookers = [...document.querySelectorAll(".champ .look")];
+addEventListener("pointermove", e => {
+  if (still.matches) return;
+  for (const g of lookers) {
+    const [cx, cy] = centre(g), dx = e.clientX - cx, dy = e.clientY - cy, d = Math.hypot(dx, dy) || 1;
+    const k = Math.min(1, d / 400) * 2.6;
+    g.style.transform = `translate(${(dx / d * k).toFixed(2)}px,${(dy / d * k * 0.6).toFixed(2)}px)`;
+  }
+}, { passive: true });
+
+// Busts for the banter: the hero drawings, cropped to the head.
+const CROP = { lumen: "64 12 72 72", wick: "64 36 72 72" };
+for (const b of document.querySelectorAll(".bust[data-champ]")) {
+  const svg = document.querySelector(`#${b.dataset.champ} svg`).cloneNode(true);
+  svg.querySelectorAll("[data-bust=hide], ellipse:first-child").forEach(n => n.remove());
+  svg.setAttribute("viewBox", CROP[b.dataset.champ]);
+  b.append(svg);
+}
+const seen = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { e.target.classList.add("in"); seen.unobserve(e.target); }
+}), { rootMargin: "0px 0px -15% 0px" });
+document.querySelectorAll(".banter").forEach(b => seen.observe(b));
+
+// The reading bar is a fuse: the spark rides its tip; reach the end to cut it.
+const fuse = document.getElementById("fuse"), toast = document.getElementById("toast");
+let cut = false;
+const burn = () => {
+  const h = document.documentElement.scrollHeight - innerHeight, p = h > 0 ? Math.min(1, scrollY / h) : 0;
+  fuse.style.left = p * innerWidth + "px";
+  fuse.style.opacity = p > 0.005 && !cut ? 1 : 0;
+  if (p > 0.995 && !cut) {
+    cut = true; bar.classList.add("defused");
+    toast.textContent = "◆ Fuse cut · article defused"; toast.classList.add("on");
+    setTimeout(() => toast.classList.remove("on"), 2600);
+  }
+};
+addEventListener("scroll", burn, { passive: true }); burn();
 </script>
 </body>
 </html>

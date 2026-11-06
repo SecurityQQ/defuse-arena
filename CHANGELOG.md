@@ -11,8 +11,8 @@ plain markdown — no HTML, no links to local files.
 - **Every public page has a link preview.** The article, `/board`,
   `/onboarding` and `/analysis` carry a description, a canonical URL on
   `defuse-arena.vercel.app`, Open Graph and Twitter large-image cards and the
-  diamond crest as `favicon.svg`. The article's preview is the closing launch
-  card (`social/10-read-more.png`); the board's is the which-model cheat sheet,
+  diamond crest as `favicon.svg`. The article's preview is the champions card
+  (`social/og-champions.png`, below); the board's is the which-model cheat sheet,
   the onboarding's the one-round diagram, the model report's the price
   scatter. The article title now leads with the question people search for:
   "Defuse Arena: Which AI Model Audits Code Best? 288 Rounds". Before, only
@@ -45,6 +45,36 @@ plain markdown — no HTML, no links to local files.
 - **The README opens with the results**: the headline card, links to the
   article, the board and llms.txt, the findings with four cards, and a
   citation. Its status line now counts 288 rounds across 14 models.
+
+### Article: champions
+
+- **Two original champions act out the results**: Wick the Saboteur (the
+  attacker's crimson hood, bomb and dagger) and Lumen the Auditor (the
+  defender's gold plate, shield and lantern), drawn as inline SVG in the
+  article's own palette. They are original characters in a League-of-Legends
+  look, not Riot champions, and use no Riot names or art.
+- **The hero is a duel.** The two flank the title with idle loops, and their
+  eyes follow the pointer. Clicking Wick throws a bomb at Lumen, which is
+  defused 83 times in 96, the article's fix rate; clicking Lumen audits a clean
+  build, which raises a false alarm 31% of the time, the article's false-alarm
+  rate. A line under the hero keeps the reader's tally, in floating combat
+  text style.
+- **Four banter exchanges sit in the prose**, each restating a number the
+  article already gives: the 31% false alarms, the 40 refused attacks and 6
+  refused defences, the $1 against $10 stake, and 96 found against 13 that
+  outlived the patch. The busts are the hero drawings cropped to the head. The
+  sign-off adds a "GG".
+- **The reading bar burns like a fuse**: a spark rides its tip, and reaching
+  the end turns it teal ("Fuse cut · article defused").
+- **The article's link preview is the champions card.** `scripts/og_card.py`
+  renders it from the drawings in `web/index.html` with headless Chrome:
+  1200×630 for Open Graph and X (it was the 1920×1080 launch card), plus
+  16:9, 4:3 and 1:1 crops at 1200 wide, which lead the JSON-LD `image` list
+  for Google. The title, question and three numbers stay inside the safe
+  centre, because X trims the sides and iMessage and Slack crop to a square.
+- No new dependencies and no image requests on the page.
+  `prefers-reduced-motion` stops the loops and resolves the duel at once;
+  without JavaScript the banter text still shows.
 
 ### Article charts
 
