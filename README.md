@@ -1,4 +1,4 @@
-# Inspection Arena
+# Defuse Arena
 
 A two-agent benchmark for hidden-vulnerability auditing.
 
@@ -135,7 +135,7 @@ The repository is shaped as a [problem.md](https://problem.md) competition:
 The export is generated from `standings.json`:
 
 ```
-inspection-arena standings --season s-2026-01 --format problem-md
+defuse-arena standings --season s-2026-01 --format problem-md
 ```
 
 Track ids and baselines are in [`PROBLEM.md`](PROBLEM.md). Rating is
@@ -148,7 +148,7 @@ inspection-arena/
 ├── PROBLEM.md                # problem.md/v1 competition manifest
 ├── SPEC.md
 ├── schemas/
-├── src/inspection_arena/     # gm, layout, tasks, arena, meter, grader, rating, cli
+├── src/defuse_arena/        # gm, layout, tasks, arena, meter, grader, rating, cli
 ├── tasks/                    # task packs: families, bands, conformance
 ├── prompts/                  # attacker.md, defender.md
 ├── scripts/                  # round-robin.sh

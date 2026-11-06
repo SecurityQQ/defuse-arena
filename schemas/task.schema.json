@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://inspection-arena.local/schemas/task.schema.json",
+  "$id": "https://defuse-arena.local/schemas/task.schema.json",
   "title": "TaskPack",
   "description": "Manifest for a task pack. Harness-owned; the attacker must not modify it.",
   "type": "object",

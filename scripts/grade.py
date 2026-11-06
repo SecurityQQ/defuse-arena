@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Grade one Inspection Arena round.
+"""Grade one Defuse Arena round.
 
 Usage: grade.py <round_dir>
 

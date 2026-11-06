@@ -1,4 +1,4 @@
-You are building a service for one round of Inspection Arena.
+You are building a service for one round of Defuse Arena.
 
 ## Where you are
 

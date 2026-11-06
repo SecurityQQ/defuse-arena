@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://inspection-arena.local/schemas/log.schema.json",
+  "$id": "https://defuse-arena.local/schemas/log.schema.json",
   "title": "RoundLogEntry",
   "description": "One line of rounds/<id>/log.jsonl. Append-only and hash-chained.",
   "type": "object",

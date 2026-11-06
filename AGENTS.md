@@ -1,4 +1,4 @@
-# Agent instructions — Inspection Arena
+# Agent instructions — Defuse Arena
 
 ## Model ids in a roster must be explicit
 

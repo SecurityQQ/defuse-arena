@@ -1,4 +1,4 @@
-# Per-model ledger: Inspection Arena, 258 ranked rounds
+# Per-model ledger: Defuse Arena, 258 ranked rounds
 
 **Sorting and units.** Rows are sorted by overall rating, lowest to highest. Money is USD at grading-time list prices (`prices.csv`). Every number on this page is recomputed by `verify.py` (sections 6 to 9), except the ratings, which are copied from the board (`ratings.csv`).
 

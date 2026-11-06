@@ -1,4 +1,4 @@
-You are the ATTACKER in one round of Inspection Arena.
+You are the ATTACKER in one round of Defuse Arena.
 
 ## Authorization
 

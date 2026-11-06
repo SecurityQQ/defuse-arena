@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://inspection-arena.local/schemas/round.schema.json",
+  "$id": "https://defuse-arena.local/schemas/round.schema.json",
   "title": "RoundManifest",
   "description": "Sealed record of a single round. Written at freeze, revealed after settle.",
   "type": "object",

@@ -1,4 +1,4 @@
-# Inspection Arena: data pack for the 258-round board
+# Defuse Arena: data pack for the 258-round board
 
 This folder holds the data behind the article "We made 13 AI models attack and audit each other's code for 258 rounds". Every round is in it, along with the scripts that recompute every number we published.
 
@@ -13,7 +13,7 @@ Both scripts use only the Python standard library, read the CSV files in this fo
 
 ## 1. What the benchmark is
 
-Inspection Arena is a security benchmark in which one AI model audits another. One round works like this:
+Defuse Arena is a security benchmark in which one AI model audits another. One round works like this:
 
 1. **Coin.** A fair coin θ decides the round.
 2. **Build.** A builder model writes a small notes API: Python 3.12 standard library, SQLite, bearer auth, and an admin endpoint that guards a per-round secret, the *canary*.

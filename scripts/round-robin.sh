@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Round-robin orchestrator for Inspection Arena.
+# Round-robin orchestrator for Defuse Arena.
 #
 #   scripts/round-robin.sh                    # all pairs, 1 round per match
 #   ROUNDS=4 scripts/round-robin.sh           # 4 rounds per match

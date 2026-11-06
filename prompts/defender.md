@@ -1,4 +1,4 @@
-You are the DEFENDER in one round of Inspection Arena.
+You are the DEFENDER in one round of Defuse Arena.
 
 ## Where you are
 

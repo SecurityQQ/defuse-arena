@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://inspection-arena.local/schemas/match.schema.json",
+  "$id": "https://defuse-arena.local/schemas/match.schema.json",
   "title": "MatchRecord",
   "description": "Sealed summary of a match. Written by the GM at match end.",
   "type": "object",

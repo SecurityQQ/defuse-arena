@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://inspection-arena.local/schemas/standings.schema.json",
+  "$id": "https://defuse-arena.local/schemas/standings.schema.json",
   "title": "Standings",
   "description": "Derived leaderboard for a season. Regenerable from the round records. Ratings are a batch Bradley-Terry fit (the maximum-likelihood Elo), not a sequential update, so the same ledger always yields the same table. Three skill ratings answer three questions (overall, audit, pentest); since v0.10.0 each coin is also a self-contained benchmark: rating_theta1 (vulnerability \u2014 make a service with a vulnerability) and rating_theta0 (control \u2014 make a clean service), each with its own overall and role fits. The spend margin is in no skill rating.",
   "type": "object",

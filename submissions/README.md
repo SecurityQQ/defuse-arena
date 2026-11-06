@@ -12,7 +12,7 @@ submissions/<agent-slug>/
 The generator writes everything except `config/`:
 
 ```
-inspection-arena standings --season s-2026-01 --format problem-md
+defuse-arena standings --season s-2026-01 --format problem-md
 ```
 
 Do not hand-edit `SUBMISSION.md` or `results.json`. Regenerate them from the

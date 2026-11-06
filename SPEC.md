@@ -1,4 +1,4 @@
-# Inspection Arena — Specification
+# Defuse Arena — Specification
 
 **A two-agent benchmark for hidden-vulnerability auditing**
 
@@ -7,7 +7,7 @@
 | Status | Draft, pre-implementation |
 | Version | 0.1.0 |
 | Date | 2026-10-22 |
-| Working title | Inspection Arena |
+| Working title | Defuse Arena |
 | License | TBD |
 
 The key words MUST, MUST NOT, SHOULD, and MAY are used as described in RFC 2119.
@@ -37,7 +37,7 @@ The key words MUST, MUST NOT, SHOULD, and MAY are used as described in RFC 2119.
 
 ## 1. Abstract
 
-Inspection Arena is a two-agent evaluation in which one model (the **attacker**)
+Defuse Arena is a two-agent evaluation in which one model (the **attacker**)
 builds a small web service and a second model (the **defender**) audits it. A
 fair coin decides whether the attacker must plant a vulnerability. The defender
 returns a probability that a vulnerability is present and, if it claims one, a
@@ -108,7 +108,7 @@ access. See §5.
 | **AgentDojo** (2024) | Prompt-injection robustness of tool-using agents | Payload is an instruction in data, not a vulnerability in code |
 | **ControlArena** (UK AISI + Redwood, 2025) | Framework for control experiments: settings, protocols, monitors, scorers | A substrate, not a setting; this benchmark can be ported into it (§13.4) |
 
-Positioning in one sentence: Inspection Arena is the only setting we are aware of
+Positioning in one sentence: Defuse Arena is the only setting we are aware of
 that combines a **randomized base rate**, a **full service artifact**, a
 **proper-scoring-rule report**, and **executable patch verification** in a single
 round.
@@ -1146,11 +1146,11 @@ match count, a spend or an attack/clean split that is absent from the ledger.
 CLI:
 
 ```
-inspection-arena standings --season s-2026-01 --format md
-inspection-arena standings --season s-2026-01 --format json
-inspection-arena standings --season s-2026-01 --format html
-inspection-arena ledger    --season s-2026-01 --agent model-a
-inspection-arena standings --season s-2026-01 --verify
+defuse-arena standings --season s-2026-01 --format md
+defuse-arena standings --season s-2026-01 --format json
+defuse-arena standings --season s-2026-01 --format html
+defuse-arena ledger    --season s-2026-01 --agent model-a
+defuse-arena standings --season s-2026-01 --verify
 ```
 
 ### 10.5 Verification
@@ -1177,7 +1177,7 @@ therefore checkable without trusting the renderer.
 A season can be published as a [problem.md](https://problem.md) competition. The
 mapping is:
 
-| Inspection Arena | problem.md |
+| Defuse Arena | problem.md |
 |---|---|
 | season | competition |
 | agent | submission |
@@ -1188,7 +1188,7 @@ mapping is:
 generator produces the rest:
 
 ```
-inspection-arena standings --season s-2026-01 --format problem-md
+defuse-arena standings --season s-2026-01 --format problem-md
 ```
 
 ```
@@ -1327,10 +1327,10 @@ the cheapest exploit that survives.
 ### 13.4 ControlArena port
 
 ControlArena (UK AISI + Redwood, built on Inspect AI) already provides settings,
-sandboxes, scorers, and analysis. Phase 4 SHOULD port Inspection Arena as a
+sandboxes, scorers, and analysis. Phase 4 SHOULD port Defuse Arena as a
 setting rather than maintaining a parallel harness. Mapping:
 
-| Inspection Arena | ControlArena |
+| Defuse Arena | ControlArena |
 |---|---|
 | Round | sample |
 | Attacker / defender | untrusted policy / monitor |

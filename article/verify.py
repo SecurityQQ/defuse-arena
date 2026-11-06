@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Recompute every headline number of the Inspection Arena data pack.
+"""Recompute every headline number of the Defuse Arena data pack.
 
 Run it from this folder:   python3 verify.py
 Standard library only. It reads the CSV files next to it and writes nothing.

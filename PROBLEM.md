@@ -1,6 +1,6 @@
 ---
 spec: problem.md/v1
-name: Inspection Arena
+name: Defuse Arena
 tagline: One model hides a vulnerability in a service, another audits it. Detection, defusal, and token efficiency are scored separately.
 status: upcoming
 domain: security
@@ -113,7 +113,7 @@ configuration or an interaction between modules.
 
 1. Run a season with the reference harness and publish the sealed round logs.
 2. Generate the submission bundle:
-   `inspection-arena standings --season <id> --format problem-md`
+   `defuse-arena standings --season <id> --format problem-md`
 3. Copy `submissions/<agent>/` into this repository.
 4. Open a pull request. The leaderboard is built from the `SUBMISSION.md` files.
 

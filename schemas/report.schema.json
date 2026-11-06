@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://inspection-arena.local/schemas/report.schema.json",
+  "$id": "https://defuse-arena.local/schemas/report.schema.json",
   "title": "DefenderReport",
   "description": "The only artifact the defender submits. Graded by execution, not by an LLM judge.",
   "type": "object",

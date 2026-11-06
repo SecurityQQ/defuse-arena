@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Inspection Arena · Onboarding</title>
+<title>Defuse Arena · Onboarding</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Rajdhani:wght@400;500;600;700&family=Spectral+SC:wght@500;700&family=Saira+Semi+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!--
-  Inspection Arena onboarding — a cinematic 3D tour of one round, on Three.js.
+  Defuse Arena onboarding — a cinematic 3D tour of one round, on Three.js.
   Layers:
     #gl            — WebGL scene (arena, models, coin, service, patch, grader)
     .layer[data-layer] — Hextech HTML overlay for each step
@@ -165,7 +165,7 @@ button{font:inherit;color:inherit}
 /* step 1 — hero */
 .hero{inset:0;display:grid;place-content:center;justify-items:center;text-align:center;gap:18px;padding:0 var(--gutter-r) 30vh var(--gutter)}
 .crest{width:58px;height:58px;filter:drop-shadow(0 0 12px rgba(10,200,185,.35))}
-.hero-title{margin:0;font:700 clamp(46px,6.3vw,94px)/.95 var(--f-display);letter-spacing:.08em;text-transform:uppercase;
+.hero-title{margin:0;font:700 clamp(46px,8.4vw,124px)/.95 var(--f-display);letter-spacing:.08em;text-transform:uppercase;
   background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.55) 45%,transparent 60%) -200% 0/250% 100% no-repeat,var(--hx-gold-grad);
   -webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 24px rgba(0,0,0,.6)) drop-shadow(0 0 22px rgba(200,170,110,.18));
   animation:titleSweep 6s ease-in-out 1.4s infinite}
@@ -591,7 +591,7 @@ body.leaving #gl{transition:filter .8s,transform .8s;filter:blur(6px) brightness
 <header class="topbar">
   <div class="brand">
     <a class="back-link" href="index.html" data-to-board>◆ Leaderboard</a>
-    <span class="wordmark">INSPECTION ARENA</span>
+    <span class="wordmark">DEFUSE ARENA</span>
   </div>
   <nav class="stepper-wrap" aria-label="Onboarding steps">
     <ol class="hx-stepper" id="stepper"></ol>
@@ -615,7 +615,7 @@ body.leaving #gl{transition:filter .8s,transform .8s;filter:blur(6px) brightness
     <path d="M32 24l6 8-6 8-6-8z" fill="#F0E6D2"/>
   </svg>
   <div class="hero-manifest rise" style="--i:1" id="hero-manifest">A true story · one real round</div>
-  <h1 class="hero-title rise" style="--i:2">Inspection Arena</h1>
+  <h1 class="hero-title rise" style="--i:2">Defuse Arena</h1>
   <div class="hx-divider rise" style="--i:3"><i></i></div>
   <p class="hero-sub rise" style="--i:4">Can one AI model find a backdoor that another AI model hid on purpose? Every round, two models meet over one small web service. One writes it and, if a coin says so, hides a secret way in. The other reads the frozen code, says how sure it is that something is hidden, and patches it. A real exploit decides who was right.</p>
   <p class="hero-sub hero-sub--small rise" style="--i:4" id="hero-story"></p>
@@ -1666,7 +1666,7 @@ function build() {
     both((x, dark) => { x.strokeStyle = dark; x.lineWidth = 7; x.beginPath(); x.arc(cx, cx, 492, 0, Math.PI * 2); x.stroke(); x.lineWidth = 3; x.beginPath(); x.arc(cx, cx, 360, 0, Math.PI * 2); x.stroke(); x.beginPath(); x.arc(cx, cx, 345, 0, Math.PI * 2); x.stroke();
       for (let k = 0; k < 96; k++) { const a = k / 96 * Math.PI * 2; x.lineWidth = k % 8 ? 3 : 6; x.beginPath(); x.moveTo(cx + 452 * Math.cos(a), cx + 452 * Math.sin(a)); x.lineTo(cx + (k % 8 ? 474 : 482) * Math.cos(a), cx + (k % 8 ? 474 : 482) * Math.sin(a)); x.stroke(); } });
     // rim lettering
-    const txt = kind === 'heads' ? '◆ INSPECTION ARENA ◆ HEADS ◆ ONE FLIP ' : '◆ INSPECTION ARENA ◆ TAILS ◆ ONE FLIP ';
+    const txt = kind === 'heads' ? '◆ DEFUSE ARENA ◆ HEADS ◆ ONE FLIP ' : '◆ DEFUSE ARENA ◆ TAILS ◆ ONE FLIP ';
     both((x, dark) => { x.save(); x.translate(cx, cx); x.font = `700 46px ${FONT_D}`; x.fillStyle = dark; x.textAlign = 'center'; x.textBaseline = 'middle';
       const chars = [...txt]; chars.forEach((ch, i) => { x.save(); x.rotate(i / chars.length * Math.PI * 2); x.fillText(ch, 0, -405); x.restore(); }); x.restore(); });
     if (kind === 'heads') {
@@ -1790,7 +1790,7 @@ function build() {
   }
   addEventListener('resize', resize); resize();
   const redrawFonts = () => { slabState = ''; drawQ(); for (const k of ['heads', 'tails']) { const f = coinFace(k); faces[k].map.image = f.canvas; faces[k].bump.image = f.bcanvas; faces[k].map.needsUpdate = faces[k].bump.needsUpdate = true; } };
-  Promise.all([document.fonts.load(`700 64px "Cinzel"`), document.fonts.load(`600 26px "Rajdhani"`), document.fonts.load(`500 34px "Rajdhani"`), document.fonts.load(`700 64px "Spectral SC"`, "Inspection"), document.fonts.load(`500 34px "Saira Semi Condensed"`, "Inspection"), document.fonts.load(`600 26px "Saira Semi Condensed"`, "Inspection")]).then(redrawFonts).catch(() => {});
+  Promise.all([document.fonts.load(`700 64px "Cinzel"`), document.fonts.load(`600 26px "Rajdhani"`), document.fonts.load(`500 34px "Rajdhani"`), document.fonts.load(`700 64px "Spectral SC"`, "Defuse"), document.fonts.load(`500 34px "Saira Semi Condensed"`, "Inspection"), document.fonts.load(`600 26px "Saira Semi Condensed"`, "Inspection")]).then(redrawFonts).catch(() => {});
   document.fonts.ready.then(redrawFonts);
 
   /* ---------------- per-frame update ---------------- */

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://inspection-arena.local/schemas/grade.schema.json",
+  "$id": "https://defuse-arena.local/schemas/grade.schema.json",
   "title": "RoundGrade",
   "description": "Executable grading record. Written by the grader after patch verification.",
   "type": "object",
