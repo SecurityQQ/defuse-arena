@@ -1,0 +1,31 @@
+# Season s-2026-08: SWE-2 enters, and the audit seat gets more games.
+#
+# Six models, one round per match, 60 matches (2N(N-1)). Every ordered pair
+# plays both coins, so the season is half vulnerability and half clean by
+# construction.
+#
+#   SEASON=s-2026-08 ROSTER_FILE=rosters/season-2026-08.tsv JOBS=2 \
+#     scripts/round-robin.sh
+#
+# swe-2 is the new champion: SWE-2 Max is the leaf id `devin models list`
+# publishes (262K context, free), so its own side of every round is $0 and the
+# bill is the champion it plays. The field is the top of the published board
+# plus GPT-6 Astra, which enters with 10 defense rounds — only two of them on
+# the vulnerability coin — and leaves with 20, seven of them θ=1.
+#
+# deepseek-flash takes gemini-4-argon's seat. gemini-4-argon-high completes the
+# clean build prompt and the defender prompt, but on the θ=1 attacker prompt the
+# CLI never opens a session: it retries skills discovery every 15 s until the
+# 30-minute agent timeout, so ten attack rounds would have been ten no-shows.
+# Flash is the board's strongest attacker (5 of 9 exploits outlived the patch),
+# costs $0.04 a round, and has never defended against Astra.
+#
+# Format: label|model-id. Leaf variants only (AGENTS.md). The ids below are the
+# ones `web/roster.json` declares for each champion and the ones the previous
+# seasons already ran, so the rows stay comparable.
+swe-2|swe-2-max
+gpt-6-astra|gpt-6-astra-max
+grok-4.7|grok-4-7-xhigh
+glm-5.3-max|glm-5-3-max
+opus-5.5|claude-opus-5-5-high
+deepseek-flash|deepseek-v4-1-flash-1017-high

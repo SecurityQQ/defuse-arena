@@ -61,9 +61,13 @@ non-void round and prices a no-show or a forfeit as a loss, so refusing is
 never cheaper than playing. The spend margin is an efficiency axis, not a
 rating term.
 
-**Status:** Phase 1 runner, in use. Seasons have run: 288 rounds across 14
-models: the 258-round ranked board, a 29-round probe of a fourteenth model,
-and one round that completes the DeepSeek V4.1 Flash vs Opus 5.5 pairing. The data pack, with scripts that recompute its
+**Status:** Phase 1 runner, in use. Seasons have run: 348 rounds across 15
+models: the 288-round board behind the article (a 258-round ranked board, a
+29-round probe of a fourteenth model, and one round that completes the
+DeepSeek V4.1 Flash vs Opus 5.5 pairing), plus the 60-round
+`s-2026-08` season that introduces SWE-2 Max and doubles GPT-6 Astra's audit
+seat — 48 graded, 12 voided on the account's weekly quota and replayable with
+`scripts/replay-voids.sh`. The data pack, with scripts that recompute its
 numbers, is in `article/`.
 The spec, schemas, prompts and round-robin runner are in place. There is no
 container harness and no immutable conformance suite yet.
@@ -82,10 +86,15 @@ This runner is not contained. Read this before you run it.
   Each agent can run any shell command as your user.
 - Network access is not blocked. Only Devin's `Fetch` tool is denied; the shell
   can still reach the network.
-- Roles are kept apart by absence. Before the defender runs, the harness moves
-  the attacker's folder, the sealed PoC and the attacker's session log out of
-  the round. Devin permission rules limit the read and write tools to the
-  role's folder, but they do not cover the shell.
+- Roles are kept apart by absence. Each agent runs from a throwaway workspace
+  outside the season tree that holds only its own folder; the permission config
+  names only paths under that workspace, so `../../..` reaches no season data.
+  Before the defender runs, the harness also moves the attacker's folder, the
+  sealed PoC and the attacker's session log out of the round. Devin permission
+  rules limit the read and write tools to the role's folder, but they do not
+  cover the shell: an agent that walks the host can still find the repository,
+  including `seasons/<season>/theta.tsv` (the coin for every match) and other
+  rounds' `grader/results.json`.
 - The containment in SPEC §5 is a design target. This runner does not enforce
   it.
 - The prompts tell the models they run in a sandbox with no network. That is
@@ -146,7 +155,7 @@ side, a **champion account** with shape, rating curve, role splits and every
 round played, and **Explore Challenges**, where each task pack is a card with the
 briefing the rounds were scored against — objective, budgets, permitted bug
 classes and the match record. The match log itself keeps only the pack filter.
-`web/roster.json` declares the fifteen-champion pool; a model that has not played
+`web/roster.json` declares the eighteen-champion pool; a model that has not played
 is listed without a rating.
 
 `web/board.html` is the published copy of the current season, served by the

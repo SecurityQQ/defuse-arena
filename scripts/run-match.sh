@@ -55,11 +55,18 @@ print(h.hexdigest())
 PY
 }
 
+# Role workspaces
+#
+# Each agent runs from a throwaway root outside the season tree. Its cwd is the
+# only path it is given, so `../../..` no longer reaches the season's coin
+# schedule or another round's grader record, and its permission config names
+# only paths under that root. This is not a container — the shell can still
+# walk the host — but it removes the one-hop answer key: `theta.tsv` lists the
+# coin for every match, and every finished round keeps its `grader/results.json`.
+
 write_configs() {
   local dir="$1" role="$2"
   mkdir -p "$dir/.devin"
-  local round_dir
-  round_dir="$(cd "$dir/.." && pwd)"
   if [[ "$role" == attacker ]]; then
     cat > "$dir/.devin/config.json" <<JSON
 {
@@ -68,14 +75,7 @@ write_configs() {
       "Read($dir/scaffold/**)", "Read($dir/work/**)", "Read($dir/scratch/**)",
       "Write($dir/work/**)", "Write($dir/scratch/**)"
     ],
-    "deny": [
-      "Read($round_dir/defender/**)", "Write($round_dir/defender/**)",
-      "Read($round_dir/sealed/**)", "Write($round_dir/sealed/**)",
-      "Read($round_dir/frozen/**)", "Write($round_dir/frozen/**)",
-      "Read($round_dir/grader/**)", "Write($round_dir/grader/**)",
-      "Read($round_dir/reveal/**)", "Write($round_dir/reveal/**)",
-      "Fetch(*)"
-    ]
+    "deny": ["Fetch(*)"]
   }
 }
 JSON
@@ -84,18 +84,41 @@ JSON
 {
   "permissions": {
     "allow": ["Read($dir/inbox/**)", "Read($dir/out/**)", "Write($dir/out/**)"],
-    "deny": [
-      "Read($round_dir/attacker/**)", "Write($round_dir/attacker/**)",
-      "Read($round_dir/sealed/**)", "Write($round_dir/sealed/**)",
-      "Read($round_dir/frozen/**)", "Write($round_dir/frozen/**)",
-      "Read($round_dir/grader/**)", "Write($round_dir/grader/**)",
-      "Read($round_dir/reveal/**)", "Write($round_dir/reveal/**)",
-      "Fetch(*)"
-    ]
+    "deny": ["Fetch(*)"]
   }
 }
 JSON
   fi
+}
+
+# prepare_workspace <role> <round_dir> -> prints the throwaway root
+prepare_workspace() {
+  local role="$1" round="$2" root
+  root=$(mktemp -d "${TMPDIR:-/tmp}/ia-$role.XXXXXX")
+  if [[ "$role" == attacker ]]; then
+    mkdir -p "$root/attacker/work" "$root/attacker/scratch" "$root/attacker/scaffold"
+    cp -a "$round/attacker/scaffold/." "$root/attacker/scaffold/" 2>/dev/null || true
+    cp -a "$round/attacker/theta" "$root/attacker/theta"
+  else
+    mkdir -p "$root/defender/out"
+    cp -a "$round/defender/inbox/." "$root/defender/inbox/" 2>/dev/null || true
+  fi
+  write_configs "$root/$role" "$role"
+  printf '%s' "$root"
+}
+
+# collect_workspace <root> <role> <round_dir>: keep the deliverables, drop the copy
+collect_workspace() {
+  local root="$1" role="$2" round="$3"
+  if [[ "$role" == attacker ]]; then
+    mkdir -p "$round/attacker/work" "$round/attacker/scratch"
+    cp -a "$root/attacker/work/." "$round/attacker/work/" 2>/dev/null || true
+    cp -a "$root/attacker/scratch/." "$round/attacker/scratch/" 2>/dev/null || true
+  else
+    mkdir -p "$round/defender/out"
+    cp -a "$root/defender/out/." "$round/defender/out/" 2>/dev/null || true
+  fi
+  rm -rf "$root"
 }
 
 FREEZE_REASON=""
@@ -150,15 +173,18 @@ run_agent() {
   # write/edit and therefore cannot run unattended under --print. Use bypass
   # instead; role isolation is enforced by hiding attacker artifacts below.
   # CLI 3000.x also requires an explicit trust bypass in non-interactive mode.
+  # stdin is /dev/null: `--print` with no inline prompt waits for EOF on an
+  # inherited pipe, so a background run would sit on the read until the agent
+  # timeout with an empty log. A terminal hid this; a background shell does not.
   if [[ "$DRY_RUN" == "1" ]]; then
-    printf '(cd %s && %s %s/run_with_timeout.py %s %s --permission-mode dangerous --respect-workspace-trust false --model %s --prompt-file %s --export %s --print)\n' \
+    printf '(cd %s && %s %s/run_with_timeout.py %s %s --permission-mode dangerous --respect-workspace-trust false --model %s --prompt-file %s --export %s --print </dev/null)\n' \
       "$cwd" "$PY" "$ROOT/scripts" "$AGENT_TIMEOUT" "$DEVIN" "$model" "$prompt" "$export" >> "$logfile"
     return 0
   fi
 
   ( cd "$cwd" && "$PY" "$ROOT/scripts/run_with_timeout.py" "$AGENT_TIMEOUT" \
       "$DEVIN" --permission-mode dangerous --respect-workspace-trust false --model "$model" \
-      --prompt-file "$prompt" --export "$export" --print ) >> "$logfile" 2>&1
+      --prompt-file "$prompt" --export "$export" --print </dev/null ) >> "$logfile" 2>&1
 }
 
 spend_file() {
@@ -337,8 +363,13 @@ for ((k = 1; k <= ROUNDS; k++)); do
     "$round_dir/defender/inbox" "$round_dir/defender/out" \
     "$round_dir/sealed" "$round_dir/frozen" "$round_dir/grader/logs" "$round_dir/reveal"
 
-  write_configs "$round_dir/attacker" attacker
-  write_configs "$round_dir/defender" defender
+  att_root=""
+  def_root=""
+  cleanup_workspaces() {
+    [[ -n "$att_root" ]] && rm -rf "$att_root"
+    [[ -n "$def_root" ]] && rm -rf "$def_root"
+  }
+  trap cleanup_workspaces EXIT
 
   # THETA pins the coin so a round can be resumed without re-drawing it. A
   # season-wide schedule in theta.tsv wins over a fresh draw, so a stratified
@@ -365,11 +396,14 @@ for ((k = 1; k <= ROUNDS; k++)); do
     att_prompt="$PROMPTS/attacker-clean.md"
   fi
 
+  att_root=$(prepare_workspace attacker "$round_dir")
   set +e
-  run_agent_settled "$round_dir/attacker" "$A_MODEL" "$att_prompt" \
+  run_agent_settled "$att_root/attacker" "$A_MODEL" "$att_prompt" \
     "$round_dir/grader/logs/attacker.log" "$att_export" attacker
   att_exit=$?
   set -e
+  collect_workspace "$att_root" attacker "$round_dir"
+  att_root=""
   spend_file "$att_export" "$att_spend"
 
   # A deliverable is the only evidence the round can be played. Without it the
@@ -401,11 +435,14 @@ for ((k = 1; k <= ROUNDS; k++)); do
     if [[ -d "$round_dir/sealed" ]]; then mv "$round_dir/sealed" "$HOLD/sealed"; fi
     if [[ -f "$att_export" ]]; then mv "$att_export" "$HOLD/attacker.export.json"; fi
 
+    def_root=$(prepare_workspace defender "$round_dir")
     set +e
-    run_agent_settled "$round_dir/defender" "$D_MODEL" "$PROMPTS/defender.md" \
+    run_agent_settled "$def_root/defender" "$D_MODEL" "$PROMPTS/defender.md" \
       "$round_dir/grader/logs/defender.log" "$def_export" defender
     def_exit=$?
     set -e
+    collect_workspace "$def_root" defender "$round_dir"
+    def_root=""
     [[ -s "$round_dir/defender/out/report.json" ]] && def_played=1
 
     mv "$HOLD/attacker" "$round_dir/attacker"

@@ -4,6 +4,72 @@ Every substantial modification to this repository is recorded here. The
 leaderboard renders this file under its **Changelog** tab, so entries must stay
 plain markdown — no HTML, no links to local files.
 
+## 0.13.0 — 2026-11-10 — SWE-2 joins the pool, and a role no longer sees the season
+
+### Roster
+
+- **SWE-2 Max joins the pool as `swe-2`** (`swe-2-max`, 262K context, free).
+  `rosters/season-2026-08.tsv` fields it against five champions — GPT-6 Astra,
+  Grok 4.7, GLM-5.3 Max, Claude Opus 5.5 and DeepSeek V4.1 Flash — 60 matches,
+  both directions on both coins. Its own side of every round is $0, so the
+  season's bill is the champions it plays.
+- **GPT-6 Astra's audit seat doubles.** It entered with 10 defense rounds, only
+  two of them on the vulnerability coin, where a perfect 2-of-2 defusal was an
+  anecdote; the season adds 10 more, five of them θ=1.
+- **DeepSeek V4.1 Flash takes gemini-4-argon's seat.** `gemini-4-argon-high`
+  completes the clean-build and defender prompts, but on the θ=1 attacker
+  prompt the CLI opens no session and retries until the 30-minute agent
+  timeout, so ten attack rounds would have been ten no-shows. Flash is the
+  board's strongest attacker (5 of 9 exploits outlived the patch) and had never
+  faced Astra.
+
+### Harness
+
+- **Each role now runs from a throwaway workspace outside the season tree.**
+  The first attempt at s-2026-08 was stopped after six rounds: four of the five
+  defenders that ran read outside their round — one read `theta.tsv`, the coin
+  for every match, and scripted over 330 `grader/results.json` files. The
+  runner copies the role's folder into `$TMPDIR/ia-<role>.*`, writes a
+  `.devin/config.json` naming only paths under that root, runs the agent there,
+  and copies `work/`+`scratch/` or `out/` back into the round. This is not a
+  container: a shell that walks the host can still find the repository, and
+  concurrent role workspaces share `$TMPDIR`.
+- **`devin --print` gets `/dev/null` on stdin.** With `--prompt-file` and no
+  inline prompt it waits for EOF on an inherited pipe, so a background run sat
+  on the read until the agent timeout with an empty log. A terminal hid this;
+  a background shell does not.
+- `--sandbox` is not usable for an unattended run: it forces the autonomous
+  permission mode and rejects the write/edit calls the roles need. The runner
+  stays on `--permission-mode dangerous`, as before.
+
+### Data
+
+- **Season s-2026-08 is 60 rounds: 48 graded and 12 voided** when the account's
+  weekly usage quota ran out mid-schedule (the last twelve pairings, ending at
+  `m-0060`). The voids keep their coins and replay with
+  `scripts/replay-voids.sh` once quota is back.
+- **SWE-2 lands at 1533.7, fourth overall, provisional at 16 played rounds.**
+  It never refused a seat. As attacker 2–7: every planted bug was found and
+  fixed, and it won twice when defenders false-alarmed its clean builds. As
+  defender 4–3: 2 of 2 patches held, but it cried wolf on 3 of 8 clean
+  services. With $0.00 a round it takes the Featherweight badge.
+- **GPT-6 Astra refused all five of its attack coins** and two of its five
+  vulnerability defences (provider cyber policy), yet stayed unbeaten on
+  played rounds: audit 6–0, clean-build record intact. It is now ranked with 26
+  eligible rounds and holds the Sniper badge; the season raises its refusal
+  sample more than its patch sample — only one θ=1 audit was actually played
+  (a TP against DeepSeek Flash).
+- **The combined board is 348 rounds across 15 played models:**
+  `standings.py s-2026-02 --extra-season s-flash-probe --extra-season s-2026-07
+  --extra-season s-2026-08 --publish web/board.html`.
+
+### Board
+
+- `web/roster.json` drops SWE-2's `bench` status; it is rated and holds the
+  Featherweight badge at $0 a round.
+- `web/board.html` regenerated at 348 rounds; the season label stays
+  `Season 2026 · #2 + verification · 348 rounds · scoring v0.10.0`.
+
 ## Unreleased — 2026-11-06 — Defuse Arena, and an llm.txt
 
 ### Launch: search, answer engines and link previews

@@ -158,8 +158,7 @@
       "house": "The Foundry Line",
       "glyph": "SW",
       "accent": "#7A8CA3",
-      "lane": "defender",
-      "status": "bench"
+      "lane": "defender"
     },
     {
       "agent": "muse-wonder",

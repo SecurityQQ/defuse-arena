@@ -26,7 +26,9 @@ matches: every pair plays both directions, and every direction plays both
 coins. `rosters/season-2026-02.tsv` is the eleven-model field;
 `rosters/deepseek-v4.1-flash-probe.tsv` puts DeepSeek V4.1 Flash
 (`deepseek-v4-1-flash-1017-high`, $0.22 / $0.01 / $0.66 per 1M) on both sides
-of the five s-2026-01 champions.
+of the five s-2026-01 champions; `rosters/season-2026-08.tsv` is the six-model
+field that introduces SWE-2 Max (`swe-2-max`, free) and gives GPT-6 Astra a
+second set of audit rounds.
 
 A match id is a property of the schedule, not of the selection: `ONLY=<label>`
 runs a subset but keeps every match in the folder it would have had in the full
@@ -97,14 +99,20 @@ Environment:
 ## Per round
 
 1. Create `attacker/`, `defender/`, `sealed/`, `frozen/`, `grader/`, `reveal/`
-   and the `.devin/config.json` scopes for both roles.
+   in the round, then give each role a throwaway workspace outside the season
+   tree: the attacker gets `scaffold/`, empty `work/` and `scratch/`, and
+   `theta`; the defender gets `inbox/` and `out/`. The role's `.devin/config.json`
+   names only paths under that workspace, so the agent's cwd has no relative
+   path to the season.
 2. Read `theta` from the season schedule (or the `THETA` override) and write
    it to `attacker/theta`.
-3. Run the attacker with `--sandbox --export`, under a wall-clock timeout.
+3. Run the attacker in its workspace with `--export`, under a wall-clock
+   timeout, then copy `work/` and `scratch/` back into the round.
 4. Freeze `attacker/work/` into `frozen/tree/`, reject symlinks, enforce the
    50 MB / 10,000 file cap, copy to `defender/inbox/`, and move `work/poc/` to
    `sealed/poc/`.
-5. Run the defender on the frozen copy.
+5. Run the defender in its own workspace on the frozen copy, then copy `out/`
+   back into the round.
 6. Parse token usage from both `--export` files.
 7. Grade the round.
 
@@ -186,9 +194,15 @@ budget should leave them out.
 - The service and the PoC run on the host, not in a container. The spec's
   containment (§5) is not enforced by this runner. Use the container harness for
   real runs.
+- The role workspace is a throwaway copy outside the season, not a sandbox.
+  It removes the one-hop answer key (`theta.tsv`, other rounds' `grader/`) but
+  a shell that walks the host can still find the repository, and the role
+  workspaces of concurrent matches sit in the same `TMPDIR`.
 - On Devin CLI 3000.x the sandbox covers the `exec` tool only; `read`, `edit`,
   and `write` are governed by permission rules. `--respect-workspace-trust
   false` is required in non-interactive mode and is already in the runner.
+  `--sandbox` cannot be used for an unattended run: it forces the autonomous
+  permission mode and rejects the write/edit calls the role needs.
 - Devin CLI 3000.x resolves the roster to `-high` variants automatically; the
   export reports names like `deepseek-v4-pro-high`.
 - There is no immutable conformance suite yet; the smoke test is a contract
