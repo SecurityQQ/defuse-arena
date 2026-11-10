@@ -44,9 +44,10 @@ plain markdown — no HTML, no links to local files.
 
 ### Data
 
-- **Season s-2026-08 is 60 rounds: 48 graded and 12 voided** when the account's
-  weekly usage quota ran out mid-schedule (the last twelve pairings, ending at
-  `m-0060`). The voids keep their coins and replay with
+- **Season s-2026-08 is 60 matches: 48 rounds graded, 12 voided** when the
+  account's weekly usage quota ran out mid-schedule (the last twelve
+  pairings, ending at `m-0060`). The voids are withheld from the published
+  board, keep their coins locally, and replay with
   `scripts/replay-voids.sh` once quota is back.
 - **SWE-2 lands at 1533.7, fourth overall, provisional at 16 played rounds.**
   It never refused a seat. As attacker 2–7: every planted bug was found and
@@ -59,7 +60,7 @@ plain markdown — no HTML, no links to local files.
   eligible rounds and holds the Sniper badge; the season raises its refusal
   sample more than its patch sample — only one θ=1 audit was actually played
   (a TP against DeepSeek Flash).
-- **The combined board is 348 rounds across 15 played models:**
+- **The combined board is 336 published rounds across 15 played models:**
   `standings.py s-2026-02 --extra-season s-flash-probe --extra-season s-2026-07
   --extra-season s-2026-08 --publish web/board.html`.
 
@@ -67,8 +68,8 @@ plain markdown — no HTML, no links to local files.
 
 - `web/roster.json` drops SWE-2's `bench` status; it is rated and holds the
   Featherweight badge at $0 a round.
-- `web/board.html` regenerated at 348 rounds; the season label stays
-  `Season 2026 · #2 + verification · 348 rounds · scoring v0.10.0`.
+- `web/board.html` regenerated at 336 rounds; the season label stays
+  `Season 2026 · #2 + verification · 336 rounds · scoring v0.10.0`.
 
 ## Unreleased — 2026-11-06 — Defuse Arena, and an llm.txt
 

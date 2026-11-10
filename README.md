@@ -61,12 +61,13 @@ non-void round and prices a no-show or a forfeit as a loss, so refusing is
 never cheaper than playing. The spend margin is an efficiency axis, not a
 rating term.
 
-**Status:** Phase 1 runner, in use. Seasons have run: 348 rounds across 15
-models: the 288-round board behind the article (a 258-round ranked board, a
-29-round probe of a fourteenth model, and one round that completes the
-DeepSeek V4.1 Flash vs Opus 5.5 pairing), plus the 60-round
-`s-2026-08` season that introduces SWE-2 Max and doubles GPT-6 Astra's audit
-seat — 48 graded, 12 voided on the account's weekly quota and replayable with
+**Status:** Phase 1 runner, in use. Seasons have run: 336 published rounds
+across 15 models: the 288-round board behind the article (a 258-round ranked
+board, a 29-round probe of a fourteenth model, and one round that completes
+the DeepSeek V4.1 Flash vs Opus 5.5 pairing), plus 48 graded rounds of the
+60-match `s-2026-08` season that introduces SWE-2 Max and doubles GPT-6
+Astra's audit seat. The remaining 12 matches voided on the account's weekly
+quota; they are withheld from the board and replay with
 `scripts/replay-voids.sh`. The data pack, with scripts that recompute its
 numbers, is in `article/`.
 The spec, schemas, prompts and round-robin runner are in place. There is no
